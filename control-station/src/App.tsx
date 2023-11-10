@@ -1,9 +1,11 @@
+import { Dashboard } from "@/views";
+
 import "./App.css";
 
 function App() {
 	return (
 		<main>
-			<h1>Control Station</h1>
+			<Dashboard />
 		</main>
 	);
 }
