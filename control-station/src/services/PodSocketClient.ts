@@ -4,12 +4,12 @@ import { ioNamespace } from "./socketHandler";
 
 interface ServerToClientEvents {
 	connect: () => void;
-	disconnect: () => void;
+	disconnect: (reason: Socket.DisconnectReason) => void;
 	pong: (data: string) => void;
 }
 
 interface ClientToServerEvents {
-	ping: (data: string) => void;
+	ping: (data: string, ack: (data: string) => void) => void;
 }
 
 export interface PodData {
@@ -57,20 +57,24 @@ class PodSocketClient {
 		this.socket.disconnect();
 	}
 
-	onConnect(): void {
-		console.log("Connected to server as", this.socket.id);
-	}
-
-	onDisconnect(): void {
-		console.log("Disconnected from server.");
-	}
-
 	// Send a ping to the server
 	sendPing(): void {
-		this.socket.emit("ping", "ping");
+		this.socket.emit("ping", "ping", (ack: string) => {
+			console.log(`Server acknowledges ping with ${ack}`);
+		});
 	}
 
-	onPong(data: string): void {
+	private onConnect(): void {
+		console.log("Connected to server as", this.socket.id);
+		this.setPodData((d) => ({ ...d, connected: true }));
+	}
+
+	private onDisconnect(reason: Socket.DisconnectReason): void {
+		console.log(`Disconnected from server: ${reason}`);
+		this.setPodData((d) => ({ ...d, connected: false }));
+	}
+
+	private onPong(data: string): void {
 		console.log("server says", data);
 	}
 }
