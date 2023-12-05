@@ -18,6 +18,12 @@ export interface PodData {
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
 
+// Not entirely safe to use but better than casting with `as`
+// From https://stackoverflow.com/a/60142095
+type Entries<T> = {
+	[K in keyof T]: [K, T[K]];
+}[keyof T][];
+
 class PodSocketClient {
 	socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 	serverEvents: ServerToClientEvents;
@@ -26,19 +32,21 @@ class PodSocketClient {
 	constructor(setPodData: SetPodData) {
 		this.socket = ioNamespace("control-station");
 		this.serverEvents = {
-			connect: this.onConnect,
-			disconnect: this.onDisconnect,
-			pong: this.onPong,
-		};
+			connect: this.onConnect.bind(this),
+			disconnect: this.onDisconnect.bind(this),
+			pong: this.onPong.bind(this),
+		} as const;
 		this.setPodData = setPodData;
 	}
 
 	enable(): void {
 		this.socket.connect();
 		console.debug("Enabling socket event handlers");
-		Object.entries(this.serverEvents).forEach(([event, handler]) => {
-			this.socket.on(event as keyof ServerToClientEvents, handler.bind(this));
-		});
+		(Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
+			([event, handler]) => {
+				this.socket.on(event, handler);
+			}
+		);
 	}
 
 	disable(): void {
