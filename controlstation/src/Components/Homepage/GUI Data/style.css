@@ -1,0 +1,17 @@
+#guidata{
+    width: 45vw;
+    display: flex;
+    flex-wrap: wrap;
+}
+#homepage{
+    background-color: rgb(230, 230, 230);
+    margin-top: 2%;
+    border: solid 1px rgba(0,0,0,0);
+    break-inside: avoid-column;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2.5%;
+    margin-bottom: 10vh;
+    min-height: 86vh;
+}
