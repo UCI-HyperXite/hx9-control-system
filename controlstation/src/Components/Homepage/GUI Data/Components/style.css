@@ -1,0 +1,42 @@
+#card{
+    height: 25vh;
+    width: 20vw;
+    border-radius: 50px;
+    text-align: center;
+    margin-top: 2%;
+    margin-left: 5%;
+    position: relative;
+}
+
+select{
+    font-size: 1.8rem;
+    background-color: black;
+    border: 0px;
+    color: white;
+    text-align: center;
+}
+
+
+#dropdown{
+    background-color: rgba(0,0,0,0);
+    border: 0px;
+}
+
+#cardinfo{
+    font-size: 8vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.extra{
+    background-color: black;
+    color: white;
+}
+
+.controls{
+    background-color: white;
+}
+
+
