@@ -1,4 +1,5 @@
 import "./style.css";
+import io from "socket.io-client";
 
 export default function Control({ consoleList, setConsoleList }) {
   return (
@@ -6,6 +7,7 @@ export default function Control({ consoleList, setConsoleList }) {
       <button
         name="start"
         onClick={() => {
+          console.log("start");
           setConsoleList(consoleList.concat(1));
         }}
         className="button"
