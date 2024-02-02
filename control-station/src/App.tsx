@@ -1,11 +1,13 @@
-import { Dashboard } from "@/views";
-
-import "./App.css";
+import ControlPanel from "./components/ControlPanel/ControlPanel";
+import Navbar from "./components/Navbar/Navbar";
+import SensorBoxContainer from "./components/SensorBoxes/SensorBoxContainer";
 
 function App() {
 	return (
 		<main>
-			<Dashboard />
+			<Navbar />
+			<SensorBoxContainer />
+			<ControlPanel />
 		</main>
 	);
 }

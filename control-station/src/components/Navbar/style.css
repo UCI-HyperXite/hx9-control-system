@@ -1,0 +1,11 @@
+#navbar{
+    height: 10%;
+    font-size: 2rem;
+    background-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+
+}
