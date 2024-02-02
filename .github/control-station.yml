@@ -46,3 +46,6 @@ jobs:
           level: error
           reporter: github-check
           eslint_flags: src
+
+      - name: Test building
+        run: npm run build
