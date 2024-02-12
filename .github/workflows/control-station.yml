@@ -11,6 +11,9 @@ jobs:
   check-control-station:
     name: Check Control Station
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./control-station
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

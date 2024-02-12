@@ -11,6 +11,9 @@ jobs:
   check-pod-operation:
     name: Check Pod Operation
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pod-operation
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
