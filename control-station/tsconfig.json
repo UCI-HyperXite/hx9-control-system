@@ -3,7 +3,11 @@
 		"target": "ES2020",
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["src/*"],
+			"@ControlPanel/*":["src/components/controlpanel/*"],
+			"@Navbar/*": ["src/components/navbar/*"],
+			"@SensorBoxes/*": ["src/components/sensorboxes/*"],
+			"$/*":["public/*"],
 		},
 		"useDefineForClassFields": true,
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],

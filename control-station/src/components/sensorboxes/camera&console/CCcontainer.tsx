@@ -1,4 +1,4 @@
-import "./style.css"
+import "./cameraconsole.css"
 import Camera from "./Camera";
 import Console from "./Console";
 export default function CCcontainer(){

@@ -1,6 +1,6 @@
-import CCcontainer from "./Camera&Console/CCcontainer"
-import SensorContainer from "./Sensors/SensorsContainer"
-import "./style.css"
+import CCcontainer from "./camera&console/CCcontainer"
+import SensorContainer from "./sensors/SensorsContainer"
+import "./sensorboxct.css"
 export default function SensorBoxContainer(){
     return(
         <div id="sensorboxcontainer">

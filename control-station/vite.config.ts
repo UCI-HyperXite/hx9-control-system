@@ -7,6 +7,10 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@/": "/src/",
+			"@Navbar":"/src/components/navbar/",
+			"@SensorBoxes":"/src/components/sensorboxes/",
+			"@ControlPanel":"/src/components/controlpanel/",
+			"$/":"/public/"
 		},
 	},
 });

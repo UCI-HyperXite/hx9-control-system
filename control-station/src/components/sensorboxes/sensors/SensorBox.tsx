@@ -1,4 +1,4 @@
-import "./style.css"
+import "./sensorbox.css"
 export default function SensorBox(){
     return(
         <div id="sensorbox">
