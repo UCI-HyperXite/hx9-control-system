@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   check-pod-operation:
-    name: Check Pod Operation
     runs-on: ubuntu-latest
     defaults:
       run:

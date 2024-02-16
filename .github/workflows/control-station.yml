@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   check-control-station:
-    name: Check Control Station
     runs-on: ubuntu-latest
     defaults:
       run:
