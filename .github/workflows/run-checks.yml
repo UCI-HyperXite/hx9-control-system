@@ -1,4 +1,4 @@
-name: "Control Station Workflow"
+name: "Run Checks"
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   check-control-station:
+    name: "Check Control Station"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,3 +54,30 @@ jobs:
 
       - name: Test building
         run: npm run build
+
+  check-pod-operation:
+    name: "Check Pod Operation"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pod-operation
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Run cargo test
+        run: cargo test
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: Lint pod operation
+        run: cargo clippy -- -D warnings
+
+      - name: Build Pod Operation Program
+        run: cargo build
