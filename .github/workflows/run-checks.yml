@@ -1,4 +1,4 @@
-name: "Run Checks"
+name: Run Checks
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   check-control-station:
-    name: "Check Control Station"
+    name: Check Control Station
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,7 +52,7 @@ jobs:
         uses: reviewdog/action-eslint@v1
         if: github.event_name == 'push'
         with:
-          workDir: control-station/
+          workdir: control-station/
           level: error
           reporter: github-check
           eslint_flags: src
@@ -61,7 +61,7 @@ jobs:
         run: npm run build
 
   check-pod-operation:
-    name: "Check Pod Operation"
+    name: Check Pod Operation
     runs-on: ubuntu-latest
     defaults:
       run:
