@@ -1,8 +1,4 @@
-import "./sensorboxct.css"
-export default function Camera(){
-    return(
-        <div className="camera">
-
-        </div>
-    )
+import "./sensorboxct.css";
+export default function Camera() {
+	return <div className="camera"></div>;
 }
