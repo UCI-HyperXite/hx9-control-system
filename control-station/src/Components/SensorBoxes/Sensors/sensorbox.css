@@ -1,4 +1,4 @@
-#sensorbox{
+.sensorbox{
     height: 25vh;
     width: 40%;
     border-radius: 15px;
@@ -6,7 +6,7 @@
     margin-bottom: 1%;
     background: #e0e0e0;
 }
-#SensorContainer{
+.SensorContainer{
     width: 65vw;
     height: 80%;
     height: auto;
@@ -16,7 +16,7 @@
     flex-basis: 50%;
 }
 
-#sensor-value{
+.sensor-value{
     display: flex;
     justify-content: center;
     align-items: center;

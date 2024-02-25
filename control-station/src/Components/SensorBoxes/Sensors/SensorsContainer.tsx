@@ -2,7 +2,7 @@ import SensorBox from "./SensorBox";
 
 export default function SensorContainer(){
     return(
-        <div id="SensorContainer">
+        <div className="SensorContainer">
             <SensorBox />
             <SensorBox />
             <SensorBox />

@@ -1,7 +1,7 @@
-import "./cameraconsole.css"
+import "./sensorboxct.css"
 export default function Camera(){
     return(
-        <div id="camera">
+        <div className="camera">
 
         </div>
     )

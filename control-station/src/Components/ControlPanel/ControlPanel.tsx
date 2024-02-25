@@ -29,7 +29,7 @@ export default function ControlPanel() {
   };
 
   return (
-    <div id="controlpanel">
+    <div className="controlpanel">
       <button id="start" className="button" onClick={handleStart}>
         Start
       </button>

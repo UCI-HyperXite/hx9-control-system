@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { consoleContext } from "@/App";
+import "./sensorboxct.css"
 
 export default function Console() {
   const context = useContext(consoleContext);
@@ -11,7 +12,7 @@ export default function Console() {
   const { console } = context;
 
   return (
-    <div id="console">
+    <div className="console">
       <h1>Console</h1>
       <ul className="console-list">
         {console.map((item:number, index:number) => (

@@ -4,9 +4,6 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"],
-			"@ControlPanel/*":["src/components/controlpanel/*"],
-			"@Navbar/*": ["src/components/navbar/*"],
-			"@SensorBoxes/*": ["src/components/sensorboxes/*"],
 			"$/*":["public/*"],
 		},
 		"useDefineForClassFields": true,
