@@ -74,6 +74,12 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+      
+      - name: Add target
+        run: rustup target add armv7-unknown-linux-gnueabihf
+      
+      - name: Install target building dependencies
+        run: sudo apt-get -qq install crossbuild-essential-armhf
 
       - name: Run cargo test
         run: cargo test
@@ -84,5 +90,8 @@ jobs:
       - name: Lint pod operation
         run: cargo clippy -- -D warnings
 
-      - name: Build Pod Operation Program
-        run: cargo build
+      - name: Build Pod Operation Program (debug)
+        run: cargo build --config target.armv7-unknown-linux-gnueabihf.linker=\"arm-linux-gnueabihf-gcc\"
+
+      - name: Build Pod Operation Program (release)
+        run: cargo build --config target.armv7-unknown-linux-gnueabihf.linker=\"arm-linux-gnueabihf-gcc\" --release
