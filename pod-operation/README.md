@@ -33,6 +33,15 @@ brew install armv7-unknown-linux-gnueabihf
 
 #### Windows/Linux
 
+For building natively, a different linker is required from the one
+specified in `.cargo/config.toml`. Instead of `armv7-unknown-linux-gnueabihf-gcc`
+for MacOS, we instead use `arm-none-linux-gnueabihf-gcc`, which can be downloaded
+and installed [here](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
+You will want to select the **AArch32 GNU/Linux target with hard float** to download.
+Then in `.cargo/config.toml`, uncomment the line that has the appropriate linker.
+
+
+#### Alternative Building Process With `cross`
 For both of these platforms, a different process is necessary.
 
 **Prerequisites**
