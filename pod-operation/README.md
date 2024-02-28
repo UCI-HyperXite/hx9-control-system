@@ -25,7 +25,7 @@ or [`cross`](https://github.com/cross-rs/cross) can be used to build inside a co
 
 #### macOS
 
-A homebrew formula for macOS cross-compiler toolchains is available
+A Homebrew formula for macOS cross-compiler toolchains is available
 
 ```shell
 brew tap messense/macos-cross-toolchains
@@ -37,7 +37,7 @@ brew install armv7-unknown-linux-gnueabihf
 To cross-compile on Windows and Linux, a different compiler toolchain is needed. From the
 [Arm GNU Toolchain Downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads),
 download and install the **AArch32 GNU/Linux target with hard float (arm-none-linux-gnueabihf)**
-for Windows or Linux.
+for your operating system.
 
 #### Alternative Building Process With `cross`
 
@@ -60,8 +60,9 @@ Next, install the `cross` package.
 cargo install cross
 ```
 
-This is the library that will facilitate cross-compilation without much
-configuration on our end. It requires Docker (or Podman) in order to function.
+This is the library that will facilitate cross-compilation with minimal additional configuration.
+`cross` requires Docker (or Podman) in order to function and will also emulate the ARM architecture
+inside the container using QEMU.
 
 On Linux, if an error appears during build about `GLIBC`, install the `glibc` library.
 
