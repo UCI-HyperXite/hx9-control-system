@@ -20,7 +20,8 @@ rustup target add armv7-unknown-linux-gnueabihf
 
 ### Cross-Compilation
 
-Install the compiler for the Raspberry Pi platform
+To compile for the Raspberry Pi target, a specific linker is needed for each operating system,
+or [`cross`](https://github.com/cross-rs/cross) can be used to build inside a container.
 
 #### macOS
 
@@ -33,16 +34,15 @@ brew install armv7-unknown-linux-gnueabihf
 
 #### Windows/Linux
 
-For building natively, a different linker is required from the one
-specified in `.cargo/config.toml`. Instead of `armv7-unknown-linux-gnueabihf-gcc`
-for MacOS, we instead use `arm-none-linux-gnueabihf-gcc`, which can be downloaded
-and installed [here](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
-You will want to select the **AArch32 GNU/Linux target with hard float** to download.
-Then in `.cargo/config.toml`, uncomment the line that has the appropriate linker.
-
+To cross-compile on Windows and Linux, a different compiler toolchain is needed. From the
+[Arm GNU Toolchain Downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads),
+download and install the **AArch32 GNU/Linux target with hard float (arm-none-linux-gnueabihf)**
+for Windows or Linux.
 
 #### Alternative Building Process With `cross`
-For both of these platforms, a different process is necessary.
+
+An alternative to installing cross-compilers is using `cross` to build and run the Rust project
+using containers and emulation. This can be used on any operating system (macOS, Windows, Linux).
 
 **Prerequisites**
 
@@ -54,27 +54,16 @@ on Linux distributions.
 use rootless Docker.** You can read more about adding yourself to the group
 [here](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
 
-Next, install the [`cross`](https://github.com/cross-rs/cross) package by
-running the below command in the `pod-operation/` directory.
+Next, install the `cross` package.
 
 ```shell
-cargo install cross --git https://github.com/cross-rs/cross
+cargo install cross
 ```
 
 This is the library that will facilitate cross-compilation without much
-configuration on our end. It requires Docker in order to function.
+configuration on our end. It requires Docker (or Podman) in order to function.
 
-Ensure that `cross` is now on your `PATH`. Usually, it
-is located in the `.cargo/bin` folder of your home directory, so if `cross` is not in your `PATH`, you can check this directory and add it to `PATH`.
-
-Now run
-
-```shell
-cross build
-```
-
-and the program should build. On Linux, if an error appears about `GLIBC`,
-you may need to install the `glibc` library. You can do this by running
+On Linux, if an error appears during build about `GLIBC`, install the `glibc` library.
 
 ```shell
 # Ubuntu/Debian-based distributions
@@ -94,12 +83,22 @@ cargo watch -x run
 
 ## Building for Production
 
-To build for production, use the `--release` option
+Uncomment the arm-linux linker for your operating system in `.cargo/config.toml`.
+
+To build for production, use the `--release` option:
 
 ```shell
-cargo build --release
+cargo build --target armv7-unknown-linux-gnueabihf --release
 ```
 
-This will compile the project to
+Alternatively, use `cross` to compile in a container:
+
+```shell
+cross build --release
+```
+
+Note: the default target is already specified in `Cross.toml`.
+
+Either approach will compile the project to
 `target/armv7-unknown-linux-gnueabihf/release/pod-operation`
 which can be run on the Raspberry Pi.
