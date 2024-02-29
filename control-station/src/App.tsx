@@ -1,27 +1,13 @@
-import React, { createContext, useState } from "react";
-import Navbar from "@/Components/Navbar/Navbar";
-import SensorBoxContainer from "@/Components/SensorBoxes/SensorBoxContainer";
-import ControlPanel from "@/Components/ControlPanel/ControlPanel";
-interface ConsoleContextProps {
-	console: number[];
-	setconsole: React.Dispatch<React.SetStateAction<number[]>>;
-}
+import Navbar from "@/components/Navbar/Navbar";
+import SensorBoxContainer from "@/components/SensorBoxes/SensorBoxContainer";
+import ControlPanel from "@/components/ControlPanel/ControlPanel";
 
-export const consoleContext = createContext<ConsoleContextProps | undefined>(
-	undefined
-);
-
-const App: React.FC = () => {
-	const [console, setconsole] = useState<number[]>([]);
+export default function App() {
 	return (
-		<consoleContext.Provider value={{ console, setconsole }}>
-			<main>
-				<Navbar />
-				<SensorBoxContainer />
-				<ControlPanel />
-			</main>
-		</consoleContext.Provider>
+		<main>
+			<Navbar />
+			<SensorBoxContainer />
+			<ControlPanel />
+		</main>
 	);
-};
-
-export default App;
+}

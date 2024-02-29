@@ -1,4 +1,4 @@
-import { Status } from "@/Components";
+import { Status } from "@/components";
 
 function Dashboard() {
 	return (
