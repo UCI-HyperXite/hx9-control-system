@@ -3,16 +3,16 @@ import "./controlpanel.css";
 export default function ControlPanel() {
 	return (
 		<div className="controlpanel">
-			<button id="start" className="button">
+			<button className="button start">
 				Start
 			</button>
-			<button id="stop" className="button">
+			<button className="button stop">
 				Stop
 			</button>
-			<button id="force" className="button">
+			<button className="button force">
 				Force Stop
 			</button>
-			<button id="load" className="button">
+			<button className="button load">
 				Load
 			</button>
 		</div>
