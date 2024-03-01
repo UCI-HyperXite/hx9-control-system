@@ -1,20 +1,12 @@
-import "./controlpanel.css";
+import "./ControlPanel.css";
 
 export default function ControlPanel() {
 	return (
 		<div className="controlpanel">
-			<button className="button start">
-				Start
-			</button>
-			<button className="button stop">
-				Stop
-			</button>
-			<button className="button force">
-				Force Stop
-			</button>
-			<button className="button load">
-				Load
-			</button>
+			<button className="button start">Start</button>
+			<button className="button stop">Stop</button>
+			<button className="button force">Force Stop</button>
+			<button className="button load">Load</button>
 		</div>
 	);
 }

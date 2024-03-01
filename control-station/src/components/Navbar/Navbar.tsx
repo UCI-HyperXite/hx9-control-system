@@ -1,5 +1,7 @@
-import "./navbar.css";
 import HX from "@/data/images/HX Logo.svg";
+
+import "./Navbar.css";
+
 export default function Navbar() {
 	return (
 		<header className="navbar">

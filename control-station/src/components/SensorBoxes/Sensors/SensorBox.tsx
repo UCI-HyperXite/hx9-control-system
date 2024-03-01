@@ -1,4 +1,5 @@
-import "./sensorbox.css";
+import "./SensorBox.css";
+
 export default function SensorBox() {
 	return (
 		<div className="sensorbox">

@@ -1,4 +1,4 @@
-import "./sensorboxct.css";
+import "./SensorData.css";
 
 export default function Console() {
 	return (
