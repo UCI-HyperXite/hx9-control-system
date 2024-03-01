@@ -1,10 +1,12 @@
-import SensorContainer from "./Sensors/SensorsContainer";
-import "./sensorboxct.css";
 import Camera from "./Camera";
 import Console from "./Console";
-export default function SensorBoxContainer() {
+import SensorContainer from "./Sensors/SensorsContainer";
+
+import "./SensorData.css";
+
+export default function SensorData() {
 	return (
-		<div className="sensorboxcontainer">
+		<div className="sensordata">
 			<SensorContainer />
 			<div style={{ width: "50%" }}>
 				<Camera />

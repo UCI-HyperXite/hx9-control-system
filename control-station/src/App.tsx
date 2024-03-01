@@ -1,12 +1,10 @@
-import Navbar from "@/components/Navbar/Navbar";
-import SensorBoxContainer from "@/components/SensorBoxes/SensorBoxContainer";
-import ControlPanel from "@/components/ControlPanel/ControlPanel";
+import { ControlPanel, Navbar, SensorData } from "@/components";
 
 export default function App() {
 	return (
 		<main>
 			<Navbar />
-			<SensorBoxContainer />
+			<SensorData />
 			<ControlPanel />
 		</main>
 	);
