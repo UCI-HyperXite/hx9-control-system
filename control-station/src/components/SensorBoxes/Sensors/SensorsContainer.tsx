@@ -1,6 +1,6 @@
 import SensorBox from "./SensorBox";
 
-export default function SensorContainer() {
+function SensorContainer() {
 	return (
 		<div className="SensorContainer">
 			<SensorBox />
@@ -12,3 +12,5 @@ export default function SensorContainer() {
 		</div>
 	);
 }
+
+export default SensorContainer;

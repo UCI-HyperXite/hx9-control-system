@@ -1,6 +1,6 @@
 import "./SensorBox.css";
 
-export default function SensorBox() {
+function SensorBox() {
 	return (
 		<div className="sensorbox">
 			<h1 style={{ textAlign: "center", height: "10%" }}>Title</h1>
@@ -8,3 +8,5 @@ export default function SensorBox() {
 		</div>
 	);
 }
+
+export default SensorBox;

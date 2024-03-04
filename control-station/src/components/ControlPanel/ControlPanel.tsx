@@ -1,6 +1,6 @@
 import "./ControlPanel.css";
 
-export default function ControlPanel() {
+function ControlPanel() {
 	return (
 		<div className="controlpanel">
 			<button className="button start">Start</button>
@@ -10,3 +10,5 @@ export default function ControlPanel() {
 		</div>
 	);
 }
+
+export default ControlPanel;

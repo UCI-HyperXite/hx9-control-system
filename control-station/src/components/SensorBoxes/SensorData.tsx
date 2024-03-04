@@ -4,7 +4,7 @@ import SensorContainer from "./Sensors/SensorsContainer";
 
 import "./SensorData.css";
 
-export default function SensorData() {
+function SensorData() {
 	return (
 		<div className="sensordata">
 			<SensorContainer />
@@ -15,3 +15,5 @@ export default function SensorData() {
 		</div>
 	);
 }
+
+export default SensorData;

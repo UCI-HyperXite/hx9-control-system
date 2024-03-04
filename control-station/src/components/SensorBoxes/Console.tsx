@@ -1,6 +1,6 @@
 import "./SensorData.css";
 
-export default function Console() {
+function Console() {
 	return (
 		<div className="console">
 			<h1>Console</h1>
@@ -13,3 +13,5 @@ export default function Console() {
 		</div>
 	);
 }
+
+export default Console;

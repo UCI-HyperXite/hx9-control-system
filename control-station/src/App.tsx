@@ -1,6 +1,6 @@
 import { ControlPanel, Navbar, SensorData } from "@/components";
 
-export default function App() {
+function App() {
 	return (
 		<main>
 			<Navbar />
@@ -9,3 +9,5 @@ export default function App() {
 		</main>
 	);
 }
+
+export default App;

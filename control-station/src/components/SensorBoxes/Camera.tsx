@@ -1,5 +1,7 @@
 import "./SensorData.css";
 
-export default function Camera() {
+function Camera() {
 	return <div className="camera"></div>;
 }
+
+export default Camera;
