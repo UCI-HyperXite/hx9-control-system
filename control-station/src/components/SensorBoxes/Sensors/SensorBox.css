@@ -1,0 +1,25 @@
+.sensorbox {
+	height: 25vh;
+	width: 40%;
+	border-radius: 15px;
+	margin-top: 1%;
+	margin-bottom: 1%;
+	background: #e0e0e0;
+}
+.SensorContainer {
+	width: 65vw;
+	height: 80%;
+	height: auto;
+	display: flex;
+	justify-content: space-evenly;
+	flex-wrap: wrap;
+	flex-basis: 50%;
+}
+
+.sensor-value {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 90%;
+	font-size: 3rem;
+}
