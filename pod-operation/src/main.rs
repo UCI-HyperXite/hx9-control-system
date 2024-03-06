@@ -3,7 +3,11 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
+mod components;
+mod demo;
 mod handlers;
+
+use crate::components::signal_light::SignalLight;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,6 +19,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 		socket.on("ping", handlers::handle_ping);
 	});
+
+	let signal_light = SignalLight::new();
+	tokio::spawn(demo::blink(signal_light));
 
 	let app = axum::Router::new().layer(layer);
 
