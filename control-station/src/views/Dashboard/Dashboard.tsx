@@ -1,4 +1,4 @@
-import { Status } from "@/Components";
+import { Status } from "@/components";
 import usePodData from "@/services/usePodData";
 
 function Dashboard() {

@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { consoleContext } from "../../App";
 import "./controlpanel.css";
+import socket from "@/services/SocketFunctions";
 
 export default function ControlPanel() {
 	const context = useContext(consoleContext);
@@ -14,18 +15,22 @@ export default function ControlPanel() {
 
 	const handleStart = () => {
 		setConsoleData((prev: number[]) => [...prev, 1]);
+		socket.emit("start");
 	};
 
 	const handleStop = () => {
 		setConsoleData((prev: number[]) => [...prev, 0]);
+		socket.emit("stop");
 	};
 
 	const handleForceStop = () => {
 		setConsoleData((prev: number[]) => [...prev, 2]);
+		socket.emit("forcestop");
 	};
 
 	const handleLoad = () => {
 		setConsoleData((prev: number[]) => [...prev, 3]);
+		socket.emit("load");
 	};
 
 	return (

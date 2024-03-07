@@ -1,0 +1,46 @@
+.smallbox {
+	height: 25vh;
+	width: 40%;
+	border-radius: 15px;
+	margin-top: 1%;
+	margin-bottom: 1%;
+	background: #e0e0e0;
+	box-shadow: 20px 20px 60px #bebebe;
+}
+.SensorContainer {
+	width: 65vw;
+	height: 80vh;
+	height: auto;
+	display: flex;
+	justify-content: space-evenly;
+	flex-wrap: wrap;
+	flex-basis: 50%;
+}
+
+.sensor-value {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 50%;
+	font-size: 3.5rem;
+}
+
+.largebox {
+	height: 25vh;
+	width: 80%;
+	border-radius: 15px;
+	margin-top: 1%;
+	margin-bottom: 1%;
+	background: #e0e0e0;
+	box-shadow: 20px 20px 60px #bebebe;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.sensor-pic {
+	max-height: 60%;
+	max-width: 80%;
+	transition: 0.1s;
+}

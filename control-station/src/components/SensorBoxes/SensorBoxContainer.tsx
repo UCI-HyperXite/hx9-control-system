@@ -6,7 +6,7 @@ export default function SensorBoxContainer() {
 	return (
 		<div className="sensorboxcontainer">
 			<SensorContainer />
-			<div style={{ width: "50%" }}>
+			<div style={{ width: "50%", height: "80vh" }}>
 				<Camera />
 				<Console />
 			</div>

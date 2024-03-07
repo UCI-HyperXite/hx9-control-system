@@ -1,16 +1,21 @@
-import React, { createContext, useState, useEffect } from "react";
-import Navbar from "@/Components/Navbar/Navbar";
-import SensorBoxContainer from "@/Components/SensorBoxes/SensorBoxContainer";
-import ControlPanel from "@/Components/ControlPanel/ControlPanel";
-import { io, Socket } from "socket.io-client";
-
-const socket: Socket = io("http://localhost:8000");
+import React, { createContext, useEffect, useState } from "react";
+import Navbar from "@/components/Navbar/Navbar";
+import SensorBoxContainer from "@/components/SensorBoxes/SensorBoxContainer";
+import ControlPanel from "@/components/ControlPanel/ControlPanel";
+import socket from "@/services/SocketFunctions";
 
 interface ConsoleContextProps {
 	consoleData: number[];
 	setConsoleData: React.Dispatch<React.SetStateAction<number[]>>;
-	imageData: string | null;
-	setImageData: React.Dispatch<React.SetStateAction<string | null>>;
+	sensorData: SensorData;
+	setSensorData: React.Dispatch<React.SetStateAction<SensorData>>;
+}
+
+interface SensorData {
+	speed: number;
+	distance: number;
+	hdeg: number;
+	vdeg: number;
 }
 
 export const consoleContext = createContext<ConsoleContextProps | undefined>(
@@ -19,25 +24,29 @@ export const consoleContext = createContext<ConsoleContextProps | undefined>(
 
 const App: React.FC = () => {
 	const [consoleData, setConsoleData] = useState<number[]>([]);
-	const [imageData, setImageData] = useState<string | null>(null);
+	const [sensorData, setSensorData] = useState<SensorData>({
+		speed: 0,
+		distance: 0,
+		hdeg: 0,
+		vdeg: 0,
+	});
 
 	useEffect(() => {
-		const handleImageData = (data: { image: string }) => {
-			setImageData(data.image);
-			console.log("Image Data:", data.image);
-		};
-
-		socket.on("image_data", handleImageData);
-
-		return () => {
-			socket.off("image_data", handleImageData);
-			socket.disconnect();
-		};
-	}, [imageData]);
+		socket.on("sensorData", (data) => {
+			setSensorData(() => {
+				return {
+					distance: data.dist,
+					speed: data.speed,
+					hdeg: data.hdeg,
+					vdeg: data.vdeg,
+				};
+			});
+		});
+	}, []);
 
 	return (
 		<consoleContext.Provider
-			value={{ consoleData, setConsoleData, imageData, setImageData }}
+			value={{ consoleData, setConsoleData, sensorData, setSensorData }}
 		>
 			<main>
 				<Navbar />
