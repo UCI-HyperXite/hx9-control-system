@@ -81,7 +81,7 @@ jobs:
         run: rustup target add $TARGET
 
       - name: Install target building dependencies
-        run: sudo apt-get update && sudo apt-get -qq install crossbuild-essential-armhf
+        run: sudo apt-get update && sudo apt-get -qq install crossbuild-essential-arm64
 
       - name: Run cargo test
         run: cargo test
@@ -93,7 +93,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Build Pod Operation Program (debug)
-        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-unknown-linux-gnu-gcc\"
+        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\"
 
       - name: Build Pod Operation Program (release)
-        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-unknown-linux-gnu-gcc\" --release
+        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\" --release

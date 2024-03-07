@@ -88,12 +88,12 @@ cargo watch -x run
 
 ## Building for Production
 
-Uncomment the arm-linux linker for your operating system in `.cargo/config.toml`.
+Uncomment the aarch64 Linux linker for your operating system in `.cargo/config.toml`.
 
 To build for production, use the `--release` option:
 
 ```shell
-cargo build --target armv7-unknown-linux-gnueabihf --release
+cargo build --target aarch64-unknown-linux-gnu --release
 ```
 
 Alternatively, use `cross` to compile in a container:
@@ -105,5 +105,5 @@ cross build --release
 Note: the default target is already specified in `Cross.toml`.
 
 Either approach will compile the project to
-`target/armv7-unknown-linux-gnueabihf/release/pod-operation`
+`target/aarch64-unknown-linux-gnu/release/pod-operation`
 which can be run on the Raspberry Pi.
