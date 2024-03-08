@@ -15,7 +15,7 @@ cargo install cargo-watch
 Add the build target for the Raspberry Pi
 
 ```shell
-rustup target add armv7-unknown-linux-gnueabihf
+rustup target add aarch64-unknown-linux-gnu
 ```
 
 ### Cross-Compilation
@@ -29,15 +29,19 @@ A Homebrew formula for macOS cross-compiler toolchains is available
 
 ```shell
 brew tap messense/macos-cross-toolchains
-brew install armv7-unknown-linux-gnueabihf
+brew install aarch64-unknown-linux-gnu
 ```
 
 #### Windows/Linux
 
 To cross-compile on Windows and Linux, a different compiler toolchain is needed. From the
 [Arm GNU Toolchain Downloads](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads),
-download and install the **AArch32 GNU/Linux target with hard float (arm-none-linux-gnueabihf)**
-for your operating system.
+download and install the **AArch64 GNU/Linux target (aarch64-none-linux-gnu)** for your operating
+system.
+
+For Linux operating systems, your distribution may also provide the target via
+its package manager (`apt`, `pacman`, etc.). Please refer to the appropriate
+package repository to verify and install it this way if you wish.
 
 #### Alternative Building Process With `cross`
 
@@ -84,12 +88,12 @@ cargo watch -x run
 
 ## Building for Production
 
-Uncomment the arm-linux linker for your operating system in `.cargo/config.toml`.
+Uncomment the aarch64 Linux linker for your operating system in `.cargo/config.toml`.
 
 To build for production, use the `--release` option:
 
 ```shell
-cargo build --target armv7-unknown-linux-gnueabihf --release
+cargo build --target aarch64-unknown-linux-gnu --release
 ```
 
 Alternatively, use `cross` to compile in a container:
@@ -101,5 +105,5 @@ cross build --release
 Note: the default target is already specified in `Cross.toml`.
 
 Either approach will compile the project to
-`target/armv7-unknown-linux-gnueabihf/release/pod-operation`
+`target/aarch64-unknown-linux-gnu/release/pod-operation`
 which can be run on the Raspberry Pi.

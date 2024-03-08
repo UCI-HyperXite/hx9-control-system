@@ -67,7 +67,7 @@ jobs:
       run:
         working-directory: ./pod-operation
     env:
-      TARGET: armv7-unknown-linux-gnueabihf
+      TARGET: aarch64-unknown-linux-gnu
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
         run: rustup target add $TARGET
 
       - name: Install target building dependencies
-        run: sudo apt-get update && sudo apt-get -qq install crossbuild-essential-armhf
+        run: sudo apt-get update && sudo apt-get -qq install crossbuild-essential-arm64
 
       - name: Run cargo test
         run: cargo test
@@ -93,7 +93,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Build Pod Operation Program (debug)
-        run: cargo build --target $TARGET --config target.$TARGET.linker=\"arm-linux-gnueabihf-gcc\"
+        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\"
 
       - name: Build Pod Operation Program (release)
-        run: cargo build --target $TARGET --config target.$TARGET.linker=\"arm-linux-gnueabihf-gcc\" --release
+        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\" --release
