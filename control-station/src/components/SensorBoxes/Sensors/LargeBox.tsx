@@ -8,6 +8,7 @@ export default function LargeBox(prop: any) {
 				src={prop.pic == "Front" ? FrontPod : SidePod}
 				style={{ rotate: `${prop.rotate}` }}
 			/>
+			<h1>{prop.rotate}</h1>
 		</div>
 	);
 }

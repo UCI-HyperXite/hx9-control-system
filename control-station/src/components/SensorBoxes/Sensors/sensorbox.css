@@ -37,6 +37,13 @@
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
+	position: relative;
+}
+.largebox > h1{
+	position: absolute;
+	top: 0;
+	right: 10px;
+	font-size: 1rem;
 }
 
 .sensor-pic {

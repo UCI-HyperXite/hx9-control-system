@@ -30,19 +30,19 @@ const App: React.FC = () => {
 		hdeg: 0,
 		vdeg: 0,
 	});
-
 	useEffect(() => {
-		socket.on("sensorData", (data) => {
-			setSensorData(() => {
+		socket.on("gyro_data", (data) => {
+			console.log("received");
+			setSensorData((prevData) => {
 				return {
-					distance: data.dist,
-					speed: data.speed,
-					hdeg: data.hdeg,
-					vdeg: data.vdeg,
+					...prevData,
+					hdeg: data.pitch,
+					vdeg: data.roll,
 				};
 			});
 		});
-	}, []);
+	}, [socket, setSensorData]);
+	
 
 	return (
 		<consoleContext.Provider
