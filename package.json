@@ -2,7 +2,6 @@
 	"name": "hx9-control-system",
 	"version": "1.0.0",
 	"description": "The control system consists of the pod operation backend and control station client. See the respective README files for setup instructions.",
-	"main": "index.js",
 	"devDependencies": {
 		"pre-commit": "^1.2.2"
 	},
@@ -11,6 +10,7 @@
 		"format:po": "cd pod-operation && npm run format",
 		"lint:cs": "cd control-station && npm run lint",
 		"lint:po": "cd pod-operation && npm run lint",
+		"test:cs": "cd control-station && npm run test",
 		"test:po": "cd pod-operation && npm run test"
 	},
 	"pre-commit": [
@@ -20,6 +20,5 @@
 		"lint:po",
 		"test:po"
 	],
-	"author": "",
-	"license": "ISC"
+	"author": "UCI HyperXite"
 }
