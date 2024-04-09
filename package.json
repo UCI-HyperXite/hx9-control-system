@@ -10,7 +10,10 @@
     "pre-commit": "^1.2.2"
   },
   "scripts": {
+    "eslint": "cd control-station && npx eslint . && exit 0",
     "prettier": "cd control-station && prettier --write . && exit 0",
+    "cargoclippy": "cd pod-operation && cargo clippy && exit 0",
+    "cargocheck": "cd pod-operation && cargo check && exit 0",
     "cargofmt": "cd pod-operation && cargo fmt && exit 0"
   },
   "pre-commit": ["prettier", "cargofmt"],
