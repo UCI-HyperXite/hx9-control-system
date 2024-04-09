@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "The control system consists of the pod operation backend and control station client. See the respective README files for setup instructions.",
   "main": "index.js",
-  "dependencies": {
-    "husky": "^9.0.11"
-  },
   "devDependencies": {
     "pre-commit": "^1.2.2"
   },
@@ -17,7 +14,14 @@
     "cargocheck": "cd pod-operation && cargo check && exit 0",
     "cargofmt": "cd pod-operation && cargo fmt && exit 0"
   },
-  "pre-commit": ["prettier", "cargofmt"],
+  "pre-commit": [
+    "tsc",
+    "eslint",
+    "prettier",
+    "cargoclippy",
+    "cargocheck",
+    "cargofmt"
+  ],
   "author": "",
   "license": "ISC"
 }
