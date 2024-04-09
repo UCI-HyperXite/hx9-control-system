@@ -10,6 +10,7 @@
     "pre-commit": "^1.2.2"
   },
   "scripts": {
+    "tsc": "cd control-station && tsc --noEmit && exit 0",
     "eslint": "cd control-station && npx eslint . && exit 0",
     "prettier": "cd control-station && prettier --write . && exit 0",
     "cargoclippy": "cd pod-operation && cargo clippy && exit 0",
