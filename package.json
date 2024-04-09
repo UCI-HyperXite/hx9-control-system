@@ -7,20 +7,18 @@
     "pre-commit": "^1.2.2"
   },
   "scripts": {
-    "tsc": "cd control-station && tsc --noEmit && exit 0",
-    "eslint": "cd control-station && npx eslint . && exit 0",
-    "prettier": "cd control-station && prettier --write . && exit 0",
-    "cargoclippy": "cd pod-operation && cargo clippy && exit 0",
-    "cargocheck": "cd pod-operation && cargo check && exit 0",
-    "cargofmt": "cd pod-operation && cargo fmt && exit 0"
+    "format:cs": "cd control-station && npm run format",
+    "format:po": "cd pod-operation && npm run format",
+    "lint:cs": "cd control-station && npm run lint",
+    "lint:po": "cd pod-operation && npm run lint",
+    "test:po": "cd pod-operation && npm run test"
   },
   "pre-commit": [
-    "tsc",
-    "eslint",
-    "prettier",
-    "cargoclippy",
-    "cargocheck",
-    "cargofmt"
+    "format:cs",
+    "format:po",
+    "lint:cs",
+    "lint:po",
+    "test:po"
   ],
   "author": "",
   "license": "ISC"
