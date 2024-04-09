@@ -42,11 +42,11 @@ class PodSocketClient {
 	enable(): void {
 		this.socket.connect();
 		console.debug("Enabling socket event handlers");
-		(Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
-			([event, handler]) => {
-				this.socket.on(event, handler);
-			}
-		);
+		(
+			Object.entries(this.serverEvents) as Entries<ServerToClientEvents>
+		).forEach(([event, handler]) => {
+			this.socket.on(event, handler);
+		});
 	}
 
 	disable(): void {
