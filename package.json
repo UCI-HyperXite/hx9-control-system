@@ -1,25 +1,25 @@
 {
-  "name": "hx9-control-system",
-  "version": "1.0.0",
-  "description": "The control system consists of the pod operation backend and control station client. See the respective README files for setup instructions.",
-  "main": "index.js",
-  "devDependencies": {
-    "pre-commit": "^1.2.2"
-  },
-  "scripts": {
-    "format:cs": "cd control-station && npm run format",
-    "format:po": "cd pod-operation && npm run format",
-    "lint:cs": "cd control-station && npm run lint",
-    "lint:po": "cd pod-operation && npm run lint",
-    "test:po": "cd pod-operation && npm run test"
-  },
-  "pre-commit": [
-    "format:cs",
-    "format:po",
-    "lint:cs",
-    "lint:po",
-    "test:po"
-  ],
-  "author": "",
-  "license": "ISC"
+	"name": "hx9-control-system",
+	"version": "1.0.0",
+	"description": "The control system consists of the pod operation backend and control station client. See the respective README files for setup instructions.",
+	"main": "index.js",
+	"devDependencies": {
+		"pre-commit": "^1.2.2"
+	},
+	"scripts": {
+		"format:cs": "cd control-station && npm run format",
+		"format:po": "cd pod-operation && npm run format",
+		"lint:cs": "cd control-station && npm run lint",
+		"lint:po": "cd pod-operation && npm run lint",
+		"test:po": "cd pod-operation && npm run test"
+	},
+	"pre-commit": [
+		"format:cs",
+		"format:po",
+		"lint:cs",
+		"lint:po",
+		"test:po"
+	],
+	"author": "",
+	"license": "ISC"
 }
