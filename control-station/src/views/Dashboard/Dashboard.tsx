@@ -9,7 +9,12 @@ function Dashboard() {
 			<h1>Dashboard</h1>
 			<Status />
 			<p>{podData.connected ? "connected" : "disconnected"}</p>
-			<button onClick={() => podSocketClient.sendPing()}>Send Ping</button>
+			<button onClick={() => podSocketClient.sendStop()}>Send Stop</button>
+			<button onClick={() => podSocketClient.sendForcestop()}>
+				Send Forcestop
+			</button>
+			<button onClick={() => podSocketClient.sendLoad()}>Send Load</button>
+			<button onClick={() => podSocketClient.sendStart()}>Send Start</button>
 		</div>
 	);
 }

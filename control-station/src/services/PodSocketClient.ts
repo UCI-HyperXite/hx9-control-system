@@ -6,10 +6,20 @@ interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
 	pong: (data: string) => void;
+	greet: (data: string) => void;
+	stop: (data: string) => void;
+	forcestop: (data: string) => void;
+	load: (data: string) => void;
+	start: (data: string) => void;
 }
 
 interface ClientToServerEvents {
 	ping: (data: string, ack: (data: string) => void) => void;
+	greet: (data: string, ack: (data: string) => void) => void;
+	stop: (data: string, ack: (data: string) => void) => void;
+	forcestop: (data: string, ack: (data: string) => void) => void;
+	load: (data: string, ack: (data: string) => void) => void;
+	start: (data: string, ack: (data: string) => void) => void;
 }
 
 export interface PodData {
@@ -34,7 +44,12 @@ class PodSocketClient {
 		this.serverEvents = {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),
-			pong: this.onPong.bind(this),
+			pong: this.onData.bind(this),
+			greet: this.onData.bind(this),
+			stop: this.onData.bind(this),
+			forcestop: this.onData.bind(this),
+			load: this.onData.bind(this),
+			start: this.onData.bind(this),
 		} as const;
 		this.setPodData = setPodData;
 	}
@@ -42,11 +57,11 @@ class PodSocketClient {
 	enable(): void {
 		this.socket.connect();
 		console.debug("Enabling socket event handlers");
-		(Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
-			([event, handler]) => {
-				this.socket.on(event, handler);
-			}
-		);
+		(
+			Object.entries(this.serverEvents) as Entries<ServerToClientEvents>
+		).forEach(([event, handler]) => {
+			this.socket.on(event, handler);
+		});
 	}
 
 	disable(): void {
@@ -64,6 +79,36 @@ class PodSocketClient {
 		});
 	}
 
+	sendGreet(): void {
+		this.socket.emit("greet", "Hello from client", (ack: string) => {
+			console.log(`Server responds to greet with ${ack}`);
+		});
+	}
+
+	sendStop(): void {
+		this.socket.emit("stop", "Hello from client", (ack: string) => {
+			console.log(`Server responds to stop with ${ack}`);
+		});
+	}
+
+	sendForcestop(): void {
+		this.socket.emit("forcestop", "Hello from client", (ack: string) => {
+			console.log(`Server responds to stop with ${ack}`);
+		});
+	}
+
+	sendLoad(): void {
+		this.socket.emit("load", "Hello from client", (ack: string) => {
+			console.log(`Server responds to stop with ${ack}`);
+		});
+	}
+
+	sendStart(): void {
+		this.socket.emit("start", "Hello from client", (ack: string) => {
+			console.log(`Server responds to stop with ${ack}`);
+		});
+	}
+
 	private onConnect(): void {
 		console.log("Connected to server as", this.socket.id);
 		this.setPodData((d) => ({ ...d, connected: true }));
@@ -74,7 +119,7 @@ class PodSocketClient {
 		this.setPodData((d) => ({ ...d, connected: false }));
 	}
 
-	private onPong(data: string): void {
+	private onData(data: string): void {
 		console.log("server says", data);
 	}
 }
