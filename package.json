@@ -18,6 +18,7 @@
 		"format:po",
 		"lint:cs",
 		"lint:po",
+		"test:cs",
 		"test:po"
 	],
 	"author": "UCI HyperXite"
