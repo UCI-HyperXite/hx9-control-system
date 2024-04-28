@@ -6,5 +6,5 @@ pub fn read_current(ina: &mut INA219<I2c>) -> f32 {
 	ina.calibrate(0xffff).unwrap();
 	debug!("Calibrating INA219");
 
-	return ina.current().unwrap() as f32 / 160.0;
+	ina.current().unwrap() as f32 / 160.0
 }
