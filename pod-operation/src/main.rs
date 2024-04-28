@@ -7,7 +7,6 @@ mod components;
 mod demo;
 mod handlers;
 
-use crate::components::ina219::read_current;
 use crate::components::signal_light::SignalLight;
 
 #[tokio::main]
@@ -23,8 +22,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
-
-	tokio::spawn(read_current());
 
 	let app = axum::Router::new().layer(layer);
 
