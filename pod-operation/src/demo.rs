@@ -20,10 +20,10 @@ pub async fn blink(mut signal_light: SignalLight) {
 }
 
 pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
-    info!("Starting pressure transducer demo.");
+	info!("Starting pressure transducer demo.");
 
-    loop {
-        tokio::time::sleep(std::time::Duration::new(1, 0)).await;
-        println!("{:?}", pressure_transducer.read());
-    }
+	loop {
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		println!("{:?}", pressure_transducer.read());
+	}
 }
