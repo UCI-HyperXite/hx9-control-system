@@ -45,7 +45,7 @@ class PodSocketClient {
 		(Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
 			([event, handler]) => {
 				this.socket.on(event, handler);
-			}
+			},
 		);
 	}
 
