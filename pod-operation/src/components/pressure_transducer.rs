@@ -10,12 +10,17 @@ pub struct PressureTransducer {
 impl PressureTransducer {
 	pub fn new(ina219_addr: u8) -> Self {
 		let device = I2c::new().unwrap();
-		let ina219 = INA219::new(device, ina219_addr);
+
+		let mut ina219 = INA219::new(device, ina219_addr);
 		debug!("Initialized I2C and INA219");
+
+        ina219.calibrate(0xffff).unwrap();
+        debug!("Calibrating INA219");
+
 		PressureTransducer { ina: ina219 }
 	}
 
 	pub fn read(&mut self) -> f32 {
-		read_current(&mut self.ina)
+		read_current(&mut self.ina) / 10.0
 	}
 }
