@@ -14,8 +14,8 @@ impl PressureTransducer {
 		let mut ina219 = INA219::new(device, ina219_addr);
 		debug!("Initialized I2C and INA219");
 
-        ina219.calibrate(0xffff).unwrap();
-        debug!("Calibrating INA219");
+		ina219.calibrate(0xffff).unwrap();
+		debug!("Calibrating INA219");
 
 		PressureTransducer { ina: ina219 }
 	}
