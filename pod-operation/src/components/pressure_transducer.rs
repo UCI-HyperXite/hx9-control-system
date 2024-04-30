@@ -18,7 +18,7 @@ const INA219_CALIBRATION_VALUE: u16 = 0xffff;
 const INA219_SCALING_VALUE: f32 = 160.0;
 
 // The pressure transducer outputs a current between 4 mA and 20 mA with 0 PSI
-// and 300 PSI respectively. Assuming a linear transformation, a 1 mA increase
+// and 300 PSI respectively. Assuming a linear interpolation, a 1 mA increase
 // results in a 18.75 PSI increase.
 const MA_TO_PSI: f32 = 18.75;
 
