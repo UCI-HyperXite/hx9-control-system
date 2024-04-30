@@ -46,8 +46,7 @@ impl PressureTransducer {
 	pub fn read(&mut self) -> f32 {
 		let current = self.read_current();
 
-		return REF_PRESSURE_LOW
-			+ REF_PRESSURE_SPAN * (current - REF_CURRENT_LOW) / REF_CURRENT_SPAN;
+		REF_PRESSURE_LOW + REF_PRESSURE_SPAN * (current - REF_CURRENT_LOW) / REF_CURRENT_SPAN
 	}
 
 	// Read from the INA219 and divide the reading by a scalar factor to
