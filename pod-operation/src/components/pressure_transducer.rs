@@ -10,12 +10,17 @@ pub struct PressureTransducer {
 // and precision of measurements.
 const INA219_CALIBRATION_VALUE: u16 = 0xffff;
 
-// Even with the calibration values, the readings from the INA219 are not
-// in mA. A scaling factor is needed in order to convert the raw reading to mA
-// and this is not provided in the INA219 library that we are using. Note that
-// this value changes according to the calibration value. The exact formula can
-// be found in the INA219 datasheet.
+// Even with the calibration values, the readings from the INA219 are not in
+// mA. A scaling factor is needed in order to convert the raw reading to mA and
+// this is not provided in the INA219 library that we are using. Note that this
+// value changes according to the calibration value. The exact formula can be
+// found in the INA219 datasheet.
 const INA219_SCALING_VALUE: f32 = 160.0;
+
+// The pressure transducer outputs a current between 4 mA and 20 mA with 0 PSI
+// and 300 PSI respectively. Assuming a linear transformation, a 1 mA increase
+// results in a 18.75 PSI increase.
+const MA_TO_PSI: f32 = 18.75;
 
 impl PressureTransducer {
 	pub fn new(ina219_addr: u8) -> Self {
@@ -33,7 +38,7 @@ impl PressureTransducer {
 	// Read current from the INA219 and apply a scaling factor to translate
 	// the current reading to PSI.
 	pub fn read(&mut self) -> f32 {
-		self.read_current()
+		self.read_current() * MA_TO_PSI
 	}
 
 	// Read from the INA219 and divide the reading by a scalar factor to
