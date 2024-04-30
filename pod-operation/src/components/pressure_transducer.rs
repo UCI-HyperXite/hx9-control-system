@@ -51,7 +51,7 @@ impl PressureTransducer {
 
 	// Read from the INA219 and divide the reading by a scalar factor to
 	// convert the reading to mA.
-	pub fn read_current(&mut self) -> f32 {
+	fn read_current(&mut self) -> f32 {
 		self.ina.current().unwrap() as f32 / INA219_SCALING_VALUE
 	}
 }
