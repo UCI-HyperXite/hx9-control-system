@@ -7,6 +7,7 @@ mod components;
 mod demo;
 mod handlers;
 
+use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 
 #[tokio::main]
@@ -22,6 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
+
+	let pressure_transducer = PressureTransducer::new(0x40);
+	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
 
 	let app = axum::Router::new().layer(layer);
 

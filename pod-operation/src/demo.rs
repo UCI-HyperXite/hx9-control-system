@@ -1,5 +1,6 @@
 use tracing::info;
 
+use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 
 pub async fn blink(mut signal_light: SignalLight) {
@@ -15,5 +16,14 @@ pub async fn blink(mut signal_light: SignalLight) {
 		}
 
 		i += 1;
+	}
+}
+
+pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
+	info!("Starting pressure transducer demo.");
+
+	loop {
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		println!("{:?}", pressure_transducer.read());
 	}
 }
