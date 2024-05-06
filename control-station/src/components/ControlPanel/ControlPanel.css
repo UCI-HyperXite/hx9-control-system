@@ -1,0 +1,30 @@
+.controlpanel {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	background-color: black;
+	height: 9%;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+}
+
+.button {
+	padding: 10px 10px 10px 10px;
+	min-width: 200px;
+	border-radius: 10px;
+	font-size: 1.5rem;
+	color: white;
+}
+.start {
+	background-color: rgb(35, 128, 30);
+}
+.stop {
+	background-color: rgb(235, 63, 51);
+}
+.force {
+	background-color: rgb(149, 46, 46);
+}
+.load {
+	background-color: rgb(0, 101, 188);
+}

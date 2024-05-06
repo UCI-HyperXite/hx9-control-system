@@ -3,7 +3,12 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 mod state;
+mod components;
+mod demo;
 mod handlers;
+use crate::components::pressure_transducer::PressureTransducer;
+use crate::components::signal_light::SignalLight;
+
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 use state::State;
 use handlers::{modify_state, read_state};
@@ -84,6 +89,8 @@ impl StateTransitions {
 	}
 }
 
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let mut state_now: Option<State> = Some(State::Init);
@@ -137,6 +144,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 			socket.on("start", handlers::handle_start);
 
 		});
+
+	let signal_light = SignalLight::new();
+	tokio::spawn(demo::blink(signal_light));
+
+	let pressure_transducer = PressureTransducer::new(0x40);
+	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
 
 		let app = axum::Router::new().layer(layer);
 	

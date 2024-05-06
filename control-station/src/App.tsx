@@ -1,11 +1,11 @@
-import { Dashboard } from "@/views";
-
-import "./App.css";
+import { ControlPanel, Navbar, SensorData } from "@/components";
 
 function App() {
 	return (
 		<main>
-			<Dashboard />
+			<Navbar />
+			<SensorData />
+			<ControlPanel />
 		</main>
 	);
 }
