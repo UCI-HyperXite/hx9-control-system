@@ -2,10 +2,10 @@ use socketioxide::extract::{AckSender, Data};
 use socketioxide::{extract::SocketRef, SocketIo};
 
 use crate::components::signal_light::SignalLight;
+use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tracing::info;
-use lazy_static::lazy_static;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum State {
@@ -142,30 +142,35 @@ impl StateMachine {
 
 	fn handle_init(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
 		info!("Received init from client");
+		socket.emit("init", "init").ok();
 		ack.send("init").ok();
 		Self::modify_state(State::Init);
 	}
 
 	fn handle_stop(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
 		info!("Received stop from client");
+		socket.emit("stop", "stop").ok();
 		ack.send("stop").ok();
 		Self::modify_state(State::Stop);
 	}
 
 	fn handle_forcestop(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
 		info!("Received forcestop from client");
+		socket.emit("forcestop", "forcestop").ok();
 		ack.send("forcestop").ok();
 		Self::modify_state(State::ForceStop);
 	}
 
 	fn handle_load(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
 		info!("Received load from client");
+		socket.emit("load", "load").ok();
 		ack.send("load").ok();
 		Self::modify_state(State::Load);
 	}
 
 	fn handle_start(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
 		info!("Received start from client");
+		socket.emit("start", "start").ok();
 		ack.send("start").ok();
 		Self::modify_state(State::Start);
 	}
