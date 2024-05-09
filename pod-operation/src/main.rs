@@ -1,4 +1,5 @@
 use axum::Server;
+use serde_json::json;
 use socketioxide::{extract::SocketRef, SocketIo};
 use socketioxide::extract::{AckSender, Data};
 
@@ -61,6 +62,7 @@ impl StateMachine {
 			*last_state.lock().unwrap() = self.state_now;
 
 			self.sensor_data();
+			println!("sensor data sending: {:?}", self.sensor_data());
 
 			if Self::read_state() == None {
 				self.state_now = next_state;
@@ -159,8 +161,14 @@ impl StateMachine {
 	}
 
 	fn sensor_data(&self) {
-		self.io.emit("sensor_data", [1, 2, 3, 4]).ok();
-		thread::sleep(Duration::from_secs(1));
+		let json_data = json!({
+			"pt1": 3,
+			"pt2": 4
+		});
+		
+		let json_string = json_data.to_string();
+	
+		self.io.emit("sensor_data", json_string).ok();
 		
 	}
 				
