@@ -6,9 +6,12 @@ use socketioxide::extract::{AckSender, Data};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 mod state;
+mod demo;
+mod components;
 use std::{sync::{Arc, Mutex}, thread, time::Duration};
 use state::{State, GLOBAL_STATE};
 use std::collections::HashMap;
+use crate::components::pressure_transducer::PressureTransducer;
 
 struct StateMachine {
 	state_now: Option<State>,
@@ -42,6 +45,8 @@ impl StateMachine {
 
 	fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
+		let pressure_transducer = PressureTransducer::new(0x40);
+		
 		loop {
 
 			if self.state_now.clone() != *last_state.lock().unwrap() {
@@ -61,8 +66,7 @@ impl StateMachine {
 
 			*last_state.lock().unwrap() = self.state_now;
 
-			self.sensor_data();
-			println!("sensor data sending: {:?}", self.sensor_data());
+			self.sensor_data(pressure_transducer);
 
 			if Self::read_state() == None {
 				self.state_now = next_state;
@@ -160,9 +164,10 @@ impl StateMachine {
 		}
 	}
 
-	fn sensor_data(&self) {
+	fn sensor_data(&self, mut pressure_transducer: PressureTransducer) {
+		let pt1 :f32 = pressure_transducer.read();
 		let json_data = json!({
-			"pt1": 3,
+			"pt1": pt1,
 			"pt2": 4
 		});
 		
