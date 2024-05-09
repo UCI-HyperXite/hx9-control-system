@@ -1,21 +1,25 @@
 use axum::Server;
 use serde_json::json;
-use socketioxide::{extract::SocketRef, SocketIo};
 use socketioxide::extract::{AckSender, Data};
+use socketioxide::{extract::SocketRef, SocketIo};
 
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
-mod state;
-mod demo;
 mod components;
-use std::{sync::{Arc, Mutex}, thread, time::Duration};
+mod demo;
+mod state;
+use crate::components::pressure_transducer::PressureTransducer;
 use state::{State, GLOBAL_STATE};
 use std::collections::HashMap;
-use crate::components::pressure_transducer::PressureTransducer;
+use std::{
+	sync::{Arc, Mutex},
+	thread,
+	time::Duration,
+};
 
 struct StateMachine {
 	state_now: Option<State>,
-    enter_actions: HashMap<State, fn()>, 
+	enter_actions: HashMap<State, fn()>,
 	io: SocketIo,
 }
 
@@ -34,33 +38,35 @@ impl StateMachine {
 			socket.on("forcestop", StateMachine::handle_forcestop);
 			socket.on("load", StateMachine::handle_load);
 			socket.on("start", StateMachine::handle_start);
-			
 		});
 		Self {
 			state_now: None,
 			enter_actions,
-			io
+			io,
 		}
 	}
 
 	fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
 		let mut pressure_transducer: PressureTransducer = PressureTransducer::new(0x40);
-		
-		loop {
 
+		loop {
 			if self.state_now.clone() != *last_state.lock().unwrap() {
-				println!("State changed from {:?} to {:?}", *last_state.lock().unwrap(), Self::read_state());
-					self.enter_state(&self.state_now.clone().unwrap());
-			}	
+				println!(
+					"State changed from {:?} to {:?}",
+					*last_state.lock().unwrap(),
+					Self::read_state()
+				);
+				self.enter_state(&self.state_now.clone().unwrap());
+			}
 			if let Some(state) = Self::read_state() {
 				Self::modify_state(state);
 			}
 			let next_state = self.state_now.clone();
-			if self.state_now == Some(State::Init){
+			if self.state_now == Some(State::Init) {
 				Self::_init_periodic();
 			}
-			if self.state_now == Some(State::Start){
+			if self.state_now == Some(State::Start) {
 				Self::_running_periodic();
 			}
 
@@ -73,16 +79,13 @@ impl StateMachine {
 			} else {
 				self.state_now = Self::read_state();
 			}
-
-
 		}
-		
 	}
 
 	fn _running_periodic() {
 		//println!("Rolling START state");
 	}
-	 
+
 	fn _init_periodic() {
 		//println!("Rolling INIT state");
 	}
@@ -155,33 +158,30 @@ impl StateMachine {
 			state.value = Some(new_value);
 		}
 	}
-	
+
 	fn read_state() -> Option<State> {
 		if let Ok(state) = GLOBAL_STATE.lock() {
 			state.value.clone()
 		} else {
-			None 
+			None
 		}
 	}
 
 	fn sensor_data(&self, pressure_transducer: &mut PressureTransducer) {
-		let pt1 :f32 = pressure_transducer.read();
+		let pt1: f32 = pressure_transducer.read();
 		let json_data = json!({
 			"pt1": pt1,
 			"pt2": 4
 		});
-		
+
 		let json_string = json_data.to_string();
-	
+
 		self.io.emit("sensor_data", json_string).ok();
-		
 	}
-				
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {	
-
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
 	let (layer, io) = SocketIo::new_layer();
@@ -196,7 +196,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let app = axum::Router::new().layer(layer);
 
 	info!("Starting server on port 5000");
-	
+
 	let server = Server::bind(&"127.0.0.1:5000".parse().unwrap()).serve(app.into_make_service());
 
 	if let Err(e) = server.await {
