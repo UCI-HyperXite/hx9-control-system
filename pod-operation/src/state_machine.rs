@@ -1,45 +1,48 @@
 use axum::Server;
 use serde_json::json;
-use std::sync::{Arc, Mutex};
-use socketioxide::{extract::SocketRef, SocketIo};
 use socketioxide::extract::{AckSender, Data};
+use socketioxide::{extract::SocketRef, SocketIo};
 
+use crate::components::signal_light::SignalLight;
+use std::collections::HashMap;
+use std::{
+	sync::{Arc, Mutex},
+	thread,
+	time::Duration,
+};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
-use std::{sync::{Arc, Mutex}, thread, time::Duration};
-use state::{State, GLOBAL_STATE};
-use std::collections::HashMap;
-use crate::components::pressure_transducer::PressureTransducer;
 
 use lazy_static::lazy_static;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum State {
-    Start,
-    Stop,
-    ForceStop,
-    Load,
-    Init,
+	Start,
+	Stop,
+	ForceStop,
+	Load,
+	Init,
 }
 
 #[derive(Debug)]
 pub struct CurrentState {
-    pub value: Option<State>,
+	pub value: Option<State>,
 }
 
 impl CurrentState {
-    pub fn new(value: Option<State>) -> Self {
-        CurrentState { value }
-    }
+	pub fn new(value: Option<State>) -> Self {
+		CurrentState { value }
+	}
 }
 
 lazy_static! {
-    pub static ref GLOBAL_STATE: Arc<Mutex<CurrentState>> = Arc::new(Mutex::new(CurrentState::new(None)));
+	pub static ref GLOBAL_STATE: Arc<Mutex<CurrentState>> =
+		Arc::new(Mutex::new(CurrentState::new(None)));
 }
 
 pub struct StateMachine {
 	state_now: Option<State>,
-    enter_actions: HashMap<State, fn()>, 
+	enter_actions: HashMap<State, fn()>,
 	io: SocketIo,
 }
 
@@ -58,57 +61,57 @@ impl StateMachine {
 			socket.on("forcestop", StateMachine::handle_forcestop);
 			socket.on("load", StateMachine::handle_load);
 			socket.on("start", StateMachine::handle_start);
-			
 		});
 		Self {
 			state_now: None,
 			enter_actions,
-			io
+			io,
 		}
 	}
 
 	pub fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
+		let mut pressure_transducer: PressureTransducer = PressureTransducer::new(0x40);
 		let signal_light = SignalLight::new();
-		
-		loop {
 
+		loop {
 			if self.state_now.clone() != *last_state.lock().unwrap() {
-				println!("State changed from {:?} to {:?}", *last_state.lock().unwrap(), Self::read_state());
-					self.enter_state(&self.state_now.clone().unwrap());
-			}	
+				println!(
+					"State changed from {:?} to {:?}",
+					*last_state.lock().unwrap(),
+					Self::read_state()
+				);
+				self.enter_state(&self.state_now.clone().unwrap());
+			}
 			if let Some(state) = Self::read_state() {
 				Self::modify_state(state);
 			}
 			let next_state = self.state_now.clone();
-			if self.state_now == Some(State::Init){
+			if self.state_now == Some(State::Init) {
 				signal_light.disable();
 				Self::_init_periodic();
 			}
-			if self.state_now == Some(State::Start){
+			if self.state_now == Some(State::Start) {
 				signal_light.enable();
 				Self::_running_periodic();
 			}
 
 			*last_state.lock().unwrap() = self.state_now;
 
-			self.sensor_data(&mut pressure_transducer);
+			//self.sensor_data();
 
 			if Self::read_state() == None {
 				self.state_now = next_state;
 			} else {
 				self.state_now = Self::read_state();
 			}
-
-
 		}
-		
 	}
 
 	fn _running_periodic() {
 		//println!("Rolling START state");
 	}
-	 
+
 	fn _init_periodic() {
 		//println!("Rolling INIT state");
 	}
@@ -181,13 +184,16 @@ impl StateMachine {
 			state.value = Some(new_value);
 		}
 	}
-	
+
 	fn read_state() -> Option<State> {
 		if let Ok(state) = GLOBAL_STATE.lock() {
 			state.value.clone()
 		} else {
-			None 
+			None
 		}
 	}
-				
+
+	fn sensor_data(&self) {
+		self.io.emit("sensor_data", [1, 2, 3]).ok();
+	}
 }
