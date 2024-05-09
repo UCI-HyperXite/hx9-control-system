@@ -149,13 +149,13 @@ impl StateMachine {
 		}
 	}
 
-	pub fn handle_init(socket: SocketRef, Data(data): Data<String>, ack: AckSender) {
+	fn handle_init(socket: SocketRef, Data(data): Data<String>, ack: AckSender) {
 		info!("Received init from client");
 		socket.emit("init", "init").ok();
 		Self::modify_state(State::Init);
 	}
 
-	pub fn handle_stop(socket: SocketRef, Data(data): Data<String>, ack: AckSender) {
+	fn handle_stop(socket: SocketRef, Data(data): Data<String>, ack: AckSender) {
 		info!("Received stop from client");
 		socket.emit("stop", "stop").ok();
 		Self::modify_state(State::Stop);
