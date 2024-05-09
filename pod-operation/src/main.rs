@@ -46,6 +46,7 @@ impl StateMachine {
 	fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
 		let mut pressure_transducer: PressureTransducer = PressureTransducer::new(0x40);
+		let signal_light = SignalLight::new();
 		
 		loop {
 
@@ -58,9 +59,11 @@ impl StateMachine {
 			}
 			let next_state = self.state_now.clone();
 			if self.state_now == Some(State::Init){
+				signal_light.disable();
 				Self::_init_periodic();
 			}
 			if self.state_now == Some(State::Start){
+				signal_light.enable();
 				Self::_running_periodic();
 			}
 
