@@ -2,8 +2,6 @@ import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
-let data_array: { pt1: number; pt2: number };
-
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;

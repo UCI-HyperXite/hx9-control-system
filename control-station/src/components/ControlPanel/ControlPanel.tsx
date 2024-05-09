@@ -2,7 +2,7 @@ import "./ControlPanel.css";
 import usePodData from "@/services/usePodData";
 
 function ControlPanel() {
-	const { podData, podSocketClient } = usePodData();
+	const { podSocketClient } = usePodData();
 	return (
 		<div className="controlpanel">
 			<button className="button start" onClick={() => podSocketClient.sendStart()}>
