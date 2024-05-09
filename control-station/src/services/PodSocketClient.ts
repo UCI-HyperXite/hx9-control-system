@@ -10,6 +10,7 @@ interface ServerToClientEvents {
 	stop: (data: string) => void;
 	forcestop: (data: string) => void;
 	load: (data: string) => void;
+	send_data: (data: string) => void;
 	start: (data: string) => void;
 }
 
@@ -19,6 +20,7 @@ interface ClientToServerEvents {
 	stop: (data: string, ack: (data: string) => void) => void;
 	forcestop: (data: string, ack: (data: string) => void) => void;
 	load: (data: string, ack: (data: string) => void) => void;
+	send_data: (data: string, ack: (data: string) => void) => void;
 	start: (data: string, ack: (data: string) => void) => void;
 }
 
@@ -49,6 +51,7 @@ class PodSocketClient {
 			stop: this.onData.bind(this),
 			forcestop: this.onData.bind(this),
 			load: this.onData.bind(this),
+			send_data: this.onData.bind(this),
 			start: this.onData.bind(this),
 		} as const;
 		this.setPodData = setPodData;
