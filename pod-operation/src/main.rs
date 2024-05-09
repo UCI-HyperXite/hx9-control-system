@@ -45,7 +45,7 @@ impl StateMachine {
 
 	fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
-		let pressure_transducer = PressureTransducer::new(0x40);
+		let mut pressure_transducer: PressureTransducer = PressureTransducer::new(0x40);
 		
 		loop {
 
@@ -66,7 +66,7 @@ impl StateMachine {
 
 			*last_state.lock().unwrap() = self.state_now;
 
-			self.sensor_data(pressure_transducer);
+			self.sensor_data(&mut pressure_transducer);
 
 			if Self::read_state() == None {
 				self.state_now = next_state;
@@ -164,7 +164,7 @@ impl StateMachine {
 		}
 	}
 
-	fn sensor_data(&self, mut pressure_transducer: PressureTransducer) {
+	fn sensor_data(&self, &mut pressure_transducer: PressureTransducer) {
 		let pt1 :f32 = pressure_transducer.read();
 		let json_data = json!({
 			"pt1": pt1,
