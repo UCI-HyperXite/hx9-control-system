@@ -164,7 +164,7 @@ impl StateMachine {
 		}
 	}
 
-	fn sensor_data(&self, &mut pressure_transducer: PressureTransducer) {
+	fn sensor_data(&self, pressure_transducer: &mut PressureTransducer) {
 		let pt1 :f32 = pressure_transducer.read();
 		let json_data = json!({
 			"pt1": pt1,

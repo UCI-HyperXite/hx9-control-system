@@ -129,8 +129,7 @@ class PodSocketClient {
 	}
 
 	private onSend_data(data: string): void {
-		data_array = JSON.parse(data);
-		console.log("server says", data_array);
+		console.log("server says", JSON.parse(data));
 	}
 
 	getData(): { pt1: number; pt2: number } {
