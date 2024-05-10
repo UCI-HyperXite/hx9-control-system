@@ -40,7 +40,7 @@ class PodSocketClient {
 	setPodData: SetPodData;
 
 	constructor(setPodData: SetPodData) {
-		this.socket = ioNamespace("");
+		this.socket = ioNamespace("control-station");
 		this.serverEvents = {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),

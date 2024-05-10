@@ -46,7 +46,7 @@ impl StateMachine {
 		enter_actions.insert(State::Stop, StateMachine::_enter_stop as fn());
 		enter_actions.insert(State::ForceStop, StateMachine::_enter_forcestop as fn());
 		enter_actions.insert(State::Load, StateMachine::_enter_load as fn());
-		io.ns("/", |socket: SocketRef| {
+		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 			socket.on("init", StateMachine::handle_init);
 			socket.on("stop", StateMachine::handle_stop);
@@ -190,6 +190,10 @@ impl StateMachine {
 	}
 
 	fn sensor_data(&self) {
-		self.io.emit("sensor_data", [1, 2, 3]).ok();
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("sensor_data", [1, 2, 3])
+			.ok();
 	}
 }
