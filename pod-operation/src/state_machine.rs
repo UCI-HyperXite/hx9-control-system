@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tracing::info;
+use crate::components::pressure_transducer::PressureTransducer;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum State {
@@ -64,7 +65,7 @@ impl StateMachine {
 	pub fn run(&mut self) {
 		let last_state = Arc::new(Mutex::new(self.state_now));
 		let mut signal_light = SignalLight::new();
-
+		let mut pressure_transducer: PressureTransducer = PressureTransducer::new(0x40);
 		loop {
 			if self.state_now.clone() != *last_state.lock().unwrap() {
 				println!(
@@ -89,7 +90,7 @@ impl StateMachine {
 
 			*last_state.lock().unwrap() = self.state_now;
 
-			//self.sensor_data();
+			self.sensor_data(&mut pressure_transducer);
 
 			if Self::read_state() == None {
 				self.state_now = next_state;
@@ -189,7 +190,15 @@ impl StateMachine {
 		}
 	}
 
-	fn sensor_data(&self) {
-		self.io.emit("sensor_data", [1, 2, 3]).ok();
+	fn sensor_data(&self, pressure_transducer: &mut PressureTransducer) {
+		let pt1: f32 = pressure_transducer.read();
+		let json_data = json!({
+			"pt1": pt1,
+			"pt2": 4
+		});
+
+		let json_string = json_data.to_string();
+
+		self.io.emit("sensor_data", json_string).ok();
 	}
 }

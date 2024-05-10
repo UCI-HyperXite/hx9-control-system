@@ -2,6 +2,8 @@ import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
+let data_array: { pt1: number; pt2: number };
+
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
@@ -10,6 +12,7 @@ interface ServerToClientEvents {
 	stop: (data: string) => void;
 	forcestop: (data: string) => void;
 	load: (data: string) => void;
+	sensor_data: (data: string) => void;
 	start: (data: string) => void;
 }
 
@@ -19,6 +22,7 @@ interface ClientToServerEvents {
 	stop: (data: string, ack: (data: string) => void) => void;
 	forcestop: (data: string, ack: (data: string) => void) => void;
 	load: (data: string, ack: (data: string) => void) => void;
+	sensor_data: (data: string, ack: (data: string) => void) => void;
 	start: (data: string, ack: (data: string) => void) => void;
 }
 
@@ -49,6 +53,7 @@ class PodSocketClient {
 			stop: this.onData.bind(this),
 			forcestop: this.onData.bind(this),
 			load: this.onData.bind(this),
+			sensor_data: this.onSend_data.bind(this),
 			start: this.onData.bind(this),
 		} as const;
 		this.setPodData = setPodData;
@@ -121,6 +126,14 @@ class PodSocketClient {
 
 	private onData(data: string): void {
 		console.log("server says", data);
+	}
+
+	private onSend_data(data: string): void {
+		console.log("server says", JSON.parse(data));
+	}
+
+	getData(): { pt1: number; pt2: number } {
+		return data_array;
 	}
 }
 
