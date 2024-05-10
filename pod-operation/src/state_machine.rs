@@ -66,18 +66,18 @@ impl StateMachine {
 		let mut signal_light = SignalLight::new();
 
 		loop {
-			if self.state_now.clone() != *last_state.lock().unwrap() {
+			if self.state_now != *last_state.lock().unwrap() {
 				println!(
 					"State changed from {:?} to {:?}",
 					*last_state.lock().unwrap(),
 					Self::read_state()
 				);
-				self.enter_state(&self.state_now.clone().unwrap());
+				self.enter_state(&self.state_now.unwrap());
 			}
 			if let Some(state) = Self::read_state() {
 				Self::modify_state(state);
 			}
-			let next_state = self.state_now.clone();
+			let next_state = self.state_now;
 			if self.state_now == Some(State::Init) {
 				signal_light.disable();
 				Self::_init_periodic();
@@ -89,9 +89,9 @@ impl StateMachine {
 
 			*last_state.lock().unwrap() = self.state_now;
 
-			//self.sensor_data();
+			self.sensor_data();
 
-			if Self::read_state() == None {
+			if Self::read_state().is_none() {
 				self.state_now = next_state;
 			} else {
 				self.state_now = Self::read_state();
@@ -140,35 +140,35 @@ impl StateMachine {
 		}
 	}
 
-	fn handle_init(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
+	fn handle_init(Data(_data): Data<String>, ack: AckSender) {
 		info!("Received init from client");
 		//socket.emit("init", "init").ok();
 		ack.send("init").ok();
 		Self::modify_state(State::Init);
 	}
 
-	fn handle_stop(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
+	fn handle_stop(Data(_data): Data<String>, ack: AckSender) {
 		info!("Received stop from client");
 		//socket.emit("stop", "stop").ok();
 		ack.send("stop").ok();
 		Self::modify_state(State::Stop);
 	}
 
-	fn handle_forcestop(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
+	fn handle_forcestop(Data(_data): Data<String>, ack: AckSender) {
 		info!("Received forcestop from client");
 		//socket.emit("forcestop", "forcestop").ok();
 		ack.send("forcestop").ok();
 		Self::modify_state(State::ForceStop);
 	}
 
-	fn handle_load(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
+	fn handle_load(Data(_data): Data<String>, ack: AckSender) {
 		info!("Received load from client");
 		//socket.emit("load", "load").ok();
 		ack.send("load").ok();
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_start(socket: SocketRef, Data(_data): Data<String>, ack: AckSender) {
+	fn handle_start(Data(_data): Data<String>, ack: AckSender) {
 		info!("Received start from client");
 		//socket.emit("start", "start").ok();
 		ack.send("start").ok();
@@ -183,7 +183,7 @@ impl StateMachine {
 
 	fn read_state() -> Option<State> {
 		if let Ok(state) = GLOBAL_STATE.lock() {
-			state.value.clone()
+			state.value
 		} else {
 			None
 		}

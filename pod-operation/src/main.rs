@@ -1,3 +1,4 @@
+use crate::components::pressure_transducer::PressureTransducer;
 use axum::Server;
 use socketioxide::SocketIo;
 use tracing::{error, info};
@@ -15,6 +16,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let (layer, io) = SocketIo::new_layer();
 
 	thread::sleep(Duration::from_millis(1));
+
+	let pressure_transducer = PressureTransducer::new(0x40);
+	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
 
 	thread::spawn(move || {
 		let mut state_machine = StateMachine::new(io);
