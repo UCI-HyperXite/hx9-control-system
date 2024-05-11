@@ -31,9 +31,9 @@ pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransduce
 
 pub async fn read_wheel_encoder() {
 	info!("Starting wheel encoder demo.");
-    let mut wheel_encoder = WheelEncoder::new();
-    loop {
-        println!("{}", wheel_encoder.read());
-        sleep(Duration::from_millis(10));
-    }
+	let mut wheel_encoder = WheelEncoder::new();
+	loop {
+		println!("{}", wheel_encoder.read());
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+	}
 }
