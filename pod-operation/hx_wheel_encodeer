@@ -1,51 +1,56 @@
+use rppal::gpio::{Gpio, InputPin, Level};
 use std::thread::sleep;
 use std::time::Duration;
-use rppal::gpio::{Gpio, InputPin, Level};
+use tracing::debug;
 
 const PIN_ENCODER_A: u8 = 1;
 const PIN_ENCODER_B: u8 = 2;
 
 pub struct WheelEncoder {
     counter: i32,
+    pin_a: InputPin,
+    pin_b: InputPin,
 }
 
 impl WheelEncoder {
     pub fn new() -> Self {
+        let gpio = Gpio::new().unwrap();
+        let pin_a = gpio.get(PIN_ENCODER_A).unwrap().into_input();
+        let pin_b = gpio.get(PIN_ENCODER_B).unwrap().into_input();
+
         WheelEncoder {
             counter: 0,
+            pin_a,
+            pin_b,
         }
     }
 
-    pub fn read(&mut self, pin_a: &InputPin, pin_b: &InputPin) {
-        //reading both
-        let a_state = pin_a.read().unwrap();
-        let b_state = pin_b.read().unwrap();
+    pub fn read(&mut self) {
+        let a_state = self.pin_a.read().unwrap();
+        let b_state = self.pin_b.read().unwrap();
 
-        // If the previous and the current state of pin_a or pin_b are different, that means a Pulse has occurred
-        if a_state != pin_a.last_read.unwrap_or(a_state) || b_state != pin_b.last_read.unwrap_or(b_state) {
-            if (b_state != a_state)
+        if a_state != self.pin_a.last_read.unwrap_or(a_state)
+            || b_state != self.pin_b.last_read.unwrap_or(b_state)
+        {
+            if b_state != a_state {
                 self.counter += 1;
-             else 
+            } else {
                 self.counter -= 1;
-            
+            }
 
             println!("Position: {}", self.counter);
         }
 
-        pin_a.last_read = Some(a_state); // Updates the previous state of pin_a with the current state
-        pin_b.last_read = Some(b_state); // Updates the previous state of pin_b with the current state
+        self.pin_a.last_read = Some(a_state);
+        self.pin_b.last_read = Some(b_state);
     }
 }
 
 fn main() {
-    let gpio = Gpio::new().unwrap();
-    let mut output_a = gpio.get(PIN_ENCODER_A).unwrap().into_input();
-    let mut output_b = gpio.get(PIN_ENCODER_B).unwrap().into_input();
-
     let mut wheel_encoder = WheelEncoder::new();
 
     loop {
-        wheel_encoder.read(&output_a, &output_b);
+        wheel_encoder.read();
         sleep(Duration::from_millis(10));
     }
 }
