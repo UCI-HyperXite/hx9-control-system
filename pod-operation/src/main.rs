@@ -1,64 +1,29 @@
-use rppal::gpio::{Gpio, InputPin, Level};
-use std::thread::sleep;
-use std::time::Duration;
-use tracing::debug;
+use axum::Server;
+use socketioxide::{extract::SocketRef, SocketIo};
+use tracing::{error, info};
+use tracing_subscriber::FmtSubscriber;
 
-const PIN_ENCODER_A: u8 = 1;
-const PIN_ENCODER_B: u8 = 2;
+mod handlers;
 
-pub struct WheelEncoder {
-	counter: i32,
-	pin_a: InputPin,
-	pin_b: InputPin,
-	a_last_read: Level,
-	b_last_read: Level,
-}
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+	tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
-impl WheelEncoder {
-	pub fn new() -> Self {
-		WheelEncoder {
-			counter: 0,
-			pin_a: Gpio::new()
-				.unwrap()
-				.get(PIN_ENCODER_A)
-				.unwrap()
-				.into_input(),
-			pin_b: Gpio::new()
-				.unwrap()
-				.get(PIN_ENCODER_B)
-				.unwrap()
-				.into_input(),
-			a_last_read: Level::High,
-			b_last_read: Level::Low,
-		}
+	let (layer, io) = SocketIo::new_layer();
+
+	io.ns("/control-station", |socket: SocketRef| {
+		info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
+		socket.on("ping", handlers::handle_ping);
+	});
+
+	let app = axum::Router::new().layer(layer);
+
+	info!("Starting server on port 5000");
+	let server = Server::bind(&"127.0.0.1:5000".parse().unwrap()).serve(app.into_make_service());
+
+	if let Err(e) = server.await {
+		error!("server error: {}", e);
 	}
 
-	pub fn read(&mut self) -> i32 {
-		let a_state = self.pin_a.read();
-		let b_state = self.pin_b.read();
-		if a_state != self.a_last_read || b_state != self.b_last_read {
-			if b_state != a_state {
-				self.counter += 1;
-			}
-		}
-
-		self.a_last_read = a_state;
-		println!("A: {}", a_state);
-		self.b_last_read = b_state;
-		println!("B: {}", b_state);
-		return self.counter;
-	}
-
-	pub fn reset(&mut self) {
-		self.counter = 0;
-	}
-}
-
-fn main() {
-	let mut wheel_encoder = WheelEncoder::new();
-
-	loop {
-		println!("{}", wheel_encoder.read());
-		sleep(Duration::from_millis(10));
-	}
+	Ok(())
 }

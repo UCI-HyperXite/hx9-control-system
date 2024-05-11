@@ -7,51 +7,58 @@ const PIN_ENCODER_A: u8 = 1;
 const PIN_ENCODER_B: u8 = 2;
 
 pub struct WheelEncoder {
-    counter: i32,
-    pin_a: InputPin,
-    pin_b: InputPin,
+	counter: i32,
+	pin_a: InputPin,
+	pin_b: InputPin,
+	a_last_read: Level,
+	b_last_read: Level,
 }
 
 impl WheelEncoder {
-    pub fn new() -> Self {
-        let gpio = Gpio::new().unwrap();
-        let pin_a = gpio.get(PIN_ENCODER_A).unwrap().into_input();
-        let pin_b = gpio.get(PIN_ENCODER_B).unwrap().into_input();
+	pub fn new() -> Self {
+		WheelEncoder {
+			counter: 0,
+			pin_a: Gpio::new()
+				.unwrap()
+				.get(PIN_ENCODER_A)
+				.unwrap()
+				.into_input(),
+			pin_b: Gpio::new()
+				.unwrap()
+				.get(PIN_ENCODER_B)
+				.unwrap()
+				.into_input(),
+			a_last_read: Level::High,
+			b_last_read: Level::Low,
+		}
+	}
 
-        WheelEncoder {
-            counter: 0,
-            pin_a,
-            pin_b,
-        }
-    }
+	pub fn read(&mut self) -> i32 {
+		let a_state = self.pin_a.read();
+		let b_state = self.pin_b.read();
+		if a_state != self.a_last_read || b_state != self.b_last_read {
+			if b_state != a_state {
+				self.counter += 1;
+			}
+		}
 
-    pub fn read(&mut self) {
-        let a_state = self.pin_a.read().unwrap();
-        let b_state = self.pin_b.read().unwrap();
+		self.a_last_read = a_state;
+		println!("A: {}", a_state);
+		self.b_last_read = b_state;
+		println!("B: {}", b_state);
+		return self.counter;
+	}
 
-        if a_state != self.pin_a.last_read.unwrap_or(a_state)
-            || b_state != self.pin_b.last_read.unwrap_or(b_state)
-        {
-            if b_state != a_state {
-                self.counter += 1;
-            } else {
-                self.counter -= 1;
-            }
-
-            println!("Position: {}", self.counter);
-        }
-
-        self.pin_a.last_read = Some(a_state);
-        self.pin_b.last_read = Some(b_state);
-    }
+	pub fn reset(&mut self) {
+		self.counter = 0;
+	}
 }
 
 fn main() {
-    let mut wheel_encoder = WheelEncoder::new();
+	let mut wheel_encoder = WheelEncoder::new();
 
-    loop {
-        wheel_encoder.read();
-        sleep(Duration::from_millis(10));
-    }
+	loop {
+		println!("{}", wheel_encoder.read());
+		sleep(Duration::from_millis(10));
+	}
 }
-
