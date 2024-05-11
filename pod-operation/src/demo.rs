@@ -2,6 +2,7 @@ use tracing::info;
 
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 
 pub async fn _blink(mut signal_light: SignalLight) {
 	let mut i = 0;
@@ -26,4 +27,13 @@ pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransduce
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
 		println!("{:?}", pressure_transducer.read());
 	}
+}
+
+pub async fn read_wheel_encoder() {
+	info!("Starting wheel encoder demo.");
+    let mut wheel_encoder = WheelEncoder::new();
+    loop {
+        println!("{}", wheel_encoder.read());
+        sleep(Duration::from_millis(10));
+    }
 }
