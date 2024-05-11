@@ -1,13 +1,15 @@
-use crate::components::pressure_transducer::PressureTransducer;
 use axum::Server;
 use socketioxide::SocketIo;
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
+
 mod components;
 mod demo;
 mod state_machine;
+
+use crate::components::pressure_transducer::PressureTransducer;
+use crate::components::signal_light::SignalLight;
 use crate::state_machine::StateMachine;
-use std::{thread, time::Duration};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,14 +17,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let (layer, io) = SocketIo::new_layer();
 
-	thread::sleep(Duration::from_millis(1));
+	let signal_light = SignalLight::new();
+	tokio::spawn(demo::blink(signal_light));
 
 	let pressure_transducer = PressureTransducer::new(0x40);
 	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
 
-	thread::spawn(move || {
+	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
-		state_machine.run();
+		state_machine.run().await;
 	});
 
 	let app = axum::Router::new().layer(layer);

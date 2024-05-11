@@ -3,7 +3,7 @@ use tracing::info;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 
-pub async fn _blink(mut signal_light: SignalLight) {
+pub async fn blink(mut signal_light: SignalLight) {
 	let mut i = 0;
 
 	info!("Starting blink demo.");
