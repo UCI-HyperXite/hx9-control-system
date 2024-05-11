@@ -54,11 +54,3 @@ impl WheelEncoder {
 	}
 }
 
-fn main() {
-	let mut wheel_encoder = WheelEncoder::new();
-
-	loop {
-		println!("{}", wheel_encoder.read());
-		sleep(Duration::from_millis(10));
-	}
-}
