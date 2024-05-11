@@ -1,7 +1,5 @@
 use rppal::gpio::{Gpio, InputPin, Level};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-use tracing::debug;
+use std::time::Instant;
 
 const PIN_ENCODER_A: u8 = 1;
 const PIN_ENCODER_B: u8 = 2;
@@ -28,7 +26,7 @@ impl WheelEncoder {
         }
     }
 
-    pub fn read(&mut self) -> (f32, f32) {
+    pub fn read(&mut self) -> f32 {
         let a_state = self.pin_a.read();
         let b_state = self.pin_b.read();
         if a_state != self.a_last_read || b_state != self.b_last_read {
