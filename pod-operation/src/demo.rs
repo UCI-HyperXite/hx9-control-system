@@ -1,5 +1,6 @@
 use tracing::info;
 
+use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 
@@ -25,5 +26,14 @@ pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransduce
 	loop {
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
 		println!("{:?}", pressure_transducer.read());
+	}
+}
+
+pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
+	info!("Starting ADS1015 Demo.");
+
+	loop {
+		tokio::time::sleep(std::time::Duration::new(0, 100000000)).await;
+		println!("{}", lim_temperature.read_pin_a0());
 	}
 }

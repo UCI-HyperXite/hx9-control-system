@@ -17,3 +17,4 @@ lazy_static = "1.4.0"
 rppal = { version = "0.17.1", features = ["hal"] }
 ina219 = "0.1.0"
 enum-map = "2.7.3"
+ads1x1x = "0.2.2"

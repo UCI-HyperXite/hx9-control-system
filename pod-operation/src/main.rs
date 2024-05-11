@@ -8,6 +8,7 @@ mod demo;
 mod state_machine;
 
 use crate::components::pressure_transducer::PressureTransducer;
+use crate::components::lim_temperature::LimTemperature;
 use crate::components::signal_light::SignalLight;
 use crate::state_machine::StateMachine;
 
@@ -22,6 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let pressure_transducer = PressureTransducer::new(0x40);
 	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
+
+	let ads1015 = LimTemperature::new();
+	tokio::spawn(demo::read_ads1015(ads1015));
 
 	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
