@@ -51,3 +51,4 @@ impl WheelEncoder {
         self.last_time = Instant::now();
     }
 }
+    
