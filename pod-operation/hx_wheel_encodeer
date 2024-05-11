@@ -17,17 +17,17 @@ impl WheelEncoder {
     }
 
     pub fn read(&mut self, pin_a: &InputPin, pin_b: &InputPin) {
+        //reading both
         let a_state = pin_a.read().unwrap();
         let b_state = pin_b.read().unwrap();
 
         // If the previous and the current state of pin_a or pin_b are different, that means a Pulse has occurred
         if a_state != pin_a.last_read.unwrap_or(a_state) || b_state != pin_b.last_read.unwrap_or(b_state) {
-            // If the pin_b state is different from the pin_a state, that means the encoder is rotating clockwise
-            if b_state != a_state {
+            if (b_state != a_state)
                 self.counter += 1;
-            } else {
+             else 
                 self.counter -= 1;
-            }
+            
 
             println!("Position: {}", self.counter);
         }
