@@ -159,37 +159,32 @@ impl StateMachine {
 		}
 	}
 
-	fn handle_init(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_init(ack: AckSender) {
 		info!("Received init from client");
-		//socket.emit("init", "init").ok();
 		ack.send("init").ok();
 		Self::modify_state(State::Init);
 	}
 
-	fn handle_stop(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_stop(ack: AckSender) {
 		info!("Received stop from client");
-		//socket.emit("stop", "stop").ok();
 		ack.send("stop").ok();
 		Self::modify_state(State::Stop);
 	}
 
-	fn handle_forcestop(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_forcestop(ack: AckSender) {
 		info!("Received forcestop from client");
-		//socket.emit("forcestop", "forcestop").ok();
 		ack.send("forcestop").ok();
 		Self::modify_state(State::ForceStop);
 	}
 
-	fn handle_load(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_load(ack: AckSender) {
 		info!("Received load from client");
-		//socket.emit("load", "load").ok();
 		ack.send("load").ok();
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_start(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_start(ack: AckSender) {
 		info!("Received start from client");
-		//socket.emit("start", "start").ok();
 		ack.send("start").ok();
 		Self::modify_state(State::Start);
 	}
