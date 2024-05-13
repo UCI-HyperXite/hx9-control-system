@@ -5,14 +5,14 @@ function ControlPanel() {
 	const { podSocketClient } = usePodData();
 	return (
 		<div className="controlpanel">
-			<button className="button start" onClick={() => podSocketClient.sendStart()}>
-				Start
+			<button className="button run" onClick={() => podSocketClient.sendRun()}>
+				Run
 			</button>
 			<button className="button stop" onClick={() => podSocketClient.sendStop()}>
 				Stop
 			</button>
-			<button className="button force" onClick={() => podSocketClient.sendForcestop()}>
-				Force Stop
+			<button className="button halt" onClick={() => podSocketClient.sendHalt()}>
+				Halt
 			</button>
 			<button className="button load" onClick={() => podSocketClient.sendLoad()}>
 				Load

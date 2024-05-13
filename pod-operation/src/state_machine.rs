@@ -56,9 +56,9 @@ impl StateMachine {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 			socket.on("init", StateMachine::handle_init);
 			socket.on("stop", StateMachine::handle_stop);
-			socket.on("forcestop", StateMachine::handle_forcestop);
+			socket.on("forcestop", StateMachine::handle_halt);
 			socket.on("load", StateMachine::handle_load);
-			socket.on("start", StateMachine::handle_start);
+			socket.on("start", StateMachine::handle_run);
 		});
 
 		Self {
@@ -170,10 +170,9 @@ impl StateMachine {
 		Self::modify_state(State::Stopped);
 	}
 
-	fn handle_forcestop(Data(_data): Data<String>, ack: AckSender) {
-		info!("Received forcestop from client");
-		//socket.emit("forcestop", "forcestop").ok();
-		ack.send("forcestop").ok();
+	fn handle_halt(Data(_data): Data<String>, ack: AckSender) {
+		info!("Received halt from client");
+		ack.send("halt").ok();
 		Self::modify_state(State::Halted);
 	}
 
@@ -184,10 +183,10 @@ impl StateMachine {
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_start(Data(_data): Data<String>, ack: AckSender) {
-		info!("Received start from client");
+	fn handle_run(Data(_data): Data<String>, ack: AckSender) {
+		info!("Received run from client");
 		//socket.emit("start", "start").ok();
-		ack.send("start").ok();
+		ack.send("run").ok();
 		Self::modify_state(State::Running);
 	}
 
