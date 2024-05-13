@@ -11,9 +11,9 @@ pub struct LimTemperature {
 }
 
 impl LimTemperature {
-	pub fn new() -> Self {
+	pub fn new(device_address: SlaveAddr) -> Self {
 		let i2cdev = I2c::new().unwrap();
-		let adc = Ads1x1x::new_ads1015(i2cdev, SlaveAddr::default());
+		let adc = Ads1x1x::new_ads1015(i2cdev, device_address);
 		LimTemperature { ads1015: adc }
 	}
 
