@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use lazy_static::lazy_static;
-use socketioxide::extract::{AckSender, Data};
+use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tracing::info;
 
