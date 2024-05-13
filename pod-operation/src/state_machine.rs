@@ -1,11 +1,15 @@
-use socketioxide::extract::{AckSender, Data};
-use socketioxide::{extract::SocketRef, SocketIo};
-
-use crate::components::signal_light::SignalLight;
-use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
+
+use lazy_static::lazy_static;
+use socketioxide::extract::{AckSender, Data};
+use socketioxide::{extract::SocketRef, SocketIo};
 use tracing::info;
+
+// use crate::components::signal_light::SignalLight;
+
+const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum State {
@@ -46,6 +50,7 @@ impl StateMachine {
 		enter_actions.insert(State::Stop, StateMachine::_enter_stop as fn());
 		enter_actions.insert(State::ForceStop, StateMachine::_enter_forcestop as fn());
 		enter_actions.insert(State::Load, StateMachine::_enter_load as fn());
+
 		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 			socket.on("init", StateMachine::handle_init);
@@ -54,6 +59,7 @@ impl StateMachine {
 			socket.on("load", StateMachine::handle_load);
 			socket.on("start", StateMachine::handle_start);
 		});
+
 		Self {
 			state_now: None,
 			enter_actions,
@@ -61,42 +67,55 @@ impl StateMachine {
 		}
 	}
 
-	pub fn run(&mut self) {
-		let last_state = Arc::new(Mutex::new(self.state_now));
-		let mut signal_light = SignalLight::new();
+	pub async fn run(&mut self) {
+		let mut interval = tokio::time::interval(TICK_INTERVAL);
 
 		loop {
-			if self.state_now != *last_state.lock().unwrap() {
-				println!(
-					"State changed from {:?} to {:?}",
-					*last_state.lock().unwrap(),
-					Self::read_state()
-				);
-				self.enter_state(&self.state_now.unwrap());
-			}
-			if let Some(state) = Self::read_state() {
-				Self::modify_state(state);
-			}
-			let next_state = self.state_now;
-			if self.state_now == Some(State::Init) {
-				signal_light.disable();
-				Self::_init_periodic();
-			}
-			if self.state_now == Some(State::Start) {
-				signal_light.enable();
-				Self::_running_periodic();
-			}
-
-			*last_state.lock().unwrap() = self.state_now;
-
-			self.sensor_data();
-
-			if Self::read_state().is_none() {
-				self.state_now = next_state;
-			} else {
-				self.state_now = Self::read_state();
-			}
+			self.tick().await;
+			interval.tick().await;
 		}
+	}
+
+	async fn tick(&mut self) {
+		let last_state = Arc::new(Mutex::new(self.state_now));
+
+		if self.state_now != *last_state.lock().unwrap() {
+			println!(
+				"State changed from {:?} to {:?}",
+				*last_state.lock().unwrap(),
+				Self::read_state()
+			);
+			self.enter_state(&self.state_now.unwrap());
+		}
+		if let Some(state) = Self::read_state() {
+			Self::modify_state(state);
+		}
+		let next_state = self.state_now;
+		if self.state_now == Some(State::Init) {
+			Self::_init_periodic();
+		}
+		if self.state_now == Some(State::Start) {
+			Self::_running_periodic();
+		}
+
+		*last_state.lock().unwrap() = self.state_now;
+
+		self.pod_periodic();
+
+		if Self::read_state().is_none() {
+			self.state_now = next_state;
+		} else {
+			self.state_now = Self::read_state();
+		}
+	}
+
+	/// Perform operations on every FSM tick
+	fn pod_periodic(&mut self) {
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("pong", "123")
+			.ok();
 	}
 
 	fn _running_periodic() {
@@ -187,13 +206,5 @@ impl StateMachine {
 		} else {
 			None
 		}
-	}
-
-	fn sensor_data(&self) {
-		self.io
-			.of("/control-station")
-			.unwrap()
-			.emit("sensor_data", [1, 2, 3])
-			.ok();
 	}
 }
