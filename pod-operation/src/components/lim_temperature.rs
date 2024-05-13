@@ -21,15 +21,15 @@ impl LimTemperature {
 		self.ads1015.destroy_ads1015();
 	}
 
-	pub fn read_pins(&mut self) -> Vec<i16> {
-		let mut read_values: Vec<i16> = Vec::new();
+	pub fn read_pins(&mut self) -> (i16, i16, i16, i16) {
+		let mut read_values = [0; 4];
 		let channels = vec![SingleA0, SingleA1, SingleA2, SingleA3];
 
-		for channel in channels {
+		for (i, channel) in channels.into_iter().enumerate() {
 			let read = block!(self.ads1015.read(channel)).unwrap();
-			read_values.push(read);
+			read_values[i] = read;
 		}
 
-		read_values
+		read_values.into()
 	}
 }
