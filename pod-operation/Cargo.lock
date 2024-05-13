@@ -656,6 +656,7 @@ dependencies = [
  "enum-map",
  "ina219",
  "lazy_static",
+ "nb 1.1.0",
  "rppal",
  "serde",
  "serde_json",
