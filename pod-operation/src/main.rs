@@ -7,12 +7,12 @@ mod components;
 mod demo;
 mod state_machine;
 
+use crate::components::gyro::Mpu6050Sensor;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing::subscriber::set_global_default(FmtSubscriber::default())?;
@@ -41,6 +41,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		state_machine.run().await;
 	});
 
+	let mut mpu6050_sensor = Mpu6050Sensor::new();
+	tokio::spawn(async move {
+		loop {
+			let (pitch, roll) = mpu6050_sensor.read_accel_gyro();
+			tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+			println!("[{:?} {:?}]", pitch, roll);
+		}
+	});
 	let app = axum::Router::new().layer(layer);
 
 	info!("Starting server on port 5000");
