@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use enum_map::{enum_map, EnumMap};
 use lazy_static::lazy_static;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
@@ -11,13 +11,13 @@ use tracing::info;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
-	Start,
-	Stop,
-	ForceStop,
-	Load,
 	Init,
+	Load,
+	Running,
+	Stopped,
+	Halted,
 }
 
 #[derive(Debug)]
@@ -38,26 +38,27 @@ lazy_static! {
 
 pub struct StateMachine {
 	state_now: Option<State>,
-	enter_actions: HashMap<State, fn()>,
+	enter_actions: EnumMap<State, fn(&mut Self)>,
 	io: SocketIo,
 }
 
 impl StateMachine {
 	pub fn new(io: SocketIo) -> Self {
-		let mut enter_actions = HashMap::new();
-		enter_actions.insert(State::Init, StateMachine::_enter_init as fn());
-		enter_actions.insert(State::Start, StateMachine::_enter_start as fn());
-		enter_actions.insert(State::Stop, StateMachine::_enter_stop as fn());
-		enter_actions.insert(State::ForceStop, StateMachine::_enter_forcestop as fn());
-		enter_actions.insert(State::Load, StateMachine::_enter_load as fn());
+		let enter_actions = enum_map! {
+			State::Init => StateMachine::_enter_init,
+			State::Load => StateMachine::_enter_load,
+			State::Running => StateMachine::_enter_running,
+			State::Stopped => StateMachine::_enter_stopped,
+			State::Halted => StateMachine::_enter_halted,
+		};
 
 		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 			socket.on("init", StateMachine::handle_init);
 			socket.on("stop", StateMachine::handle_stop);
-			socket.on("forcestop", StateMachine::handle_forcestop);
+			socket.on("forcestop", StateMachine::handle_halt);
 			socket.on("load", StateMachine::handle_load);
-			socket.on("start", StateMachine::handle_start);
+			socket.on("start", StateMachine::handle_run);
 		});
 
 		Self {
@@ -94,7 +95,7 @@ impl StateMachine {
 		if self.state_now == Some(State::Init) {
 			Self::_init_periodic();
 		}
-		if self.state_now == Some(State::Start) {
+		if self.state_now == Some(State::Running) {
 			Self::_running_periodic();
 		}
 
@@ -126,37 +127,33 @@ impl StateMachine {
 		//println!("Rolling INIT state");
 	}
 
-	fn _enter_init() {
-		println!("Entering INIT state");
+	/// Run the corresponding enter action for the given state
+	fn enter_state(&mut self, state: &State) {
+		let enter_action = self.enter_actions[*state];
+		enter_action(self);
 	}
 
-	fn _enter_load() {
-		println!("Entering LOAD state");
-		Self::modify_state(State::Init);
+	fn _enter_init(&mut self) {
+		info!("Entering Init state");
 	}
 
-	fn _enter_start() {
-		println!("Entering START state");
+	fn _enter_load(&mut self) {
+		info!("Entering Load state");
 	}
 
-	fn _enter_stop() {
-		println!("Entering STOP state");
-		Self::modify_state(State::Init);
-		println!("State changed to {:?}", Self::read_state());
+	fn _enter_running(&mut self) {
+		info!("Entering Running state");
+		// self.signal_light.enable();
 	}
 
-	fn _enter_forcestop() {
-		println!("Entering FORCESTOP state");
-		Self::modify_state(State::Init);
+	fn _enter_stopped(&mut self) {
+		info!("Entering Stopped state");
+		// self.signal_light.disable();
 	}
 
-	fn enter_state(&self, state: &State) {
-		println!("Entering state: {:?}", state);
-		if let Some(enter_action) = self.enter_actions.get(state) {
-			enter_action();
-		} else {
-			println!("No enter action defined for {:?}", state);
-		}
+	fn _enter_halted(&mut self) {
+		info!("Entering Halted state");
+		// self.hvs.disable()
 	}
 
 	fn handle_init(ack: AckSender) {
@@ -168,13 +165,13 @@ impl StateMachine {
 	fn handle_stop(ack: AckSender) {
 		info!("Received stop from client");
 		ack.send("stop").ok();
-		Self::modify_state(State::Stop);
+		Self::modify_state(State::Stopped);
 	}
 
-	fn handle_forcestop(ack: AckSender) {
-		info!("Received forcestop from client");
-		ack.send("forcestop").ok();
-		Self::modify_state(State::ForceStop);
+	fn handle_halt( ack: AckSender) {
+		info!("Received halt from client");
+		ack.send("halt").ok();
+		Self::modify_state(State::Halted);
 	}
 
 	fn handle_load(ack: AckSender) {
@@ -183,10 +180,11 @@ impl StateMachine {
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_start(ack: AckSender) {
-		info!("Received start from client");
-		ack.send("start").ok();
-		Self::modify_state(State::Start);
+	fn handle_run( ack: AckSender) {
+		info!("Received run from client");
+		//socket.emit("start", "start").ok();
+		ack.send("run").ok();
+		Self::modify_state(State::Running);
 	}
 
 	fn modify_state(new_value: State) {

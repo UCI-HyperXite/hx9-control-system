@@ -10,9 +10,9 @@ interface ServerToClientEvents {
 
 interface ClientToServerEvents {
 	stop: (ack: (data: string) => void) => void;
-	forcestop: (ack: (data: string) => void) => void;
+	halt: (ack: (data: string) => void) => void;
 	load: (ack: (data: string) => void) => void;
-	start: (ack: (data: string) => void) => void;
+	run: (ack: (data: string) => void) => void;
 }
 
 export interface PodData {
@@ -66,8 +66,8 @@ class PodSocketClient {
 		});
 	}
 
-	sendForcestop(): void {
-		this.socket.emit("forcestop", (ack: string) => {
+	sendHalt(): void {
+		this.socket.emit("halt", (ack: string) => {
 			console.log(`Server responds to stop with ${ack}`);
 		});
 	}
@@ -78,8 +78,8 @@ class PodSocketClient {
 		});
 	}
 
-	sendStart(): void {
-		this.socket.emit("start", (ack: string) => {
+	sendRun(): void {
+		this.socket.emit("run", (ack: string) => {
 			console.log(`Server responds to stop with ${ack}`);
 		});
 	}
