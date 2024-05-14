@@ -21,8 +21,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
 
-	let pressure_transducer = PressureTransducer::new(0x40);
+	let pressure_transducer = PressureTransducer::new();
 	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
+
+	let pressure_transducer2 = PressureTransducer::new_a0();
+	tokio::spawn(demo::read_pressure_transducer(pressure_transducer2));
 
 	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_ads1015(ads1015));
