@@ -1,7 +1,5 @@
 use rppal::gpio::{Gpio, InputPin, Level};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-use tracing::debug;
+use std::time::Instant;
 
 const PIN_ENCODER_A: u8 = 1;
 const PIN_ENCODER_B: u8 = 2;
@@ -22,7 +20,7 @@ impl WheelEncoder {
             counter: 0.0,
             pin_a: gpio.get(PIN_ENCODER_A).unwrap().into_input(),
             pin_b: gpio.get(PIN_ENCODER_B).unwrap().into_input(),
-            a_last_read: Level::High,
+            a_last_read: Level::Low,
             b_last_read: Level::Low,
             last_time: Instant::now(),
         }
@@ -31,11 +29,10 @@ impl WheelEncoder {
     pub fn read(&mut self) -> (f32, f32) {
         let a_state = self.pin_a.read();
         let b_state = self.pin_b.read();
-        if a_state != self.a_last_read || b_state != self.b_last_read {
-            if b_state != a_state && a_state > b_state{
+        if a_state != self.a_last_read{
+            if b_state != a_state{
                 self.counter += 1.0;
-            } 
-            else {
+            } else {
                 self.counter -= 1.0;
             }
         }
@@ -46,10 +43,10 @@ impl WheelEncoder {
         let elapsed = current_time.duration_since(self.last_time).as_secs_f32();
         self.last_time = current_time;
 
-        let distance = self.counter * 5 / 1000.0;
+        let distance = self.counter * 5.0 / 1000.0;
         let velocity = if elapsed > 0.0 { distance / elapsed } else { 0.0 };
 
-        (distance, velocity) 
+        (distance, velocity)
     }
 
     pub fn reset(&mut self) {
@@ -57,3 +54,5 @@ impl WheelEncoder {
         self.last_time = Instant::now();
     }
 }
+
+
