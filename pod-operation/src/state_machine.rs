@@ -168,7 +168,7 @@ impl StateMachine {
 		Self::modify_state(State::Stopped);
 	}
 
-	fn handle_halt( ack: AckSender) {
+	fn handle_halt(ack: AckSender) {
 		info!("Received halt from client");
 		ack.send("halt").ok();
 		Self::modify_state(State::Halted);
@@ -180,7 +180,7 @@ impl StateMachine {
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_run( ack: AckSender) {
+	fn handle_run(ack: AckSender) {
 		info!("Received run from client");
 		//socket.emit("start", "start").ok();
 		ack.send("run").ok();
