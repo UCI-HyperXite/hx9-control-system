@@ -67,20 +67,20 @@ class PodSocketClient {
 	}
 
 	sendHalt(): void {
-		this.socket.emit("halt", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
+		this.socket.emit("halt", (response: string) => {
+			console.log("Server acknowledged:", response);
 		});
 	}
 
 	sendLoad(): void {
-		this.socket.emit("load", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
+		this.socket.emit("load", (response: string) => {
+			console.log("Server acknowledged:", response);
 		});
 	}
 
 	sendRun(): void {
-		this.socket.emit("run", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
+		this.socket.emit("run", (response: string) => {
+			console.log("Server acknowledged:", response);
 		});
 	}
 
