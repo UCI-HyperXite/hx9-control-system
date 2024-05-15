@@ -54,7 +54,6 @@ impl StateMachine {
 
 		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
-			socket.on("init", StateMachine::handle_init);
 			socket.on("stop", StateMachine::handle_stop);
 			socket.on("forcestop", StateMachine::handle_halt);
 			socket.on("load", StateMachine::handle_load);
