@@ -10,6 +10,7 @@ mod state_machine;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
 
 #[tokio::main]
