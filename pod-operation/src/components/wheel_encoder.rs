@@ -36,8 +36,8 @@ impl WheelEncoder {
 		let a_state = self.pin_a.read();
 		let b_state = self.pin_b.read();
 		if (a_state != self.a_last_read || b_state != self.b_last_read) && b_state != a_state {
-            self.counter += 1.0;
-        }
+			self.counter += 1.0;
+		}
 		self.a_last_read = a_state;
 		self.b_last_read = b_state;
 
