@@ -56,4 +56,5 @@ pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 		);
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
 	}
+	wheel_encoder.reset();
 }
