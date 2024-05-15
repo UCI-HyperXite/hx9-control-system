@@ -34,6 +34,18 @@ impl Reference {
 			current_span: current_hi - current_lo,
 		}
 	}
+
+	// The upstream pressure transducer outputs a current between 4 mA and 20 mA
+	// with 0 PSI and 5000 PSI respectively.
+	fn upstream() -> Self {
+		Self::new(0.0, 5000.0, 4.0, 20.0)
+	}
+
+	// The downtream pressure transducer outputs a current between 4 mA and 20 mA
+	// with 0 PSI and 300 PSI respectively.
+	fn downstream() -> Self {
+		Self::new(0.0, 300.0, 4.0, 20.0)
+	}
 }
 
 fn init_ina(device_address: u8) -> INA219<I2c> {
@@ -57,25 +69,18 @@ impl PressureTransducer {
 	// This constructor should be used for INA219s where the address pins are
 	// grounded. That is, the device address is 0x40.
 	pub fn upstream() -> Self {
-		// The upstream pressure transducer outputs a current between 4 mA and 20 mA
-		// with 0 PSI and 300 PSI respectively.
-		let upstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
-
 		Self {
 			ina: init_ina(INA219_UPSTREAM_ADDRESS),
-			ref_values: upstream_ref,
+			ref_values: Reference::upstream(),
 		}
 	}
 
 	// This constructor should be used for INA219s where the address pin A0 is
 	// jumped. That is, the device address is 0x41.
 	pub fn downstream() -> Self {
-		// The downtream pressure transducer outputs a current between 4 mA and 20 mA
-		// with 0 PSI and 300 PSI respectively.
-		let downstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
 		Self {
 			ina: init_ina(INA219_DOWNSTREAM_ADDRESS),
-			ref_values: downstream_ref,
+			ref_values: Reference::downstream(),
 		}
 	}
 
