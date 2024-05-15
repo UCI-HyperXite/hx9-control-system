@@ -60,18 +60,6 @@ class PodSocketClient {
 		this.socket.disconnect();
 	}
 
-	sendStop(): void {
-		this.socket.emit("stop", (response: string) => {
-			console.log("Server acknowledged:", response);
-		});
-	}
-
-	sendHalt(): void {
-		this.socket.emit("halt", (response: string) => {
-			console.log("Server acknowledged:", response);
-		});
-	}
-
 	sendLoad(): void {
 		this.socket.emit("load", (response: string) => {
 			console.log("Server acknowledged:", response);
@@ -80,6 +68,18 @@ class PodSocketClient {
 
 	sendRun(): void {
 		this.socket.emit("run", (response: string) => {
+			console.log("Server acknowledged:", response);
+		});
+	}
+
+	sendStop(): void {
+		this.socket.emit("stop", (response: string) => {
+			console.log("Server acknowledged:", response);
+		});
+	}
+
+	sendHalt(): void {
+		this.socket.emit("halt", (response: string) => {
 			console.log("Server acknowledged:", response);
 		});
 	}
