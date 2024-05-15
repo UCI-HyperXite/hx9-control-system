@@ -89,7 +89,6 @@ impl PressureTransducer {
 			current_lo,
 			pressure_span,
 			current_span,
-			..
 		} = self.ref_values;
 
 		pressure_lo + pressure_span * (current - current_lo) / current_span
