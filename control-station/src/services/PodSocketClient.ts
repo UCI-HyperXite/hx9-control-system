@@ -17,9 +17,9 @@ interface ClientToServerEvents {
 	ping: (data: string, ack: (data: string) => void) => void;
 	greet: (data: string, ack: (data: string) => void) => void;
 	stop: (data: string, ack: (data: string) => void) => void;
-	forcestop: (data: string, ack: (data: string) => void) => void;
+	halt: (data: string, ack: (data: string) => void) => void;
 	load: (data: string, ack: (data: string) => void) => void;
-	start: (data: string, ack: (data: string) => void) => void;
+	run: (data: string, ack: (data: string) => void) => void;
 }
 
 export interface PodData {
@@ -91,8 +91,8 @@ class PodSocketClient {
 		});
 	}
 
-	sendForcestop(): void {
-		this.socket.emit("forcestop", "Hello from client", (ack: string) => {
+	sendHalt(): void {
+		this.socket.emit("halt", "Hello from client", (ack: string) => {
 			console.log(`Server responds to stop with ${ack}`);
 		});
 	}
@@ -103,8 +103,8 @@ class PodSocketClient {
 		});
 	}
 
-	sendStart(): void {
-		this.socket.emit("start", "Hello from client", (ack: string) => {
+	sendRun(): void {
+		this.socket.emit("run", "Hello from client", (ack: string) => {
 			console.log(`Server responds to stop with ${ack}`);
 		});
 	}
