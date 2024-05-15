@@ -46,9 +46,8 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	lim_temperature.cleanup();
 }
 
-pub async fn read_wheel_encoder() {
+pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	info!("Starting wheel encoder demo.");
-	let mut wheel_encoder = WheelEncoder::new();
 	loop {
 		println!(
 			"{:?}{:?}",
