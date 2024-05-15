@@ -9,10 +9,10 @@ interface ServerToClientEvents {
 }
 
 interface ClientToServerEvents {
-	stop: (ack: (data: string) => void) => void;
-	halt: (ack: (data: string) => void) => void;
 	load: (ack: (data: string) => void) => void;
 	run: (ack: (data: string) => void) => void;
+	stop: (ack: (data: string) => void) => void;
+	halt: (ack: (data: string) => void) => void;
 }
 
 export interface PodData {

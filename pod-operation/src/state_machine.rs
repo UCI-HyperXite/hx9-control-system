@@ -156,12 +156,6 @@ impl StateMachine {
 		// self.hvs.disable()
 	}
 
-	fn handle_init(ack: AckSender) {
-		info!("Received init from client");
-		ack.send("init").ok();
-		Self::modify_state(State::Init);
-	}
-
 	fn handle_stop(ack: AckSender) {
 		info!("Received stop from client");
 		ack.send("stop").ok();
