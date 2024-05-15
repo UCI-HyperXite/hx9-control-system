@@ -5,21 +5,14 @@ import { ioNamespace } from "./socketHandler";
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
-	pong: (data: string) => void;
-	greet: (data: string) => void;
-	stop: (data: string) => void;
-	forcestop: (data: string) => void;
-	load: (data: string) => void;
-	start: (data: string) => void;
+	serverResponse: (data: string) => void;
 }
 
 interface ClientToServerEvents {
-	ping: (data: string, ack: (data: string) => void) => void;
-	greet: (data: string, ack: (data: string) => void) => void;
-	stop: (data: string, ack: (data: string) => void) => void;
-	halt: (data: string, ack: (data: string) => void) => void;
-	load: (data: string, ack: (data: string) => void) => void;
-	run: (data: string, ack: (data: string) => void) => void;
+	load: (ack: (data: string) => void) => void;
+	run: (ack: (data: string) => void) => void;
+	stop: (ack: (data: string) => void) => void;
+	halt: (ack: (data: string) => void) => void;
 }
 
 export interface PodData {
@@ -44,12 +37,7 @@ class PodSocketClient {
 		this.serverEvents = {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),
-			pong: this.onData.bind(this),
-			greet: this.onData.bind(this),
-			stop: this.onData.bind(this),
-			forcestop: this.onData.bind(this),
-			load: this.onData.bind(this),
-			start: this.onData.bind(this),
+			serverResponse: this.onData.bind(this),
 		} as const;
 		this.setPodData = setPodData;
 	}
@@ -72,40 +60,27 @@ class PodSocketClient {
 		this.socket.disconnect();
 	}
 
-	// Send a ping to the server
-	sendPing(): void {
-		this.socket.emit("ping", "ping", (ack: string) => {
-			console.log(`Server acknowledges ping with ${ack}`);
-		});
-	}
-
-	sendGreet(): void {
-		this.socket.emit("greet", "Hello from client", (ack: string) => {
-			console.log(`Server responds to greet with ${ack}`);
-		});
-	}
-
-	sendStop(): void {
-		this.socket.emit("stop", "Hello from client", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
-		});
-	}
-
-	sendHalt(): void {
-		this.socket.emit("halt", "Hello from client", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
-		});
-	}
-
 	sendLoad(): void {
-		this.socket.emit("load", "Hello from client", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
+		this.socket.emit("load", (response: string) => {
+			console.log("Server acknowledged:", response);
 		});
 	}
 
 	sendRun(): void {
-		this.socket.emit("run", "Hello from client", (ack: string) => {
-			console.log(`Server responds to stop with ${ack}`);
+		this.socket.emit("run", (response: string) => {
+			console.log("Server acknowledged:", response);
+		});
+	}
+
+	sendStop(): void {
+		this.socket.emit("stop", (response: string) => {
+			console.log("Server acknowledged:", response);
+		});
+	}
+
+	sendHalt(): void {
+		this.socket.emit("halt", (response: string) => {
+			console.log("Server acknowledged:", response);
 		});
 	}
 
