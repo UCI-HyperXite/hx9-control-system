@@ -33,7 +33,11 @@ pub async fn read_wheel_encoder() {
 	info!("Starting wheel encoder demo.");
 	let mut wheel_encoder = WheelEncoder::new();
 	loop {
-		println!("{}", wheel_encoder.read());
+		println!(
+			"{:?}{:?}",
+			wheel_encoder.read(),
+			wheel_encoder.get_velocity()
+		);
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
 	}
 }
