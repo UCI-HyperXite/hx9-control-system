@@ -20,28 +20,21 @@ const INA219_SCALING_VALUE: f32 = 160.0;
 
 struct Reference {
 	pressure_lo: f32,
-	pressure_hi: f32,
+	pressure_span: f32,
 	current_lo: f32,
-	current_hi: f32,
+	current_span: f32,
 }
 
-// The upstream pressure transducer outputs a current between 4 mA and 20 mA
-// with 0 PSI and 300 PSI respectively.
-const UPSTREAM_REF: Reference = Reference {
-	pressure_lo: 0.0,
-	pressure_hi: 300.0,
-	current_lo: 4.0,
-	current_hi: 20.0,
-};
-
-// The downtream pressure transducer outputs a current between 4 mA and 20 mA
-// with 0 PSI and 300 PSI respectively.
-const DOWNSTREAM_REF: Reference = Reference {
-	pressure_lo: 0.0,
-	pressure_hi: 300.0,
-	current_lo: 4.0,
-	current_hi: 20.0,
-};
+impl Reference {
+	fn new(pressure_lo: f32, pressure_hi: f32, current_lo: f32, current_hi: f32) -> Self {
+		Self {
+			pressure_lo,
+			current_lo,
+			pressure_span: pressure_hi - pressure_lo,
+			current_span: current_hi - current_lo,
+		}
+	}
+}
 
 struct CalibratedINA;
 
@@ -61,25 +54,32 @@ impl CalibratedINA {
 
 pub struct PressureTransducer {
 	ina: INA219<I2c>,
-	ref_measurements: Reference,
+	ref_values: Reference,
 }
 
 impl PressureTransducer {
 	// This constructor should be used for INA219s where the address pins are
 	// grounded. That is, the device address is 0x40.
-	pub fn new() -> Self {
+	pub fn upstream() -> Self {
+		// The upstream pressure transducer outputs a current between 4 mA and 20 mA
+		// with 0 PSI and 300 PSI respectively.
+		let upstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
+
 		Self {
 			ina: CalibratedINA::init_ina(INA219_UPSTREAM_ADDRESS),
-			ref_measurements: UPSTREAM_REF,
+			ref_values: upstream_ref,
 		}
 	}
 
 	// This constructor should be used for INA219s where the address pin A0 is
 	// jumped. That is, the device address is 0x41.
-	pub fn new_a0() -> Self {
+	pub fn downstream() -> Self {
+		// The downtream pressure transducer outputs a current between 4 mA and 20 mA
+		// with 0 PSI and 300 PSI respectively.
+		let downstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
 		Self {
 			ina: CalibratedINA::init_ina(INA219_DOWNSTREAM_ADDRESS),
-			ref_measurements: DOWNSTREAM_REF,
+			ref_values: downstream_ref,
 		}
 	}
 
@@ -90,13 +90,13 @@ impl PressureTransducer {
 
 		let Reference {
 			pressure_lo,
-			pressure_hi,
 			current_lo,
-			current_hi,
-		} = self.ref_measurements;
+			pressure_span,
+			current_span,
+			..
+		} = self.ref_values;
 
-		pressure_lo
-			+ (pressure_hi - pressure_lo) * (current - current_lo) / (current_hi - current_lo)
+		pressure_lo + pressure_span * (current - current_lo) / current_span
 	}
 
 	// Read from the INA219 and divide the reading by a scalar factor to
