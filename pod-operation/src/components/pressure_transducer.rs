@@ -36,20 +36,16 @@ impl Reference {
 	}
 }
 
-struct CalibratedINA;
+fn init_ina(device_address: u8) -> INA219<I2c> {
+	let device = I2c::new().unwrap();
 
-impl CalibratedINA {
-	fn init_ina(device_address: u8) -> INA219<I2c> {
-		let device = I2c::new().unwrap();
+	let mut ina219 = INA219::new(device, device_address);
+	debug!("Initialized I2C and INA219");
 
-		let mut ina219 = INA219::new(device, device_address);
-		debug!("Initialized I2C and INA219");
+	ina219.calibrate(INA219_CALIBRATION_VALUE).unwrap();
+	debug!("Calibrating INA219");
 
-		ina219.calibrate(INA219_CALIBRATION_VALUE).unwrap();
-		debug!("Calibrating INA219");
-
-		ina219
-	}
+	ina219
 }
 
 pub struct PressureTransducer {
@@ -66,7 +62,7 @@ impl PressureTransducer {
 		let upstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
 
 		Self {
-			ina: CalibratedINA::init_ina(INA219_UPSTREAM_ADDRESS),
+			ina: init_ina(INA219_UPSTREAM_ADDRESS),
 			ref_values: upstream_ref,
 		}
 	}
@@ -78,7 +74,7 @@ impl PressureTransducer {
 		// with 0 PSI and 300 PSI respectively.
 		let downstream_ref = Reference::new(0.0, 300.0, 4.0, 20.0);
 		Self {
-			ina: CalibratedINA::init_ina(INA219_DOWNSTREAM_ADDRESS),
+			ina: init_ina(INA219_DOWNSTREAM_ADDRESS),
 			ref_values: downstream_ref,
 		}
 	}
