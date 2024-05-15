@@ -58,7 +58,7 @@ impl WheelEncoder {
 		distance
 	}
 
-	pub fn reset(&mut self) {
+	pub fn _reset(&mut self) {
 		self.counter = 0.0;
 		self.last_time = Instant::now();
 		self.last_distance = 0.0;
