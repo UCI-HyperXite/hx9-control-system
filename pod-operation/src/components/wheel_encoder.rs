@@ -47,7 +47,7 @@ impl WheelEncoder {
 		let elapsed = current_time.duration_since(self.last_time).as_secs_f32();
 		self.last_time = current_time;
 
-		let distance = (self.counter * 5.0) / 1000;
+		let distance = (self.counter * 5.0) / 1000.0;
 		let velocity_elapsed = current_time
 			.duration_since(self.last_velocity_time)
 			.as_secs_f32();
