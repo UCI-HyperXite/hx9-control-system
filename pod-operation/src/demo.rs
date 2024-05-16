@@ -25,7 +25,7 @@ pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransduce
 
 	loop {
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
-		println!("{:?}", pressure_transducer.read());
+		println!("{:?}", pressure_transducer.read_pressure());
 	}
 }
 
