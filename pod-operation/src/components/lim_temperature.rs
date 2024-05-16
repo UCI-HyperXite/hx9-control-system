@@ -6,17 +6,18 @@ use ads1x1x::{Ads1x1x, DynamicOneShot, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
 
-const DIVIDER_RESISTANCE: f32 = 22000.0;
-const VCC: f32 = 5.0;
-const BETA: f32 = 3950.0;
-const R_0: f32 = 10000.0;
-const ROOM_TEMP: f32 = 298.15;
+const DIVIDER_RESISTANCE: f32 = 22000.0; // Resistance used in voltage divider circuit
+const V_IN: f32 = 5.0; // Voltage provided to voltage divider circuit
+const BETA: f32 = 3950.0; // Constant used in voltage to temperature conversion process
+const R_0: f32 = 10000.0; // Resistance of thermistor at room temperature
+const ROOM_TEMP: f32 = 298.15; // Room temperature in Kelvins (25 degrees C)
 
 fn voltage_to_temp(voltage: i16) -> f32 {
 	let voltage = f32::from(voltage) / 1000.0;
-	let thermistor_resistance: f32 = (voltage * DIVIDER_RESISTANCE) / (VCC - voltage);
+	let thermistor_resistance = (voltage * DIVIDER_RESISTANCE) / (V_IN - voltage);
 	let r_inf = R_0 * std::f32::consts::E.powf(-BETA / ROOM_TEMP);
-	(BETA / (thermistor_resistance / r_inf).ln()) - 273.15
+	let temp_kelvins = BETA / (thermistor_resistance / r_inf).ln();
+	temp_kelvins - 273.15
 }
 
 pub struct LimTemperature {
