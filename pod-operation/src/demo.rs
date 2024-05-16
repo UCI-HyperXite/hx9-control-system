@@ -35,7 +35,7 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	let mut i = 0;
 	loop {
 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-		println!("{:?}", lim_temperature.read_pins());
+		println!("{:?}", lim_temperature.read_lim_temps());
 		i += 1;
 		if i > 1000 {
 			break;

@@ -6,6 +6,10 @@ use ads1x1x::{Ads1x1x, DynamicOneShot, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
 
+// These constants assume that 5 volts is provided to a 22k Ohm resistor
+// connected to a thermistor, with the ADS1015 is measuring the node connecting
+// the two (a voltage divider circuit).
+
 const DIVIDER_RESISTANCE: f32 = 22000.0; // Resistance used in voltage divider circuit
 const V_IN: f32 = 5.0; // Voltage provided to voltage divider circuit
 const BETA: f32 = 3950.0; // Constant used in voltage to temperature conversion process
@@ -35,7 +39,7 @@ impl LimTemperature {
 		self.ads1015.destroy_ads1015();
 	}
 
-	pub fn read_pins(&mut self) -> (f32, f32, f32, f32) {
+	pub fn read_lim_temps(&mut self) -> (f32, f32, f32, f32) {
 		[SingleA0, SingleA1, SingleA2, SingleA3]
 			.map(|channel| block!(self.ads1015.read(channel)).unwrap())
 			.map(voltage_to_temp)
