@@ -86,7 +86,7 @@ impl PressureTransducer {
 
 	// Read current from the INA219 and apply a scaling factor to translate
 	// the current reading to PSI.
-	pub fn read(&mut self) -> f32 {
+	pub fn read_pressure(&mut self) -> f32 {
 		let current = self.read_current();
 
 		let Reference {
