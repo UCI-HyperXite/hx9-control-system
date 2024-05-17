@@ -20,11 +20,13 @@ pub enum State {
 	Halted,
 }
 
+type StateTransition = fn(&mut StateMachine) -> State;
+
 pub struct StateMachine {
 	last_state: State,
 	state: &'static Mutex<State>,
 	enter_actions: EnumMap<State, fn(&mut Self)>,
-	state_transitions: EnumMap<State, Option<fn(&mut Self) -> State>>,
+	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 }
 
@@ -91,13 +93,13 @@ impl StateMachine {
 		// Run enter action when entering a new state
 		if *state != self.last_state {
 			info!("State changed from {:?} to {:?}", self.last_state, state);
-			self.enter_state(&*state);
+			self.enter_state(&state);
 		}
 
 		self.pod_periodic();
 
 		// Proceed to the next state by transition
-		let next_state = self.run_state_transition(*state);
+		let next_state = self.run_state_transition(&state);
 		self.last_state = *state;
 		*state = next_state;
 		// state is dropped, releasing the lock
@@ -120,10 +122,10 @@ impl StateMachine {
 
 	/// Run the transition function for a given state if it exists.
 	/// Otherwise, remain in the same state.
-	fn run_state_transition(&mut self, state: State) -> State {
-		match self.state_transitions[state] {
+	fn run_state_transition(&mut self, state: &State) -> State {
+		match self.state_transitions[*state] {
 			Some(state_transition) => state_transition(self),
-			None => state,
+			None => *state,
 		}
 	}
 
@@ -159,6 +161,7 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
+		// TODO: add actual decision logic
 		State::Running
 	}
 
