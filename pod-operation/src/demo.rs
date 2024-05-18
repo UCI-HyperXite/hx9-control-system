@@ -1,5 +1,6 @@
 use tracing::info;
 
+use crate::components::brakes;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -43,4 +44,20 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	}
 
 	lim_temperature.cleanup();
+}
+
+pub async fn brake(mut brakes: Brakes) {
+	let mut i = 0;
+
+	info!("Starting brakes demo.");
+	loop {
+		tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+		if i % 4 == 0 {
+			brakes.enable();
+		} else if i % 4 == 1 {
+			brakes.disable();
+		}
+
+		i += 1;
+	}
 }
