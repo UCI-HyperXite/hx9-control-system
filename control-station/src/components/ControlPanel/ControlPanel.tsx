@@ -2,9 +2,10 @@ import "./ControlPanel.css";
 import usePodData from "@/services/usePodData";
 
 function ControlPanel() {
-	const { podSocketClient } = usePodData();
+	const { podData, podSocketClient } = usePodData();
 	return (
 		<div className="controlpanel">
+			<h2 style={{ color: "white" }}>{podData.state}</h2>
 			<button className="button run" onClick={() => podSocketClient.sendRun()}>
 				Run
 			</button>

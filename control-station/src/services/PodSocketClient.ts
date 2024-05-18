@@ -2,6 +2,14 @@ import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
+export enum State {
+	Init = "Init",
+	Load = "Load",
+	Running = "Running",
+	Stop = "Stop",
+	Halt = "Halt",
+}
+
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
@@ -17,6 +25,7 @@ interface ClientToServerEvents {
 
 export interface PodData {
 	connected: boolean;
+	state: State;
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
@@ -64,24 +73,28 @@ class PodSocketClient {
 		this.socket.emit("load", (response: string) => {
 			console.log("Server acknowledged:", response);
 		});
+		this.setPodData((d) => ({ ...d, state: State.Load }));
 	}
 
 	sendRun(): void {
 		this.socket.emit("run", (response: string) => {
 			console.log("Server acknowledged:", response);
 		});
+		this.setPodData((d) => ({ ...d, state: State.Running }));
 	}
 
 	sendStop(): void {
 		this.socket.emit("stop", (response: string) => {
 			console.log("Server acknowledged:", response);
 		});
+		this.setPodData((d) => ({ ...d, state: State.Stop }));
 	}
 
 	sendHalt(): void {
 		this.socket.emit("halt", (response: string) => {
 			console.log("Server acknowledged:", response);
 		});
+		this.setPodData((d) => ({ ...d, state: State.Halt }));
 	}
 
 	private onConnect(): void {
