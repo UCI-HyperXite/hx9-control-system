@@ -43,7 +43,7 @@ impl WheelEncoder {
 				.duration_since(self.last_velocity_time)
 				.as_secs_f32();
 
-			if (velocity_elapsed >= 0.1) {
+			if velocity_elapsed >= 0.1 {
 				let distance_delta = distance - self.last_distance;
 				self.velocity = distance_delta / velocity_elapsed;
 				self.last_velocity_time = current_time;
