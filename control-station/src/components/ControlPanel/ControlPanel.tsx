@@ -5,7 +5,7 @@ function ControlPanel() {
 	const { podData, podSocketClient } = usePodData();
 	return (
 		<div className="controlpanel">
-			<h2 style={{ color: "white" }}>{podData.state}</h2>
+			<h2 style={{ color: "white" }}>Current State: {podData.state}</h2>
 			<button className="button run" onClick={() => podSocketClient.sendRun()}>
 				Run
 			</button>
