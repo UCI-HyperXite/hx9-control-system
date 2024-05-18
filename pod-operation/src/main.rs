@@ -16,9 +16,9 @@ use crate::state_machine::StateMachine;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+	tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
-    let (layer, io) = SocketIo::new_layer();
+	let (layer, io) = SocketIo::new_layer();
 
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
@@ -37,20 +37,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let wheel_encoder = WheelEncoder::new();
 	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
+	let gyro: Gyroscope = Gyroscope::new();
+	tokio::spawn(demo::read_gyroscope(gyro));
+
 	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
 		state_machine.run().await;
 	});
 
-    let app = axum::Router::new().layer(layer);
+	let app = axum::Router::new().layer(layer);
 
-    info!("Starting server on port 5000");
+	info!("Starting server on port 5000");
 
-    let server = Server::bind(&"127.0.0.1:5000".parse().unwrap()).serve(app.into_make_service());
+	let server = Server::bind(&"127.0.0.1:5000".parse().unwrap()).serve(app.into_make_service());
 
-    if let Err(e) = server.await {
-        error!("server error: {}", e);
-    }
+	if let Err(e) = server.await {
+		error!("server error: {}", e);
+	}
 
-    Ok(())
+	Ok(())
 }
