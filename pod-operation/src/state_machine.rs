@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
 use lazy_static::lazy_static;
-use socketioxide::extract::{AckSender, Data};
+use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tracing::info;
 
@@ -54,11 +54,10 @@ impl StateMachine {
 
 		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
-			socket.on("init", StateMachine::handle_init);
-			socket.on("stop", StateMachine::handle_stop);
-			socket.on("forcestop", StateMachine::handle_halt);
 			socket.on("load", StateMachine::handle_load);
 			socket.on("start", StateMachine::handle_run);
+			socket.on("stop", StateMachine::handle_stop);
+			socket.on("forcestop", StateMachine::handle_halt);
 		});
 
 		Self {
@@ -156,38 +155,29 @@ impl StateMachine {
 		// self.hvs.disable()
 	}
 
-	fn handle_init(Data(_data): Data<String>, ack: AckSender) {
-		info!("Received init from client");
-		//socket.emit("init", "init").ok();
-		ack.send("init").ok();
-		Self::modify_state(State::Init);
-	}
-
-	fn handle_stop(Data(_data): Data<String>, ack: AckSender) {
-		info!("Received stop from client");
-		//socket.emit("stop", "stop").ok();
-		ack.send("stop").ok();
-		Self::modify_state(State::Stopped);
-	}
-
-	fn handle_halt(Data(_data): Data<String>, ack: AckSender) {
-		info!("Received halt from client");
-		ack.send("halt").ok();
-		Self::modify_state(State::Halted);
-	}
-
-	fn handle_load(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_load(ack: AckSender) {
 		info!("Received load from client");
-		//socket.emit("load", "load").ok();
 		ack.send("load").ok();
 		Self::modify_state(State::Load);
 	}
 
-	fn handle_run(Data(_data): Data<String>, ack: AckSender) {
+	fn handle_run(ack: AckSender) {
 		info!("Received run from client");
 		//socket.emit("start", "start").ok();
 		ack.send("run").ok();
 		Self::modify_state(State::Running);
+	}
+
+	fn handle_stop(ack: AckSender) {
+		info!("Received stop from client");
+		ack.send("stop").ok();
+		Self::modify_state(State::Stopped);
+	}
+
+	fn handle_halt(ack: AckSender) {
+		info!("Received halt from client");
+		ack.send("halt").ok();
+		Self::modify_state(State::Halted);
 	}
 
 	fn modify_state(new_value: State) {

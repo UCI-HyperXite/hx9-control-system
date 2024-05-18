@@ -11,6 +11,7 @@ use crate::components::brakes::Brakes;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
 
 #[tokio::main]
@@ -22,11 +23,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
 
-	let pressure_transducer = PressureTransducer::new(0x40);
-	tokio::spawn(demo::read_pressure_transducer(pressure_transducer));
+	let upstream_pressure_transducer = PressureTransducer::upstream();
+	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
+
+	let downstream_pressure_transducer = PressureTransducer::downstream();
+	tokio::spawn(demo::read_pressure_transducer(
+		downstream_pressure_transducer,
+	));
 
 	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_ads1015(ads1015));
+
+	let wheel_encoder = WheelEncoder::new();
+	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
 	let brakes = components::brakes::Brakes::new();
 	tokio::spawn(demo::brake(brakes));
