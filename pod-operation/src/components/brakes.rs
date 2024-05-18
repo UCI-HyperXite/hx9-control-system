@@ -11,11 +11,7 @@ const PIN_BRAKES: u8 = 5; //Replace with real value
 impl Brakes {
 	pub fn new() -> Self {
 		Brakes {
-			pin: Gpio::new()
-				.unwrap()
-				.get(PIN_SIGNAL_LIGHT)
-				.unwrap()
-				.into_output(),
+			pin: Gpio::new().unwrap().get(PIN_BRAKES).unwrap().into_output(),
 		}
 	}
 
