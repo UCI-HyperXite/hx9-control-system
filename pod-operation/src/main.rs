@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let wheel_encoder = WheelEncoder::new();
 	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
-	let brakes = components::brakes::Brakes::new();
+	let brakes = Brakes::new();
 	tokio::spawn(demo::brake(brakes));
 
 	tokio::spawn(async {
