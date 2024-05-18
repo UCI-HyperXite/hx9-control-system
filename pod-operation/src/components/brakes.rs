@@ -6,7 +6,7 @@ pub struct Brakes {
 	pin: OutputPin,
 }
 
-const PIN_BRAKES: u8 = 5; //Change to real value
+const PIN_BRAKES: u8 = 5; //Replace with real value
 
 impl Brakes {
 	pub fn new() -> Self {
