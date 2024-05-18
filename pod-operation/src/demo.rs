@@ -66,9 +66,9 @@ pub async fn brake(mut brakes: Brakes) {
 	loop {
 		tokio::time::sleep(std::time::Duration::from_secs(30)).await;
 		if i % 4 == 0 {
-			brakes.enable();
+			brakes.engage();
 		} else if i % 4 == 1 {
-			brakes.disable();
+			brakes.disengage();
 		}
 
 		i += 1;

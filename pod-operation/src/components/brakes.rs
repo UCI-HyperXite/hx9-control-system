@@ -6,7 +6,7 @@ pub struct Brakes {
 	pin: OutputPin,
 }
 
-const PIN_BRAKES: u8 = 5; //Replace with real value
+const PIN_BRAKES: u8 = 26;
 
 impl Brakes {
 	pub fn new() -> Self {
@@ -15,13 +15,13 @@ impl Brakes {
 		}
 	}
 
-	pub fn disable(&mut self) {
-		debug!("Disabling brakes.");
+	pub fn engage(&mut self) {
+		debug!("Engage brakes.");
 		self.pin.set_low();
 	}
 
-	pub fn enable(&mut self) {
-		debug!("Enabling brakes.");
+	pub fn disengage(&mut self) {
+		debug!("Disengage brakes.");
 		self.pin.set_high();
 	}
 }
