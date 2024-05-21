@@ -5,22 +5,14 @@ use ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2};
 use ads1x1x::{Ads1x1x, SlaveAddr, FullScaleRange};
 use nb::block;
 use rppal::i2c::I2c;
+const SLOPE:f32 = 15.873;
+const YINTERCEPT:f32 = 39.683;
 
 fn voltage_to_current(voltage: i16) -> f32 {
 
-    let SLOPE = 15.873;
-    let YINTERCEPT = 39.683;
-
-    // Convert voltage to f32 and scale it
     let voltage = f32::from(voltage) / 1000.0;
-    
-    // Multiply voltage by 15.873 and subtract 39.683
     let current = (voltage * SLOPE - YINTERCEPT) as f32;
-
-    // Print the voltage value
     println!("Voltage: {}", voltage);
-    
-    // Return the current value
     current
 }
 
@@ -43,10 +35,8 @@ impl LimCurrent {
 
     pub fn read_currents(&mut self) -> (f32, f32, f32) {
         let currents: [f32; 3] = [SingleA0, SingleA1, SingleA2]
-            .map(|channel| {
-                let voltage = block!(self.ads1015.read(channel)).unwrap() * 2;
-                voltage_to_current(voltage)
-            });
-        currents.into()
+            .map(|channel|block!(self.ads1015.read(channel)).unwrap() * 2)
+            .map(voltage_to_current);
+            currents.into()
     }
 }
