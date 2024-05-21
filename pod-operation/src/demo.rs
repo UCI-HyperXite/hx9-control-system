@@ -1,6 +1,6 @@
 use tracing::info;
 
-use crate::components::hall_effect::HallEffect; 
+use crate::components::lim_current::LimCurrent; // Changed from hall_effect to lim_current
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::lim_temperature::LimTemperature;
@@ -46,19 +46,17 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
     lim_temperature.cleanup();
 }
 
-
-pub async fn read_hall_effect(mut hall_effect: HallEffect) { // Updated function name and parameter
-    info!("Starting Hall Effect Sensor Demo.");
+pub async fn read_lim_current(mut lim_current: LimCurrent) { // Changed function name and parameter
+    info!("Starting Lim Current Sensor Demo.");
     let mut i = 0;
     loop {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        println!("{:?}", hall_effect.read_currents()); // Updated method call
+        println!("{:?}", lim_current.read_currents()); // Updated method call
         i += 1;
         if i > 1000 {
             break;
         }
     }
 
-    hall_effect.cleanup();
+    lim_current.cleanup();
 }
-
