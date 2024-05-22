@@ -77,7 +77,7 @@ impl StateMachine {
 			state_transitions,
 			io,
 			ads1015_1: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			ads1015_2: LimTemperature::new(ads1x1x::SlaveAddr::Alternative),
+			ads1015_2: LimTemperature::new(ads1x1x::SlaveAddr::Alternative((false), (true))),
 		}
 	}
 
