@@ -2,18 +2,16 @@ use ads1x1x::ic::{Ads1015, Resolution12Bit};
 use ads1x1x::interface::I2cInterface;
 use ads1x1x::mode::OneShot;
 use ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2};
-use ads1x1x::{Ads1x1x, FullScaleRange, SlaveAddr, DynamicOneShot};
+use ads1x1x::{Ads1x1x, DynamicOneShot, FullScaleRange, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
 
-
-//When referring to the datasheet for the hall effect sensor, these are the values of the slope and the y-intercept of the voltage-current graphs obtained which can be used
-const SLOPE: f32 = 15.873;
-const YINTERCEPT: f32 = 39.683;
+const QUIESCENT_VOLTAGE: f32 = 2.5;
+const SENSITIVITY:f32 = 0.066;
 
 fn voltage_to_current(voltage: i16) -> f32 {
-	let voltage = f32::from(voltage*2) / 1000.0;
-	let current = (voltage * SLOPE - YINTERCEPT) as f32;
+	let voltage = f32::from(voltage * 2) / 1000.0;
+	let current = (voltage - QUIESCENT_VOLTAGE) / SENSITIVITY as f32;
 	println!("Voltage: {}", voltage);
 	current
 }
@@ -37,7 +35,7 @@ impl LimCurrent {
 
 	pub fn read_currents(&mut self) -> (f32, f32, f32) {
 		let currents: [f32; 3] = [SingleA0, SingleA1, SingleA2]
-            .map(|channel| block!(self.ads1015.read(channel)).unwrap())
+			.map(|channel| block!(self.ads1015.read(channel)).unwrap())
 			.map(voltage_to_current);
 		currents.into()
 	}
