@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use crate::components::wheel_encoder::WheelEncoder;
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
@@ -9,9 +8,10 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 // use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
-const ENCODER_LIMIT: f32 = 37.0;
+const STOP_THRESHOLD: f32 = 37.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -166,7 +166,7 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-		if encoder_value > ENCODER_LIMIT {
+		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
 		println!("Encoder: {}", encoder_value);

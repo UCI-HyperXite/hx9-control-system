@@ -38,7 +38,7 @@ impl WheelEncoder {
 			self.counter += 1.0;
 
 			let current_time = Instant::now();
-			let distance = (self.counter / 18.0) * 3.28084;
+			let distance = (self.counter / 16.0) * 3.0;
 			let velocity_elapsed = current_time
 				.duration_since(self.last_velocity_time)
 				.as_secs_f32();
@@ -54,7 +54,7 @@ impl WheelEncoder {
 		self.a_last_read = a_state;
 		self.b_last_read = b_state;
 
-		(self.counter / 18.0) * 3.28084
+		(self.counter / 16.0) * 3.0
 	}
 
 	pub fn _reset(&mut self) {
