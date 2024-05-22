@@ -6,6 +6,7 @@ use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
+use crate::components::pressure_transducer::PressureTransducer;
 
 // use crate::components::signal_light::SignalLight;
 
@@ -28,6 +29,8 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
+	upstream_pressure_transducer: PressureTransducer,
+	downstream_pressure_transducer: PressureTransducer,
 }
 
 impl StateMachine {
@@ -72,6 +75,8 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
+			upstream_pressure_transducer: PressureTransducer::upstream(),
+			downstream_pressure_transducer: PressureTransducer::downstream(),
 		}
 	}
 
@@ -155,13 +160,18 @@ impl StateMachine {
 	/// Perform operations when the pod is loading
 	fn _load_periodic(&mut self) -> State {
 		info!("Rolling Load state");
+
 		State::Load
 	}
 
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// TODO: add actual decision logic
+		if self.upstream_pressure_transducer.read_pressure() > 1000.0 {
+			State::Ha
+		} else {
+			State::Running
+		}
 		State::Running
 	}
 
