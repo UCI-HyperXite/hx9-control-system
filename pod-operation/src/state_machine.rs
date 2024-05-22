@@ -149,11 +149,13 @@ impl StateMachine {
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
 		// self.signal_light.disable();
+		State::Load
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		// self.hvs.disable()
+		State::Load
 	}
 
 	/// Perform operations when the pod is loading
