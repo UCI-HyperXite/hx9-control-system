@@ -2,15 +2,19 @@ use axum::Server;
 use socketioxide::SocketIo;
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
+use tokio::sync::mpsc;
+
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 mod components;
 mod demo;
 mod state_machine;
 
-use crate::components::brakes::Brakes;
-use crate::components::lim_temperature::LimTemperature;
-use crate::components::pressure_transducer::PressureTransducer;
-use crate::components::signal_light::SignalLight;
+// use crate::components::brakes::Brakes;
+// use crate::components::lim_temperature::LimTemperature;
+// use crate::components::pressure_transducer::PressureTransducer;
+// use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
 
@@ -20,28 +24,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let (layer, io) = SocketIo::new_layer();
 
-	let signal_light = SignalLight::new();
-	tokio::spawn(demo::blink(signal_light));
+	// let signal_light = SignalLight::new();
+	// tokio::spawn(demo::blink(signal_light));
 
-	let upstream_pressure_transducer = PressureTransducer::upstream();
-	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
+	// let upstream_pressure_transducer = PressureTransducer::upstream();
+	// tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
 
-	let downstream_pressure_transducer = PressureTransducer::downstream();
-	tokio::spawn(demo::read_pressure_transducer(
-		downstream_pressure_transducer,
-	));
+	// let downstream_pressure_transducer = PressureTransducer::downstream();
+	// tokio::spawn(demo::read_pressure_transducer(
+	// 	downstream_pressure_transducer,
+	// ));
 
-	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
-	tokio::spawn(demo::read_ads1015(ads1015));
+	// let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
+	// tokio::spawn(demo::read_ads1015(ads1015));
 
-	let wheel_encoder = WheelEncoder::new();
-	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
+	// let wheel_encoder = WheelEncoder::new();
+	// tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
-	let brakes = Brakes::new();
-	tokio::spawn(demo::brake(brakes));
+	// let brakes = Brakes::new();
+	// tokio::spawn(demo::brake(brakes));
+
+	let encoder_value = Arc::new(Mutex::new(0.0));
+	let encoder_value_clone = Arc::clone(&encoder_value);
+
+    tokio::spawn(async move {
+        let mut wheel_encoder = WheelEncoder::new();
+        loop {
+            let reading = wheel_encoder.read();
+            let mut value = encoder_value_clone.lock().await;
+            *value = reading;
+        }
+    });
+
 
 	tokio::spawn(async {
-		let mut state_machine = StateMachine::new(io);
+		let mut state_machine = StateMachine::new(io, encoder_value);
 		state_machine.run().await;
 	});
 

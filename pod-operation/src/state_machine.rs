@@ -4,12 +4,16 @@ use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
-use tokio::sync::Mutex;
 use tracing::info;
+use tokio::sync::mpsc::Receiver;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
 
 // use crate::components::signal_light::SignalLight;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const TICK_INTERVAL: Duration = Duration::from_millis(10);
+const ENCODER_LIMIT: f32 = 1.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -28,10 +32,11 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
+	encoder_value: Arc<Mutex<f32>>,
 }
 
 impl StateMachine {
-	pub fn new(io: SocketIo) -> Self {
+	pub fn new(io: SocketIo, encoder_value: Arc<Mutex<f32>>) -> Self {
 		static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::Init));
 
 		let enter_actions = enum_map! {
@@ -72,6 +77,7 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
+			encoder_value,
 		}
 	}
 
@@ -112,6 +118,7 @@ impl StateMachine {
 			.unwrap()
 			.emit("pong", "123")
 			.ok();
+
 	}
 
 	/// Run the corresponding enter action for the given state
@@ -161,8 +168,13 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// TODO: add actual decision logic
-		State::Running
+		if let Ok(encoder_value) = self.encoder_value.try_lock(){
+        if *encoder_value > ENCODER_LIMIT {
+            return State::Stopped;
+        }
+		println!("Encoder: {}", encoder_value);
+		}
+		return State::Running;
 	}
 
 	// To avoid conflicts with the state-transition model,

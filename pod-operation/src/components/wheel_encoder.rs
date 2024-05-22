@@ -38,22 +38,21 @@ impl WheelEncoder {
 			self.counter += 1.0;
 
 			let current_time = Instant::now();
-			let distance = (self.counter * 5.0) / 1000.0;
+			let distance = (self.counter * 5.0) / 1000.0 ;
+            
 			let velocity_elapsed = current_time
 				.duration_since(self.last_velocity_time)
 				.as_secs_f32();
-
-			if velocity_elapsed >= 0.1 {
-				let distance_delta = distance - self.last_distance;
-				self.velocity = distance_delta / velocity_elapsed;
-				self.last_velocity_time = current_time;
-				self.last_distance = distance;
-			}
+            let distance_delta = distance - self.last_distance;
+            self.velocity = distance_delta / velocity_elapsed;
+            self.last_velocity_time = current_time;
+            self.last_distance = distance;
+			
 		}
 
 		self.a_last_read = a_state;
 		self.b_last_read = b_state;
-
+        println!("dist: {}", self.counter);
 		(self.counter * 5.0) / 1000.0
 	}
 
