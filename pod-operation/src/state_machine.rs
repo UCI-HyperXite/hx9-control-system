@@ -1,12 +1,12 @@
 use std::time::Duration;
 
+use crate::components::lim_temperature::LimTemperature;
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
-
 // use crate::components::signal_light::SignalLight;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
@@ -28,6 +28,7 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
+	ads1015: LimTemperature,
 }
 
 impl StateMachine {
@@ -72,6 +73,7 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
+			ads1015: LimTemperature::new(ads1x1x::SlaveAddr::Default),
 		}
 	}
 
@@ -161,7 +163,9 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// TODO: add actual decision logic
+		if self.ads1015.read_lim_temps() > 150.0 {
+			State::Halted
+		}
 		State::Running
 	}
 
