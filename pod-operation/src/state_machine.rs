@@ -6,10 +6,13 @@ use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
+use crate::components::wheel_encoder::WheelEncoder;
+
 
 // use crate::components::signal_light::SignalLight;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const ENCODER_LIMIT: f32 = 37.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -28,6 +31,7 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
+	wheel_encoder: WheelEncoder,
 }
 
 impl StateMachine {
@@ -72,6 +76,7 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
+			wheel_encoder: WheelEncoder::new(),
 		}
 	}
 
@@ -112,6 +117,7 @@ impl StateMachine {
 			.unwrap()
 			.emit("pong", "123")
 			.ok();
+
 	}
 
 	/// Run the corresponding enter action for the given state
@@ -161,8 +167,12 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// TODO: add actual decision logic
-		State::Running
+		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+        if encoder_value > ENCODER_LIMIT {
+            return State::Stopped;
+        }
+		println!("Encoder: {}", encoder_value);
+		return State::Running;
 	}
 
 	// To avoid conflicts with the state-transition model,
