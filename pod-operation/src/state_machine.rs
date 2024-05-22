@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use crate::components::lim_temperature::LimTemperature;
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
@@ -8,6 +7,7 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
 // use crate::components::signal_light::SignalLight;
+use crate::components::lim_temperature::LimTemperature;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
@@ -30,7 +30,8 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	ads1015: LimTemperature,
+	ads1015_1: LimTemperature,
+	ads1015_2: LimTemperature,
 }
 
 impl StateMachine {
@@ -75,7 +76,8 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			ads1015: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			ads1015_1: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			ads1015_2: LimTemperature::new(ads1x1x::SlaveAddr::Alternative),
 		}
 	}
 
@@ -167,14 +169,16 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let (a0_reading, a1_reading, a2_reading, a3_reading) = self.ads1015.read_lim_temps();
-		if a0_reading > LIM_TEMP_THRESHOLD
-			|| a1_reading > LIM_TEMP_THRESHOLD
-			|| a2_reading > LIM_TEMP_THRESHOLD
-			|| a3_reading > LIM_TEMP_THRESHOLD
+		let default_readings: [f32; 4] = self.ads1015_1.read_lim_temps().into();
+		let alternative_readings: [f32; 4] = self.ads1015_2.read_lim_temps().into();
+		let all_readings = [default_readings, alternative_readings].concat();
+		if all_readings
+			.iter()
+			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
 			return State::Halted;
 		}
+
 		State::Running
 	}
 
