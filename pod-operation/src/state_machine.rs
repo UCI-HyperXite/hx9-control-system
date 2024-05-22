@@ -170,7 +170,7 @@ impl StateMachine {
 			return State::Stopped;
 		}
 		println!("Encoder: {}", encoder_value);
-		return State::Running;
+		State::Running
 	}
 
 	// To avoid conflicts with the state-transition model,
