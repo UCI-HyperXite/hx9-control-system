@@ -7,11 +7,11 @@ mod components;
 mod demo;
 mod state_machine;
 
+use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::state_machine::StateMachine;
-use crate::components::lim_current::LimCurrent;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -40,7 +40,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let limcurrent = LimCurrent::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_lim_current(limcurrent));
-
 
 	let app = axum::Router::new().layer(layer);
 
