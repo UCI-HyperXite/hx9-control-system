@@ -1,17 +1,16 @@
 use std::time::Duration;
 
+use crate::components::wheel_encoder::WheelEncoder;
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
-use crate::components::wheel_encoder::WheelEncoder;
-
 
 // use crate::components::signal_light::SignalLight;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const ENCODER_LIMIT: f32 = 37.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
@@ -117,7 +116,6 @@ impl StateMachine {
 			.unwrap()
 			.emit("pong", "123")
 			.ok();
-
 	}
 
 	/// Run the corresponding enter action for the given state
@@ -168,9 +166,9 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-        if encoder_value > ENCODER_LIMIT {
-            return State::Stopped;
-        }
+		if encoder_value > ENCODER_LIMIT {
+			return State::Stopped;
+		}
 		println!("Encoder: {}", encoder_value);
 		return State::Running;
 	}
