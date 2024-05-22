@@ -11,6 +11,8 @@ use tracing::info;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
+const LIM_TEMP_THRESHOLD: f32 = 150.0;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
 	Init,
@@ -163,8 +165,13 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		if self.ads1015.read_lim_temps() > 150.0 {
-			State::Halted
+		let (a0_reading, a1_reading, a2_reading, a3_reading) = self.ads1015.read_lim_temps();
+		if a0_reading > LIM_TEMP_THRESHOLD
+			|| a1_reading > LIM_TEMP_THRESHOLD
+			|| a2_reading > LIM_TEMP_THRESHOLD
+			|| a3_reading > LIM_TEMP_THRESHOLD
+		{
+			return State::Halted;
 		}
 		State::Running
 	}
