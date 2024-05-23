@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use crate::components::pressure_transducer::PressureTransducer;
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
@@ -10,8 +9,10 @@ use tracing::info;
 
 // use crate::components::signal_light::SignalLight;
 use crate::components::brakes::Brakes;
+use crate::components::pressure_transducer::PressureTransducer;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const MIN_PRESSURE: f64 = 126.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -174,8 +175,8 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		if self.upstream_pressure_transducer.read_pressure() < 126.0
-			|| self.downstream_pressure_transducer.read_pressure() < 126.0
+		if self.upstream_pressure_transducer.read_pressure() < MIN_PRESSURE
+			|| self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE
 		{
 			return State::Halted;
 		}
