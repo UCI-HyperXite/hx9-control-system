@@ -177,7 +177,7 @@ impl StateMachine {
 		if self.upstream_pressure_transducer.read_pressure() < 126.0
 			|| self.downstream_pressure_transducer.read_pressure() < 126.0
 		{
-			State::Halted
+			return State::Halted;
 		}
 		State::Running
 	}
