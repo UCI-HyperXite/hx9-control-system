@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 // use crate::components::signal_light::SignalLight;
+use crate::components::brakes::Brakes;
 use crate::components::wheel_encoder::WheelEncoder;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
@@ -30,6 +31,7 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
+	brakes: Brakes,
 	wheel_encoder: WheelEncoder,
 }
 
@@ -75,6 +77,7 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
+			brakes: Brakes::new(),
 			wheel_encoder: WheelEncoder::new(),
 		}
 	}
@@ -139,21 +142,25 @@ impl StateMachine {
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
+		self.brakes.disengage();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
 		// self.signal_light.enable();
+		self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
 		// self.signal_light.disable();
+		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		// self.hvs.disable()
+		self.brakes.engage();
 	}
 
 	/// Perform operations when the pod is loading
