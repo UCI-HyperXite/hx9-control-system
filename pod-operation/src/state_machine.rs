@@ -11,7 +11,7 @@ use crate::components::lim_temperature::LimTemperature;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
-const LIM_TEMP_THRESHOLD: f32 = 150.0;
+const LIM_TEMP_THRESHOLD: f32 = 150.0; //°C
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -30,8 +30,8 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	ads1015_1: LimTemperature,
-	ads1015_2: LimTemperature,
+	lim_temperature_port: LimTemperature,
+	lim_temperature_starboard: LimTemperature,
 }
 
 impl StateMachine {
@@ -76,8 +76,10 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			ads1015_1: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			ads1015_2: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(false, true)),
+			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+				false, true,
+			)),
 		}
 	}
 
@@ -167,8 +169,8 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let default_readings: [f32; 4] = self.ads1015_1.read_lim_temps().into();
-		let alternative_readings: [f32; 4] = self.ads1015_2.read_lim_temps().into();
+		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
+		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
 		let all_readings = [default_readings, alternative_readings].concat();
 		if all_readings
 			.iter()
