@@ -12,7 +12,7 @@ use crate::components::lim_temperature::LimTemperature;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
-const LIM_TEMP_THRESHOLD: f32 = 65.0; //°C
+const LIM_TEMP_THRESHOLD: f32 = 150.0; //°C
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
