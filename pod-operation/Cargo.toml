@@ -20,3 +20,4 @@ rppal = { version = "0.17.1", features = ["hal"] }
 ina219 = "0.1.0"
 ads1x1x = "0.2.2"
 nb = "1.1.0"
+mpu6050 = "0.1.6"
