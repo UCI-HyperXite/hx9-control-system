@@ -8,9 +8,9 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
-use crate::components::pressure_transducer::PressureTransducer;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
