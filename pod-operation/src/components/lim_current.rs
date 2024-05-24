@@ -6,11 +6,11 @@ use ads1x1x::{Ads1x1x, DynamicOneShot, FullScaleRange, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
 
-const QUIESCENT_VOLTAGE: f32 = 2.5;
-const SENSITIVITY:f32 = 0.066;
+const QUIESCENT_VOLTAGE: f32 = 2.5; //Units: volts (v)
+const SENSITIVITY: f32 = 0.066; //Unit: vots/amp (v/a)
 
 fn voltage_to_current(voltage: i16) -> f32 {
-	let voltage = f32::from(voltage * 2) / 1000.0;
+	let voltage = f32::from(voltage) / 1000.0;
 	let current = (voltage - QUIESCENT_VOLTAGE) / SENSITIVITY as f32;
 	println!("Voltage: {}", voltage);
 	current
@@ -35,7 +35,7 @@ impl LimCurrent {
 
 	pub fn read_currents(&mut self) -> (f32, f32, f32) {
 		let currents: [f32; 3] = [SingleA0, SingleA1, SingleA2]
-			.map(|channel| block!(self.ads1015.read(channel)).unwrap())
+			.map(|channel| block!(self.ads1015.read(channel)).unwrap()*2)
 			.map(voltage_to_current);
 		currents.into()
 	}

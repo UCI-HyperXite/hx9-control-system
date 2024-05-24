@@ -1,9 +1,11 @@
 use tracing::info;
 
+use crate::components::brakes::Brakes;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 
 pub async fn blink(mut signal_light: SignalLight) {
 	let mut i = 0;
@@ -47,7 +49,6 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 }
 
 pub async fn read_lim_current(mut lim_current: LimCurrent) {
-	// Changed function name and parameter
 	info!("Starting Lim Current Sensor Demo.");
 	let mut i = 0;
 	loop {
@@ -60,4 +61,31 @@ pub async fn read_lim_current(mut lim_current: LimCurrent) {
 	}
 
 	lim_current.cleanup();
+}
+pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
+	info!("Starting wheel encoder demo.");
+	loop {
+		println!(
+			"{:?}{:?}",
+			wheel_encoder.read(),
+			wheel_encoder.get_velocity()
+		);
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+	}
+}
+
+pub async fn brake(mut brakes: Brakes) {
+	let mut i = 0;
+
+	info!("Starting brakes demo.");
+	loop {
+		tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+		if i % 4 == 0 {
+			brakes.engage();
+		} else if i % 4 == 1 {
+			brakes.disengage();
+		}
+
+		i += 1;
+	}
 }
