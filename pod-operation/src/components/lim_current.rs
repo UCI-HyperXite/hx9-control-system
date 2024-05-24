@@ -11,7 +11,7 @@ const SENSITIVITY: f32 = 0.066; //Unit: vots/amp (v/a)
 
 fn voltage_to_current(voltage: i16) -> f32 {
 	let voltage = f32::from(voltage) / 1000.0;
-	let current = (voltage - QUIESCENT_VOLTAGE) / SENSITIVITY as f32;
+	let current = (voltage - QUIESCENT_VOLTAGE) / SENSITIVITY;
 	println!("Voltage: {}", voltage);
 	current
 }
