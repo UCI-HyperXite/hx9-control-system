@@ -7,8 +7,8 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
 
-// use crate::components::signal_light::SignalLight;
 use crate::components::brakes::Brakes;
+use crate::components::signal_light::SignalLight;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(500);
 
@@ -30,6 +30,7 @@ pub struct StateMachine {
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
+	signal_light: SignalLight,
 }
 
 impl StateMachine {
@@ -75,6 +76,7 @@ impl StateMachine {
 			state_transitions,
 			io,
 			brakes: Brakes::new(),
+			signal_light: SignalLight::new(),
 		}
 	}
 
@@ -134,28 +136,31 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
+		self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
 		self.brakes.disengage();
+		self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		// self.signal_light.enable();
+		self.signal_light.enable();
 		self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		// self.signal_light.disable();
+		self.signal_light.disable();
 		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		// self.hvs.disable()
+		self.signal_light.disable();
 		self.brakes.engage();
 	}
 
