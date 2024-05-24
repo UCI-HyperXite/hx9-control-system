@@ -32,7 +32,7 @@ pub struct StateMachine {
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
-	upstream_pressure_transducer: PressureTransducer,
+	//upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
 }
 
@@ -79,7 +79,7 @@ impl StateMachine {
 			state_transitions,
 			io,
 			brakes: Brakes::new(),
-			upstream_pressure_transducer: PressureTransducer::upstream(),
+			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 		}
 	}
@@ -175,9 +175,7 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		if self.upstream_pressure_transducer.read_pressure() < MIN_PRESSURE
-			|| self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE
-		{
+		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Halted;
 		}
 		State::Running
