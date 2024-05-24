@@ -9,8 +9,10 @@ use tracing::info;
 
 use crate::components::brakes::Brakes;
 use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const TICK_INTERVAL: Duration = Duration::from_millis(10);
+const STOP_THRESHOLD: f32 = 37.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -31,6 +33,7 @@ pub struct StateMachine {
 	io: SocketIo,
 	brakes: Brakes,
 	signal_light: SignalLight,
+	wheel_encoder: WheelEncoder,
 }
 
 impl StateMachine {
@@ -77,6 +80,7 @@ impl StateMachine {
 			io,
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
+			wheel_encoder: WheelEncoder::new(),
 		}
 	}
 
@@ -173,7 +177,11 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// TODO: add actual decision logic
+		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
+			return State::Stopped;
+		}
+		println!("Encoder: {}", encoder_value);
 		State::Running
 	}
 
