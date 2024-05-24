@@ -1,3 +1,4 @@
+import LargeBox from "./LargeBox";
 import SensorBox from "./SensorBox";
 
 function SensorContainer() {
@@ -7,8 +8,7 @@ function SensorContainer() {
 			<SensorBox />
 			<SensorBox />
 			<SensorBox />
-			<SensorBox />
-			<SensorBox />
+			<LargeBox />
 		</div>
 	);
 }
