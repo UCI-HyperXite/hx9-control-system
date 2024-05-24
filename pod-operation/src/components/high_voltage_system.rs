@@ -6,14 +6,14 @@ pub struct HighVoltageSystem {
 	pin: OutputPin,
 }
 
-const PIN_HIGH_VOLTAGE_SYSTEM: u8 = 20;
+const PIN_CONTACTOR_RELAY: u8 = 20;
 
 impl HighVoltageSystem {
 	pub fn new() -> Self {
 		HighVoltageSystem {
 			pin: Gpio::new()
 				.unwrap()
-				.get(PIN_HIGH_VOLTAGE_SYSTEM)
+				.get(PIN_CONTACTOR_RELAY)
 				.unwrap()
 				.into_output(),
 		}
