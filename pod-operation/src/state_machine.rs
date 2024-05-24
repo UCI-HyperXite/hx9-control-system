@@ -1,10 +1,10 @@
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
+use tokio::sync::Mutex;
 use tracing::info;
 
 // use crate::components::signal_light::SignalLight;
@@ -20,30 +20,20 @@ pub enum State {
 	Halted,
 }
 
-#[derive(Debug)]
-pub struct CurrentState {
-	pub value: Option<State>,
-}
-
-impl CurrentState {
-	pub fn new(value: Option<State>) -> Self {
-		CurrentState { value }
-	}
-}
-
-lazy_static! {
-	pub static ref GLOBAL_STATE: Arc<Mutex<CurrentState>> =
-		Arc::new(Mutex::new(CurrentState::new(None)));
-}
+type StateTransition = fn(&mut StateMachine) -> State;
 
 pub struct StateMachine {
-	state_now: Option<State>,
+	last_state: State,
+	state: &'static Mutex<State>,
 	enter_actions: EnumMap<State, fn(&mut Self)>,
+	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 }
 
 impl StateMachine {
 	pub fn new(io: SocketIo) -> Self {
+		static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::Init));
+
 		let enter_actions = enum_map! {
 			State::Init => StateMachine::_enter_init,
 			State::Load => StateMachine::_enter_load,
@@ -52,17 +42,35 @@ impl StateMachine {
 			State::Halted => StateMachine::_enter_halted,
 		};
 
+		let state_transitions = enum_map! {
+			State::Init => None,
+			State::Load => Some(StateMachine::_load_periodic as fn(&mut Self) -> State),
+			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
+			State::Stopped => None,
+			State::Halted => None,
+		};
+
 		io.ns("/control-station", |socket: SocketRef| {
 			info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
-			socket.on("load", StateMachine::handle_load);
-			socket.on("start", StateMachine::handle_run);
-			socket.on("stop", StateMachine::handle_stop);
-			socket.on("forcestop", StateMachine::handle_halt);
+			socket.on("load", |ack: AckSender| async {
+				Self::handle_load(&STATE, ack).await;
+			});
+			socket.on("run", |ack: AckSender| async {
+				Self::handle_run(&STATE, ack).await;
+			});
+			socket.on("stop", |ack: AckSender| async {
+				Self::handle_stop(&STATE, ack).await;
+			});
+			socket.on("halt", |ack: AckSender| async {
+				Self::handle_halt(&STATE, ack).await;
+			});
 		});
 
 		Self {
-			state_now: None,
+			last_state: State::Init,
+			state: &STATE,
 			enter_actions,
+			state_transitions,
 			io,
 		}
 	}
@@ -76,37 +84,25 @@ impl StateMachine {
 		}
 	}
 
+	/// Tick the state machine by running the transition for the current state
+	/// and actions for when entering a new state
 	async fn tick(&mut self) {
-		let last_state = Arc::new(Mutex::new(self.state_now));
+		// Acquire lock for state to prevent socket handlers from overwriting
+		let mut state = self.state.lock().await;
 
-		if self.state_now != *last_state.lock().unwrap() {
-			println!(
-				"State changed from {:?} to {:?}",
-				*last_state.lock().unwrap(),
-				Self::read_state()
-			);
-			self.enter_state(&self.state_now.unwrap());
+		// Run enter action when entering a new state
+		if *state != self.last_state {
+			info!("State changed from {:?} to {:?}", self.last_state, state);
+			self.enter_state(&state);
 		}
-		if let Some(state) = Self::read_state() {
-			Self::modify_state(state);
-		}
-		let next_state = self.state_now;
-		if self.state_now == Some(State::Init) {
-			Self::_init_periodic();
-		}
-		if self.state_now == Some(State::Running) {
-			Self::_running_periodic();
-		}
-
-		*last_state.lock().unwrap() = self.state_now;
 
 		self.pod_periodic();
 
-		if Self::read_state().is_none() {
-			self.state_now = next_state;
-		} else {
-			self.state_now = Self::read_state();
-		}
+		// Proceed to the next state by transition
+		let next_state = self.run_state_transition(&state);
+		self.last_state = *state;
+		*state = next_state;
+		// state is dropped, releasing the lock
 	}
 
 	/// Perform operations on every FSM tick
@@ -118,18 +114,19 @@ impl StateMachine {
 			.ok();
 	}
 
-	fn _running_periodic() {
-		//println!("Rolling START state");
-	}
-
-	fn _init_periodic() {
-		//println!("Rolling INIT state");
-	}
-
 	/// Run the corresponding enter action for the given state
 	fn enter_state(&mut self, state: &State) {
 		let enter_action = self.enter_actions[*state];
 		enter_action(self);
+	}
+
+	/// Run the transition function for a given state if it exists.
+	/// Otherwise, remain in the same state.
+	fn run_state_transition(&mut self, state: &State) -> State {
+		match self.state_transitions[*state] {
+			Some(state_transition) => state_transition(self),
+			None => *state,
+		}
 	}
 
 	fn _enter_init(&mut self) {
@@ -155,42 +152,51 @@ impl StateMachine {
 		// self.hvs.disable()
 	}
 
-	fn handle_load(ack: AckSender) {
+	/// Perform operations when the pod is loading
+	fn _load_periodic(&mut self) -> State {
+		info!("Rolling Load state");
+		State::Load
+	}
+
+	/// Perform operations when the pod is running
+	fn _running_periodic(&mut self) -> State {
+		info!("Rolling Running state");
+		// TODO: add actual decision logic
+		State::Running
+	}
+
+	// To avoid conflicts with the state-transition model,
+	// each of these event handlers must wait for an ongoing transition to complete
+	// by awaiting the mutex lock to be acquired.
+	// Tokio::sync::mutex uses a fairness queue to ensure in-order acquisition.
+	// The acknowledgement is then sent after the state is updated.
+
+	async fn handle_load(state: &Mutex<State>, ack: AckSender) {
 		info!("Received load from client");
+		let mut state = state.lock().await;
+		*state = State::Load;
 		ack.send("load").ok();
-		Self::modify_state(State::Load);
 	}
 
-	fn handle_run(ack: AckSender) {
-		info!("Received run from client");
-		//socket.emit("start", "start").ok();
+	async fn handle_run(state: &Mutex<State>, ack: AckSender) {
+		info!("Received start from client");
+
+		let mut state = state.lock().await;
+		*state = State::Running;
 		ack.send("run").ok();
-		Self::modify_state(State::Running);
 	}
 
-	fn handle_stop(ack: AckSender) {
+	async fn handle_stop(state: &Mutex<State>, ack: AckSender) {
 		info!("Received stop from client");
+		let mut state = state.lock().await;
+		*state = State::Stopped;
 		ack.send("stop").ok();
-		Self::modify_state(State::Stopped);
 	}
 
-	fn handle_halt(ack: AckSender) {
+	async fn handle_halt(state: &Mutex<State>, ack: AckSender) {
 		info!("Received halt from client");
+		let mut state = state.lock().await;
+		*state = State::Halted;
 		ack.send("halt").ok();
-		Self::modify_state(State::Halted);
-	}
-
-	fn modify_state(new_value: State) {
-		if let Ok(mut state) = GLOBAL_STATE.lock() {
-			state.value = Some(new_value);
-		}
-	}
-
-	fn read_state() -> Option<State> {
-		if let Ok(state) = GLOBAL_STATE.lock() {
-			state.value
-		} else {
-			None
-		}
 	}
 }
