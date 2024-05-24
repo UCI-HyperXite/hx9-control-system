@@ -35,7 +35,7 @@ impl LimCurrent {
 
 	pub fn read_currents(&mut self) -> (f32, f32, f32) {
 		[SingleA0, SingleA1, SingleA2]
-			.map(|channel| block!(self.ads1015.read(channel)).unwrap()*2)
+			.map(|channel| block!(self.ads1015.read(channel)).unwrap() * 2)
 			.map(voltage_to_current)
 			.into()
 	}
