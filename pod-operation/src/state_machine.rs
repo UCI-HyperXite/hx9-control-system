@@ -7,11 +7,13 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
 
-// use crate::components::signal_light::SignalLight;
 use crate::components::brakes::Brakes;
+use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
 use crate::components::pressure_transducer::PressureTransducer;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(500);
+const TICK_INTERVAL: Duration = Duration::from_millis(10);
+const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
@@ -32,6 +34,8 @@ pub struct StateMachine {
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
+	signal_light: SignalLight,
+	wheel_encoder: WheelEncoder,
 	//upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
 }
@@ -79,6 +83,8 @@ impl StateMachine {
 			state_transitions,
 			io,
 			brakes: Brakes::new(),
+			signal_light: SignalLight::new(),
+			wheel_encoder: WheelEncoder::new(),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 		}
@@ -140,28 +146,31 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
+		self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
 		self.brakes.disengage();
+		self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		// self.signal_light.enable();
+		self.signal_light.enable();
 		self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		// self.signal_light.disable();
+		self.signal_light.disable();
 		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		// self.hvs.disable()
+		self.signal_light.disable();
 		self.brakes.engage();
 	}
 
@@ -175,6 +184,11 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
+		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
+			return State::Stopped;
+		}
+		println!("Encoder: {}", encoder_value);
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Halted;
 		}

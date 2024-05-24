@@ -1,6 +1,7 @@
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::gyro::Gyroscope;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -45,6 +46,20 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	}
 
 	lim_temperature.cleanup();
+}
+
+pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
+	info!("Starting Gyroscope Demo.");
+	tokio::spawn(async move {
+		loop {
+			let orientation = gyroscope.read_orientation();
+			tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+			println!(
+				"Pitch: {:?}, Roll: {:?}",
+				orientation.pitch, orientation.roll
+			);
+		}
+	});
 }
 
 pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
