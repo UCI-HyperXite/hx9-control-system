@@ -18,10 +18,10 @@ impl Gyroscope {
 	}
 
 	pub fn read_orientation(&mut self) -> Orientation {
-		let acc = self.mpu6050.get_acc_angles().unwrap();
+		let angles = self.mpu6050.get_acc_angles().unwrap();
 		Orientation {
-			pitch: acc[1],
-			roll: acc[0],
+			pitch: angles[1],
+			roll: angles[0],
 		}
 	}
 }
