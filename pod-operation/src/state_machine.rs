@@ -188,7 +188,6 @@ impl StateMachine {
 		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
-		println!("Encoder: {}", encoder_value);
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Halted;
 		}
