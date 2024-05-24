@@ -8,11 +8,13 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
-const STOP_THRESHOLD: f32 = 37.0;
+const STOP_THRESHOLD: f32 = 37.0; // Meters
+const MIN_PRESSURE: f32 = 126.0; // PSI
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -34,6 +36,8 @@ pub struct StateMachine {
 	brakes: Brakes,
 	signal_light: SignalLight,
 	wheel_encoder: WheelEncoder,
+	//upstream_pressure_transducer: PressureTransducer,
+	downstream_pressure_transducer: PressureTransducer,
 }
 
 impl StateMachine {
@@ -81,6 +85,8 @@ impl StateMachine {
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
 			wheel_encoder: WheelEncoder::new(),
+			//upstream_pressure_transducer: PressureTransducer::upstream(),
+			downstream_pressure_transducer: PressureTransducer::downstream(),
 		}
 	}
 
@@ -171,6 +177,7 @@ impl StateMachine {
 	/// Perform operations when the pod is loading
 	fn _load_periodic(&mut self) -> State {
 		info!("Rolling Load state");
+
 		State::Load
 	}
 
@@ -181,7 +188,9 @@ impl StateMachine {
 		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
-		println!("Encoder: {}", encoder_value);
+		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			return State::Halted;
+		}
 		State::Running
 	}
 
