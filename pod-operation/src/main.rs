@@ -7,8 +7,8 @@ mod components;
 mod demo;
 mod state_machine;
 
-use crate::components::gyro::Gyroscope;
 use crate::components::brakes::Brakes;
+use crate::components::gyro::Gyroscope;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;

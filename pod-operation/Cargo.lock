@@ -738,7 +738,6 @@ dependencies = [
  "axum",
  "enum-map",
  "ina219",
- "lazy_static",
  "mpu6050",
  "nb 1.1.0",
  "once_cell",
