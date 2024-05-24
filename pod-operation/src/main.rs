@@ -9,6 +9,7 @@ mod state_machine;
 
 use crate::components::brakes::Brakes;
 use crate::components::lim_current::LimCurrent;
+use crate::components::gyro::Gyroscope;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -38,6 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let wheel_encoder = WheelEncoder::new();
 	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
+	let gyro: Gyroscope = Gyroscope::new();
+	tokio::spawn(demo::read_gyroscope(gyro));
 	let brakes = Brakes::new();
 	tokio::spawn(demo::brake(brakes));
 
