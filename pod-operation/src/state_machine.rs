@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -15,6 +16,8 @@ use crate::components::wheel_encoder::WheelEncoder;
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
+
+const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -38,6 +41,8 @@ pub struct StateMachine {
 	wheel_encoder: WheelEncoder,
 	//upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
+	lim_temperature_port: LimTemperature,
+	lim_temperature_starboard: LimTemperature,
 }
 
 impl StateMachine {
@@ -87,6 +92,10 @@ impl StateMachine {
 			wheel_encoder: WheelEncoder::new(),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
+			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+				false, true,
+			)),
 		}
 	}
 
@@ -191,6 +200,16 @@ impl StateMachine {
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Halted;
 		}
+		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
+		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
+		let all_readings = [default_readings, alternative_readings].concat();
+		if all_readings
+			.iter()
+			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		{
+			return State::Halted;
+		}
+
 		State::Running
 	}
 
