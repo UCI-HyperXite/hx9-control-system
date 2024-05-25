@@ -3,6 +3,7 @@ use tracing::info;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -49,6 +50,20 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	lim_temperature.cleanup();
 }
 
+pub async fn read_lim_current(mut lim_current: LimCurrent) {
+	info!("Starting Lim Current Sensor Demo.");
+	let mut i = 0;
+	loop {
+		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+		println!("{:?}", lim_current.read_currents()); // Updated method call
+		i += 1;
+		if i > 1000 {
+			break;
+		}
+	}
+
+	lim_current.cleanup();
+}
 pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 	info!("Starting Gyroscope Demo.");
 	tokio::spawn(async move {
