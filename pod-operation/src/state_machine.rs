@@ -7,11 +7,11 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
 
-use crate::components::brakes::Brakes;
-use crate::components::lim_temperature::LimTemperature;
-use crate::components::pressure_transducer::PressureTransducer;
-use crate::components::signal_light::SignalLight;
-use crate::components::wheel_encoder::WheelEncoder;
+// use crate::components::brakes::Brakes;
+// use crate::components::lim_temperature::LimTemperature;
+// use crate::components::pressure_transducer::PressureTransducer;
+// use crate::components::signal_light::SignalLight;
+// use crate::components::wheel_encoder::WheelEncoder;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
@@ -36,11 +36,11 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	brakes: Brakes,
-	signal_light: SignalLight,
-	wheel_encoder: WheelEncoder,
+	// brakes: Brakes,
+	// signal_light: SignalLight,
+	// wheel_encoder: WheelEncoder,
 	//upstream_pressure_transducer: PressureTransducer,
-	downstream_pressure_transducer: PressureTransducer,
+	// downstream_pressure_transducer: PressureTransducer,
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 }
@@ -87,11 +87,11 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			brakes: Brakes::new(),
-			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new(),
+			// brakes: Brakes::new(),
+			// signal_light: SignalLight::new(),
+			// wheel_encoder: WheelEncoder::new(),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
-			downstream_pressure_transducer: PressureTransducer::downstream(),
+			// downstream_pressure_transducer: PressureTransducer::downstream(),
 			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
 			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
 				false, true,
@@ -155,32 +155,32 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
-		self.signal_light.disable();
+		//self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		self.brakes.disengage();
-		self.signal_light.disable();
+		// self.brakes.disengage();
+		// self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		self.signal_light.enable();
-		self.brakes.disengage();
+		// self.signal_light.enable();
+		// self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		self.signal_light.disable();
-		self.brakes.engage();
+		// self.signal_light.disable();
+		// self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		// self.hvs.disable()
-		self.signal_light.disable();
-		self.brakes.engage();
+		// self.signal_light.disable();
+		// self.brakes.engage();
 	}
 
 	/// Perform operations when the pod is loading
@@ -193,13 +193,13 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
-			return State::Stopped;
-		}
-		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Halted;
-		}
+		// let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		// if encoder_value > STOP_THRESHOLD {
+		// 	return State::Stopped;
+		// }
+		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+		// 	return State::Halted;
+		// }
 		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
 		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
 		let all_readings = [default_readings, alternative_readings].concat();
