@@ -6,6 +6,8 @@ use ads1x1x::FullScaleRange;
 use ads1x1x::{Ads1x1x, DynamicOneShot, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
+use std::time::Duration;
+use tokio::time::sleep;
 
 const C_TO_K_CONVERSION: f32 = 273.15;
 
@@ -35,6 +37,7 @@ pub struct LimTemperature {
 
 impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
+		tokio::sleep(tokio::time::Duration::from_secs(1)).await;
 		let i2cdev = I2c::new().unwrap();
 		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
 		adc.set_full_scale_range(FullScaleRange::Within4_096V)
