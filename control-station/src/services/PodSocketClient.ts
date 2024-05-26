@@ -6,8 +6,9 @@ export enum State {
 	Init = "Init",
 	Load = "Load",
 	Running = "Running",
-	Stop = "Stop",
-	Halt = "Halt",
+	Stopped = "Stopped",
+	Halted = "Halted",
+	Faulted = "Faulted",
 }
 
 interface ServerToClientEvents {
