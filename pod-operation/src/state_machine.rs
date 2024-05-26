@@ -26,7 +26,7 @@ pub enum State {
 	Running,
 	Stopped,
 	Halted,
-	Faulted
+	Faulted,
 }
 
 type StateTransition = fn(&mut StateMachine) -> State;
@@ -35,7 +35,7 @@ pub struct StateMachine {
 	last_state: State,
 	state: &'static Mutex<State>,
 	enter_actions: EnumMap<State, fn(&mut Self)>,
-	state_transitions: EnumMap<State, Option<Sta,teTransition>>,
+	state_transitions: EnumMap<State, Option<Sta, teTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
 	signal_light: SignalLight,
@@ -212,7 +212,7 @@ impl StateMachine {
 			return State::Stopped;
 		}
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Halted;
+			return State::Faulted;
 		}
 		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
 		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
