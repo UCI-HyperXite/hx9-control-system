@@ -6,8 +6,8 @@ use ads1x1x::FullScaleRange;
 use ads1x1x::{Ads1x1x, DynamicOneShot, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
+use std::thread::sleep;
 use std::time::Duration;
-use tokio::time::sleep;
 
 const C_TO_K_CONVERSION: f32 = 273.15;
 
