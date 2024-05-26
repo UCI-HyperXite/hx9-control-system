@@ -40,7 +40,7 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	let mut i = 0;
 	loop {
 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-		println!("{:?}", lim_temperature.read_lim_temps());
+		println!("DEFAULT: {:?}", lim_temperature.read_lim_temps());
 		i += 1;
 		if i > 1000 {
 			break;
@@ -50,6 +50,21 @@ pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	lim_temperature.cleanup();
 }
 
+pub async fn read_ads1015_vdd(mut lim_temperature: LimTemperature) {
+	info!("Starting ADS1015 Demo.");
+
+	let mut i = 0;
+	loop {
+		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+		println!("VDD: {:?}", lim_temperature.read_lim_temps());
+		i += 1;
+		if i > 1000 {
+			break;
+		}
+	}
+
+	lim_temperature.cleanup();
+}
 // pub async fn read_lim_current(mut lim_current: LimCurrent) {
 // 	info!("Starting Lim Current Sensor Demo.");
 // 	let mut i = 0;
