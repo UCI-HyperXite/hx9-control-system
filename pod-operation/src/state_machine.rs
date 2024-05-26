@@ -26,6 +26,7 @@ pub enum State {
 	Running,
 	Stopped,
 	Halted,
+	Faulted
 }
 
 type StateTransition = fn(&mut StateMachine) -> State;
@@ -34,7 +35,7 @@ pub struct StateMachine {
 	last_state: State,
 	state: &'static Mutex<State>,
 	enter_actions: EnumMap<State, fn(&mut Self)>,
-	state_transitions: EnumMap<State, Option<StateTransition>>,
+	state_transitions: EnumMap<State, Option<Sta,teTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
 	signal_light: SignalLight,
@@ -55,6 +56,7 @@ impl StateMachine {
 			State::Running => StateMachine::_enter_running,
 			State::Stopped => StateMachine::_enter_stopped,
 			State::Halted => StateMachine::_enter_halted,
+			State::Faulted => StateMachine::_enter_faulted,
 		};
 
 		let state_transitions = enum_map! {
@@ -63,6 +65,7 @@ impl StateMachine {
 			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
 			State::Stopped => None,
 			State::Halted => None,
+			State::Faulted => None,
 		};
 
 		io.ns("/control-station", |socket: SocketRef| {
@@ -183,6 +186,17 @@ impl StateMachine {
 		self.brakes.engage();
 	}
 
+	fn _enter_faulted(&mut self) {
+		info!("Entering Faulted state");
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("fault", "123")
+			.ok();
+		self.signal_light.disable();
+		self.brakes.engage();
+	}
+
 	/// Perform operations when the pod is loading
 	fn _load_periodic(&mut self) -> State {
 		info!("Rolling Load state");
@@ -207,7 +221,7 @@ impl StateMachine {
 			.iter()
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
-			return State::Halted;
+			return State::Faulted;
 		}
 
 		State::Running
