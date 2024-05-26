@@ -37,6 +37,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_ads1015(ads1015));
 
+	let ads1015_vdd = LimTemperature::new_vdd(ads1x1x::SlaveAddr::Alternative(false, true));
+	tokio::spawn(demo::read_ads1015(ads1015_vdd));
+
 	// let wheel_encoder = WheelEncoder::new();
 	// tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
