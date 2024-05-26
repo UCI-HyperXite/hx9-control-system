@@ -37,7 +37,7 @@ pub struct LimTemperature {
 
 impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
-		tokio::sleep(tokio::time::Duration::from_secs(1)).await;
+		sleep(Duration::from_secs(1)).await;
 		let i2cdev = I2c::new().unwrap();
 		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
 		adc.set_full_scale_range(FullScaleRange::Within4_096V)
