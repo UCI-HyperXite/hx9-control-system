@@ -19,6 +19,7 @@ const R_0: f32 = 10000.0; // Ohms
 const ROOM_TEMP: f32 = 25.0 + C_TO_K_CONVERSION; // Kelvins
 
 fn voltage_to_temp(voltage: i16) -> f32 {
+	println!("Voltage: {}", voltage);
 	let voltage = f32::from(voltage) / 1000.0;
 	let thermistor_resistance = ((V_IN - voltage) * DIVIDER_RESISTANCE) / (voltage);
 	let r_inf = R_0 * std::f32::consts::E.powf(-BETA / ROOM_TEMP);
