@@ -35,8 +35,8 @@ pub struct LimTemperature {
 impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
 		let i2cdev = I2c::new().unwrap();
-		let adc = Ads1x1x::new_ads1015(i2cdev, device_address)
-			.set_full_scale_range(FullScaleRange::Within4_096V)
+		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
+		adc.set_full_scale_range(FullScaleRange::Within4_096V)
 			.unwrap();
 		LimTemperature { ads1015: adc }
 	}
