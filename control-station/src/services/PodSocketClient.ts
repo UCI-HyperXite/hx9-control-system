@@ -73,29 +73,29 @@ class PodSocketClient {
 	sendLoad(): void {
 		this.socket.emit("load", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Load }));
 		});
-		this.setPodData((d) => ({ ...d, state: State.Load }));
 	}
 
 	sendRun(): void {
 		this.socket.emit("run", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Running }));
 		});
-		this.setPodData((d) => ({ ...d, state: State.Running }));
 	}
 
 	sendStop(): void {
 		this.socket.emit("stop", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Stopped }));
 		});
-		this.setPodData((d) => ({ ...d, state: State.Stop }));
 	}
 
 	sendHalt(): void {
 		this.socket.emit("halt", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Halted }));
 		});
-		this.setPodData((d) => ({ ...d, state: State.Halt }));
 	}
 
 	private onConnect(): void {
