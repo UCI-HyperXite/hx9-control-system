@@ -4,8 +4,8 @@ use tracing::info;
 // use crate::components::gyro::Gyroscope;
 // use crate::components::high_voltage_system::HighVoltageSystem;
 // use crate::components::lim_current::LimCurrent;
-use crate::components::lim_temperature::LimTemperature;
-// use crate::components::pressure_transducer::PressureTransducer;
+// use crate::components::lim_temperature::LimTemperature;
+use crate::components::pressure_transducer::PressureTransducer;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
 
@@ -25,46 +25,46 @@ use crate::components::lim_temperature::LimTemperature;
 // 	}
 // }
 
-// pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
-// 	info!("Starting pressure transducer demo.");
+pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
+	info!("Starting pressure transducer demo.");
 
+	loop {
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		println!("{:?}", pressure_transducer.read_pressure());
+	}
+}
+
+// pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
+// 	info!("Starting ADS1015 Demo.");
+
+// 	let mut i = 0;
 // 	loop {
-// 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
-// 		println!("{:?}", pressure_transducer.read_pressure());
+// 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+// 		println!("DEFAULT: {:?}", lim_temperature.read_lim_temps());
+// 		i += 1;
+// 		if i > 1000 {
+// 			break;
+// 		}
 // 	}
+
+// 	lim_temperature.cleanup();
 // }
 
-pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
-	info!("Starting ADS1015 Demo.");
+// pub async fn read_ads1015_vdd(mut lim_temperature: LimTemperature) {
+// 	info!("Starting ADS1015 Demo.");
 
-	let mut i = 0;
-	loop {
-		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-		println!("DEFAULT: {:?}", lim_temperature.read_lim_temps());
-		i += 1;
-		if i > 1000 {
-			break;
-		}
-	}
+// 	let mut i = 0;
+// 	loop {
+// 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+// 		println!("VDD: {:?}", lim_temperature.read_lim_temps());
+// 		i += 1;
+// 		if i > 1000 {
+// 			break;
+// 		}
+// 	}
 
-	lim_temperature.cleanup();
-}
-
-pub async fn read_ads1015_vdd(mut lim_temperature: LimTemperature) {
-	info!("Starting ADS1015 Demo.");
-
-	let mut i = 0;
-	loop {
-		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-		println!("VDD: {:?}", lim_temperature.read_lim_temps());
-		i += 1;
-		if i > 1000 {
-			break;
-		}
-	}
-
-	lim_temperature.cleanup();
-}
+// 	lim_temperature.cleanup();
+// }
 // pub async fn read_lim_current(mut lim_current: LimCurrent) {
 // 	info!("Starting Lim Current Sensor Demo.");
 // 	let mut i = 0;
