@@ -473,6 +473,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ina219"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a93dcf42590b25525d79f7e497f3e8caf909ff8d53a2989b3c8d809980e647e"
+dependencies = [
+ "byteorder",
+ "embedded-hal 0.2.7",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -644,6 +654,7 @@ dependencies = [
  "ads1x1x",
  "axum",
  "enum-map",
+ "ina219",
  "nb 1.1.0",
  "once_cell",
  "rppal",
