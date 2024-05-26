@@ -35,7 +35,7 @@ pub struct StateMachine {
 	last_state: State,
 	state: &'static Mutex<State>,
 	enter_actions: EnumMap<State, fn(&mut Self)>,
-	state_transitions: EnumMap<State, Option<Sta, teTransition>>,
+	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
 	brakes: Brakes,
 	signal_light: SignalLight,
