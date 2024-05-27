@@ -24,4 +24,8 @@ impl Brakes {
 		debug!("Disengage brakes.");
 		self.pin.set_high();
 	}
+
+	pub fn is_engaged(&self) -> bool {
+		self.pin.is_set_low()
+	}
 }

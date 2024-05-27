@@ -28,4 +28,8 @@ impl HighVoltageSystem {
 		debug!("Enabling high voltage system.");
 		self.pin.set_high();
 	}
+
+	pub fn is_enabled(&self) -> bool {
+		self.pin.is_set_high()
+	}
 }

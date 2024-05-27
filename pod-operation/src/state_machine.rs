@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
@@ -40,11 +41,12 @@ pub struct StateMachine {
 	brakes: Brakes,
 	signal_light: SignalLight,
 	wheel_encoder: WheelEncoder,
-	//upstream_pressure_transducer: PressureTransducer,
+	upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
+	gyro: Gyroscope,
 }
 
 impl StateMachine {
@@ -92,13 +94,14 @@ impl StateMachine {
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
 			wheel_encoder: WheelEncoder::new(),
-			//upstream_pressure_transducer: PressureTransducer::upstream(),
+			upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
 			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
 				false, true,
 			)),
 			high_voltage_system: HighVoltageSystem::new(),
+			gyro: Gyroscope::new(),
 		}
 	}
 
@@ -137,7 +140,18 @@ impl StateMachine {
 		self.io
 			.of("/control-station")
 			.unwrap()
-			.emit("pong", "123")
+			.emit(
+				"serverResponse",
+				json!({ "gyroscope": self.gyro.read(),
+			"wheel_encoder": self.wheel_encoder.read(),
+			"downstream_pressure_transducer": self.downstream_pressure_transducer.read_pressure(),
+			"upstream_pressure_transducer": self.upstream_pressure_transducer.read_pressure(),
+			"lim_temperature_port": self.lim_temperature_port.read_lim_temps(),
+			"lim_temperature_starboard": self.lim_temperature_starboard.read_lim_temps(),
+			"high_voltage_system": self.high_voltage_system.is_enabled(),
+			"brakes": self.brakes.is_engaged(),
+			"signal_light": self.signal_light.is_enabled()}),
+			)
 			.ok();
 	}
 
