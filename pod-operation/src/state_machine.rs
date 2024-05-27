@@ -199,6 +199,7 @@ impl StateMachine {
 			.ok();
 		self.signal_light.disable();
 		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
