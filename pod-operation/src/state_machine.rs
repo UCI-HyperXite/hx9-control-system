@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -44,6 +45,7 @@ pub struct StateMachine {
 	downstream_pressure_transducer: PressureTransducer,
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
+	high_voltage_system: HighVoltageSystem,
 }
 
 impl StateMachine {
@@ -99,6 +101,7 @@ impl StateMachine {
 			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
 				false, true,
 			)),
+			high_voltage_system: HighVoltageSystem::new(),
 		}
 	}
 
@@ -169,6 +172,7 @@ impl StateMachine {
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
+		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.signal_light.enable();
 		self.brakes.disengage();
 	}
@@ -181,9 +185,9 @@ impl StateMachine {
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		// self.hvs.disable()
 		self.signal_light.disable();
 		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
