@@ -163,13 +163,13 @@ impl StateMachine {
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.brakes.disengage();
 		self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
+		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.signal_light.enable();
 		self.brakes.disengage();
 	}
