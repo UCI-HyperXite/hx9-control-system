@@ -10,6 +10,7 @@ mod state_machine;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::inverter_board::InverterBoard;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
@@ -55,6 +56,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let limcurrent = LimCurrent::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_lim_current(limcurrent));
+
+	let inverter_board = InverterBoard::new();
+	tokio::spawn(demo::inverter_control(inverter_board));
 
 	let app = axum::Router::new().layer(layer);
 
