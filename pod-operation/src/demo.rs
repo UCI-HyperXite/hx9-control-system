@@ -34,6 +34,15 @@ pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransduce
 	}
 }
 
+pub async fn read_pressure_transducer_2(mut pressure_transducer: PressureTransducer) {
+	info!("Starting pressure transducer demo.");
+
+	loop {
+		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		println!("pt2 {:?}", pressure_transducer.read_pressure());
+	}
+}
+
 // pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 // 	info!("Starting ADS1015 Demo.");
 

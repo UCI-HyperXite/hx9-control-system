@@ -29,10 +29,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let upstream_pressure_transducer = PressureTransducer::upstream();
 	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
 
-	// let downstream_pressure_transducer = PressureTransducer::downstream();
-	// tokio::spawn(demo::read_pressure_transducer(
-	// 	downstream_pressure_transducer,
-	// ));
+	let downstream_pressure_transducer = PressureTransducer::downstream();
+	tokio::spawn(demo::read_pressure_transducer_2(
+		downstream_pressure_transducer_,
+	));
 
 	// let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
 	// tokio::spawn(demo::read_ads1015(ads1015));
