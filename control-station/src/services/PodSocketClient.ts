@@ -3,6 +3,7 @@ import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
 export enum State {
+	Disconnected = "Disconnected",
 	Init = "Init",
 	Load = "Load",
 	Running = "Running",
@@ -100,12 +101,14 @@ class PodSocketClient {
 
 	private onConnect(): void {
 		console.log("Connected to server as", this.socket.id);
-		this.setPodData((d) => ({ ...d, connected: true }));
+		// TODO: On connecting, the state below should be what's provided by the pod
+		// if it's already running. Otherwise, the states should be State.Init
+		this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
 	}
 
 	private onDisconnect(reason: Socket.DisconnectReason): void {
 		console.log(`Disconnected from server: ${reason}`);
-		this.setPodData((d) => ({ ...d, connected: false }));
+		this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
 	}
 
 	private onData(data: string): void {

@@ -3,7 +3,7 @@ import PodSocketClient, { PodData, State } from "./PodSocketClient";
 
 function usePodData() {
 	const [podData, setPodData] = useState<PodData>({
-		state: State.Init,
+		state: State.Disconnected,
 		connected: false,
 	});
 
