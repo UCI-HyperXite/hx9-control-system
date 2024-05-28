@@ -21,11 +21,11 @@ const LLv3_COMMAND: u8 = 0x40;
 const LLv3_CORR_DATA: u8 = 0x52;
 const LLv3_ACQ_SETTINGS: u8 = 0x5d;
 
-pub struct LIDARLite_v3 {
+pub struct LidarliteV3 {
 	i2c: I2c,
 }
 
-impl LIDARLite_v3 {
+impl LidarliteV3 {
 	pub fn new() -> io::Result<Self> {
 		let i2c = I2c::new()?;
 		Ok(Self { i2c })
@@ -92,7 +92,7 @@ impl LIDARLite_v3 {
 }
 
 fn main() -> io::Result<()> {
-	let mut lidar_lite = LIDARLite_v3::new()?;
+	let mut lidar_lite = LidarliteV3::new()?;
 	let lidarlite_address = LIDARLITE_ADDR_DEFAULT;
 
 	// Optionally configure LIDAR-Lite
