@@ -1,4 +1,5 @@
 use mpu6050::Mpu6050;
+use rppal::hal::Delay;
 use rppal::i2c::I2c;
 
 pub struct Gyroscope {
@@ -13,7 +14,8 @@ pub struct Orientation {
 impl Gyroscope {
 	pub fn new() -> Self {
 		let i2c = I2c::new().unwrap();
-		let mpu6050 = Mpu6050::new(i2c);
+		let mut mpu6050 = Mpu6050::new(i2c);
+		mpu6050.init(&mut Delay::new()).unwrap();
 		Gyroscope { mpu6050 }
 	}
 
