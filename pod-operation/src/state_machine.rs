@@ -143,7 +143,7 @@ impl StateMachine {
 			.unwrap()
 			.emit(
 				"serverResponse",
-				json!({ "gyroscope": self.gyro.read(),
+				json!({ "gyroscope": self.gyro.read_orientation(),
 			"wheel_encoder": self.wheel_encoder.read(),
 			"downstream_pressure_transducer": self.downstream_pressure_transducer.read_pressure(),
 			"upstream_pressure_transducer": self.upstream_pressure_transducer.read_pressure(),
