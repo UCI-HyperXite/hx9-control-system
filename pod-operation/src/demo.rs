@@ -7,8 +7,7 @@ use tracing::info;
 // use crate::components::pressure_transducer::PressureTransducer;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
-use crate::components::lidar::LidarliteV3;
-
+use crate::components::lidar::Lidar;
 // pub async fn blink(mut signal_light: SignalLight) {
 // 	let mut i = 0;
 
@@ -107,11 +106,10 @@ use crate::components::lidar::LidarliteV3;
 // 		i += 1;
 // 	}
 // }
-
-pub async fn read_lidar(mut lidar: LidarliteV3) {
-	info!("Starting lidar demo.");
+pub async fn read_lidar(mut lidar: Lidar) {
+	info!("Starting Lidar Demo.");
 	loop {
-		tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-		println!("{:?}", lidar.read());
+		println!("{:?}", lidar.read_distance());
+		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 	}
 }

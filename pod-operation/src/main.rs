@@ -14,8 +14,8 @@ mod state_machine;
 // use crate::components::pressure_transducer::PressureTransducer;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
+use crate::components::lidar::Lidar;
 use crate::state_machine::StateMachine;
-use components::lidar::LidarliteV3;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,9 +48,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	// let high_voltage_system = HighVoltageSystem::new();
 	// tokio::spawn(demo::high_voltage_system(high_voltage_system));
 
-	let lidar = LidarliteV3::new();
+	let lidar = Lidar::new();
 	tokio::spawn(demo::read_lidar(lidar));
 
+
+	
 	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
 		state_machine.run().await;
