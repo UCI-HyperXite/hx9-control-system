@@ -2,6 +2,16 @@ import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
+export enum State {
+	Disconnected = "Disconnected",
+	Init = "Init",
+	Load = "Load",
+	Running = "Running",
+	Stopped = "Stopped",
+	Halted = "Halted",
+	Faulted = "Faulted",
+}
+
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
@@ -17,6 +27,7 @@ interface ClientToServerEvents {
 
 export interface PodData {
 	connected: boolean;
+	state: State;
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
@@ -63,35 +74,41 @@ class PodSocketClient {
 	sendLoad(): void {
 		this.socket.emit("load", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Load }));
 		});
 	}
 
 	sendRun(): void {
 		this.socket.emit("run", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Running }));
 		});
 	}
 
 	sendStop(): void {
 		this.socket.emit("stop", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Stopped }));
 		});
 	}
 
 	sendHalt(): void {
 		this.socket.emit("halt", (response: string) => {
 			console.log("Server acknowledged:", response);
+			this.setPodData((d) => ({ ...d, state: State.Halted }));
 		});
 	}
 
 	private onConnect(): void {
 		console.log("Connected to server as", this.socket.id);
-		this.setPodData((d) => ({ ...d, connected: true }));
+		// TODO: On connecting, the state below should be what's provided by the pod
+		// if it's already running. Otherwise, the states should be State.Init
+		this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
 	}
 
 	private onDisconnect(reason: Socket.DisconnectReason): void {
 		console.log(`Disconnected from server: ${reason}`);
-		this.setPodData((d) => ({ ...d, connected: false }));
+		this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
 	}
 
 	private onData(data: string): void {
