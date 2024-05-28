@@ -41,10 +41,9 @@ impl LimTemperature {
 		self.ads1015.destroy_ads1015();
 	}
 
-	pub fn read_lim_temps(&mut self) -> (f32, f32, f32, f32) {
+	pub fn read_lim_temps(&mut self) -> [f32; 4] {
 		[SingleA0, SingleA1, SingleA2, SingleA3]
 			.map(|channel| block!(self.ads1015.read(channel)).unwrap())
 			.map(voltage_to_temp)
-			.into()
 	}
 }

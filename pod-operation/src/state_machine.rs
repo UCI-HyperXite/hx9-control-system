@@ -219,8 +219,8 @@ impl StateMachine {
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}
-		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
-		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
+		let default_readings = self.lim_temperature_port.read_lim_temps();
+		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
 		let all_readings = [default_readings, alternative_readings].concat();
 		if all_readings
 			.iter()
