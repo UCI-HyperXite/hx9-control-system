@@ -1,70 +1,95 @@
-use rppal::gpio::{Gpio, InputPin, Level};
-use std::time::Instant;
+use rppal::gpio::{Gpio, InputPin};
+use std::thread;
+use std::time::{Duration, Instant};
+use tracing::{debug, error, info};
 
-const PIN_ENCODER_A: u8 = 1;
-const PIN_ENCODER_B: u8 = 2;
+// GPIO pins for the encoder
+const PIN_ENCODER_A: u8 = 1; //need to move
+const PIN_ENCODER_B: u8 = 2; //need to move
 
+// Constants for calculations
+const DELTA_D: f64 = 1.0 / 16.0;
+
+type EncoderState = u8;
+type EncoderDiff = i8;
+
+// Function to encode the state
+// 00, 01, 10, 11
+fn encode_state(a: bool, b: bool) -> EncoderState {
+    ((a as u8) << 1) + (a as u8 ^ b as u8)
+}
+
+// Function to calculate the difference in states
+// -1 => moving backwards
+// 0 => no movement
+// 1 => moving forward
+// 2 => Undersampling
+fn state_difference(p: EncoderState, q: EncoderState) -> EncoderDiff {
+    ((p as i8 - q as i8 + 1) % 4 - 1) as EncoderDiff
+}
+
+// Struct to represent the wheel encoder
 pub struct WheelEncoder {
-	counter: f32,
-	pin_a: InputPin,
-	pin_b: InputPin,
-	a_last_read: Level,
-	b_last_read: Level,
-	last_distance: f32,
-	last_velocity_time: Instant,
-	velocity: f32,
+    counter: i32,
+    last_time: Instant,
+    last_state: EncoderState,
+    pin_a: InputPin,
+    pin_b: InputPin,
+    faulted: bool,
 }
 
 impl WheelEncoder {
-	pub fn new() -> Self {
-		let gpio = Gpio::new().unwrap();
-		WheelEncoder {
-			counter: 0.0,
-			pin_a: gpio.get(PIN_ENCODER_A).unwrap().into_input(),
-			pin_b: gpio.get(PIN_ENCODER_B).unwrap().into_input(),
-			a_last_read: Level::High,
-			b_last_read: Level::Low,
-			last_distance: 0.0,
-			last_velocity_time: Instant::now(),
-			velocity: 0.0,
-		}
-	}
+    // Constructor to initialize the encoder
+    pub fn new() -> Result<Self, rppal::gpio::Error> {
+        let gpio = Gpio::new()?;
+        let pin_a = gpio.get(PIN_ENCODER_A)?.into_input();
+        let pin_b = gpio.get(PIN_ENCODER_B)?.into_input();
 
-	pub fn read(&mut self) -> f32 {
-		let a_state = self.pin_a.read();
-		let b_state = self.pin_b.read();
+        let initial_state = encode_state(pin_a.is_high(), pin_b.is_high());
 
-		if (a_state != self.a_last_read || b_state != self.b_last_read) && b_state != a_state {
-			self.counter += 1.0;
+        Ok(WheelEncoder {
+            counter: 0,
+            last_time: Instant::now(),
+            last_state: initial_state,
+            pin_a,
+            pin_b,
+            faulted: false,
+        })
+    }
 
-			let current_time = Instant::now();
-			let distance = (self.counter / 16.0) * 3.0;
-			let velocity_elapsed = current_time
-				.duration_since(self.last_velocity_time)
-				.as_secs_f32();
+    // Method to measure speed and distance
+    pub fn measure(&mut self) -> Result<(f64, f64), &'static str> {
+        if self.faulted {
+            return Err("WheelEncoder is in Faulted state");
+        }
 
-			if velocity_elapsed >= 0.1 {
-				let distance_delta = distance - self.last_distance;
-				self.velocity = distance_delta / velocity_elapsed;
-				self.last_velocity_time = current_time;
-				self.last_distance = distance;
-			}
-		}
+        let current_time = Instant::now();
+        let state = self.read_state();
 
-		self.a_last_read = a_state;
-		self.b_last_read = b_state;
+        let mut speed = 0.0;
+        let inc = state_difference(state, self.last_state);
 
-		(self.counter / 16.0) * 3.0
-	}
+        if inc == 2 {
+            self.faulted = true;
+            return Err("Undersampling. Transition to Faulted state please.");
+        }
 
-	pub fn _reset(&mut self) {
-		self.counter = 0.0;
-		self.last_distance = 0.0;
-		self.velocity = 0.0;
-		self.last_velocity_time = Instant::now();
-	}
+        if inc != 0 {
+            let delta_t = current_time.duration_since(self.last_time).as_secs_f64();
+            speed = inc as f64 * DELTA_D / delta_t;
+            self.last_time = current_time;
+        }
 
-	pub fn get_velocity(&self) -> f32 {
-		self.velocity
-	}
+        self.last_state = state;
+        self.counter += inc as i32;
+
+        let distance = self.counter as f64 * DELTA_D;
+
+        Ok((speed, distance))
+    }
+
+    // Private method to read the state of the encoder
+    fn read_state(&self) -> EncoderState {
+        encode_state(self.pin_a.is_high(), self.pin_b.is_high())
+    }
 }
