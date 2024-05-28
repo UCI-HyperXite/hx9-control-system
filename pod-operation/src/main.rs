@@ -8,6 +8,7 @@ mod demo;
 mod state_machine;
 
 // use crate::components::brakes::Brakes;
+use crate::components::lidar::Lidar;
 // use crate::components::gyro::Gyroscope;
 // use crate::components::high_voltage_system::HighVoltageSystem;
 // use crate::components::lim_temperature::LimTemperature;
@@ -15,7 +16,6 @@ mod state_machine;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
-use components::lidar::LidarliteV3;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -7,8 +7,7 @@ use tracing::info;
 // use crate::components::pressure_transducer::PressureTransducer;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
-use crate::components::lidar::LidarliteV3;
-
+use crate::components::lidar::Lidar;
 // pub async fn blink(mut signal_light: SignalLight) {
 // 	let mut i = 0;
 
@@ -108,24 +107,10 @@ use crate::components::lidar::LidarliteV3;
 // 	}
 // }
 
-pub async fn lidar(mut lidar_lite: LidarliteV3) {
-	info!("Starting LIDAR-Lite v3 demo.");
-	let lidarlite_address = LIDARLITE_ADDR_DEFAULT;
-
-	// Optionally configure LIDAR-Lite
-	lidar_lite.configure(0, lidarlite_address).unwrap();
-
+pub async fn read_lidar(mut lidar: Lidar) {
+	info!("Starting Lidar Demo.");
 	loop {
-		// Each time through the loop, check BUSY
-		if lidar_lite.get_busy_flag(lidarlite_address).unwrap() == 0x00 {
-			// When no longer busy, immediately initialize another measurement
-			// and then read the distance data from the last measurement.
-			// This method will result in faster I2C rep rates.
-			lidar_lite.take_range(lidarlite_address).unwrap();
-			let distance = lidar_lite.read_distance(lidarlite_address).unwrap();
-			println!("{:4}", distance);
-		}
-		// Sleep for a while to avoid busy-waiting
-		tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+		println!("{:?}", lidar.read_distance());
+		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 	}
 }
