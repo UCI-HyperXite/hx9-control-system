@@ -2,9 +2,12 @@ use ads1x1x::ic::{Ads1015, Resolution12Bit};
 use ads1x1x::interface::I2cInterface;
 use ads1x1x::mode::OneShot;
 use ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2, SingleA3};
+use ads1x1x::FullScaleRange;
 use ads1x1x::{Ads1x1x, DynamicOneShot, SlaveAddr};
 use nb::block;
 use rppal::i2c::I2c;
+use std::thread::sleep;
+use std::time::Duration;
 
 const C_TO_K_CONVERSION: f32 = 273.15;
 
@@ -19,8 +22,9 @@ const R_0: f32 = 10000.0; // Ohms
 const ROOM_TEMP: f32 = 25.0 + C_TO_K_CONVERSION; // Kelvins
 
 fn voltage_to_temp(voltage: i16) -> f32 {
-	let voltage = f32::from(voltage) / 1000.0;
-	let thermistor_resistance = (voltage * DIVIDER_RESISTANCE) / (V_IN - voltage);
+	let voltage = f32::from(voltage) / 500.0;
+
+	let thermistor_resistance = ((V_IN - voltage) * DIVIDER_RESISTANCE) / (voltage);
 	let r_inf = R_0 * std::f32::consts::E.powf(-BETA / ROOM_TEMP);
 	let temp_kelvins = BETA / (thermistor_resistance / r_inf).ln();
 	temp_kelvins - C_TO_K_CONVERSION
@@ -32,8 +36,11 @@ pub struct LimTemperature {
 
 impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
+		sleep(Duration::from_secs(1));
 		let i2cdev = I2c::new().unwrap();
-		let adc = Ads1x1x::new_ads1015(i2cdev, device_address);
+		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
+		adc.set_full_scale_range(FullScaleRange::Within4_096V)
+			.unwrap();
 		LimTemperature { ads1015: adc }
 	}
 
