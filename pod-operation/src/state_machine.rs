@@ -29,6 +29,7 @@ pub enum State {
 	Running,
 	Stopped,
 	Halted,
+	Faulted,
 }
 
 type StateTransition = fn(&mut StateMachine) -> State;
@@ -60,6 +61,7 @@ impl StateMachine {
 			State::Running => StateMachine::_enter_running,
 			State::Stopped => StateMachine::_enter_stopped,
 			State::Halted => StateMachine::_enter_halted,
+			State::Faulted => StateMachine::_enter_faulted,
 		};
 
 		let state_transitions = enum_map! {
@@ -68,6 +70,7 @@ impl StateMachine {
 			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
 			State::Stopped => None,
 			State::Halted => None,
+			State::Faulted => None,
 		};
 
 		io.ns("/control-station", |socket: SocketRef| {
@@ -199,6 +202,18 @@ impl StateMachine {
 		self.high_voltage_system.disable();
 	}
 
+	fn _enter_faulted(&mut self) {
+		info!("Entering Faulted state");
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("fault", "123")
+			.ok();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
+	}
+
 	/// Perform operations when the pod is loading
 	fn _load_periodic(&mut self) -> State {
 		info!("Rolling Load state");
@@ -214,7 +229,7 @@ impl StateMachine {
 			return State::Stopped;
 		}
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Halted;
+			return State::Faulted;
 		}
 		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
 		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
@@ -223,7 +238,7 @@ impl StateMachine {
 			.iter()
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
-			return State::Halted;
+			return State::Faulted;
 		}
 
 		State::Running
