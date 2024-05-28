@@ -148,10 +148,7 @@ impl StateMachine {
 			"downstream_pressure_transducer": self.downstream_pressure_transducer.read_pressure(),
 			"upstream_pressure_transducer": self.upstream_pressure_transducer.read_pressure(),
 			"lim_temperature_port": self.lim_temperature_port.read_lim_temps(),
-			"lim_temperature_starboard": self.lim_temperature_starboard.read_lim_temps(),
-			"high_voltage_system": self.high_voltage_system.is_enabled(),
-			"brakes": self.brakes.is_engaged(),
-			"signal_light": self.signal_light.is_enabled()}),
+			"lim_temperature_starboard": self.lim_temperature_starboard.read_lim_temps(),}),
 			)
 			.ok();
 	}
