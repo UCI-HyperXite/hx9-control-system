@@ -1,17 +1,20 @@
+use rppal::gpio::{Gpio, OutputPin};
 use tracing::debug;
 
-use rppal::gpio::{Gpio, OutputPin};
+use crate::utils::GpioPins;
 
 pub struct Brakes {
 	pin: OutputPin,
 }
 
-const PIN_BRAKES: u8 = 26;
-
 impl Brakes {
 	pub fn new() -> Self {
 		Brakes {
-			pin: Gpio::new().unwrap().get(PIN_BRAKES).unwrap().into_output(),
+			pin: Gpio::new()
+				.unwrap()
+				.get(GpioPins::PNEUMATICS_RELAY)
+				.unwrap()
+				.into_output(),
 		}
 	}
 

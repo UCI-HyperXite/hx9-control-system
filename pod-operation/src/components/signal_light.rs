@@ -1,19 +1,18 @@
+use rppal::gpio::{Gpio, OutputPin};
 use tracing::debug;
 
-use rppal::gpio::{Gpio, OutputPin};
+use crate::utils::GpioPins;
 
 pub struct SignalLight {
 	pin: OutputPin,
 }
-
-const PIN_SIGNAL_LIGHT: u8 = 21;
 
 impl SignalLight {
 	pub fn new() -> Self {
 		SignalLight {
 			pin: Gpio::new()
 				.unwrap()
-				.get(PIN_SIGNAL_LIGHT)
+				.get(GpioPins::SIGNAL_LIGHT_RELAY)
 				.unwrap()
 				.into_output(),
 		}

@@ -6,6 +6,7 @@ use tracing_subscriber::FmtSubscriber;
 mod components;
 mod demo;
 mod state_machine;
+mod utils;
 
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
