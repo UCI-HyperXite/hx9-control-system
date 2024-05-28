@@ -1,5 +1,4 @@
 use rppal::gpio::{Gpio, InputPin};
-use std::thread;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info};
 
