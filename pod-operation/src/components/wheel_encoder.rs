@@ -87,40 +87,6 @@ impl WheelEncoder {
 		Ok((speed, distance))
 	}
 
-	// Method to get velocity
-	pub fn get_velocity(&self) -> Result<f32, &'static str> {
-		if self.faulted {
-			return Err("WheelEncoder is in Faulted state");
-		}
-
-		let current_time = Instant::now();
-		let state = self.read_state();
-
-		let inc = state_difference(state, self.last_state);
-
-		if inc == 2 {
-			return Err("Undersampling. Cannot calculate velocity.");
-		}
-
-		let delta_t = current_time.duration_since(self.last_time).as_secs_f32();
-		let velocity = if delta_t != 0.0 {
-			inc as f32 * DELTA_D / delta_t
-		} else {
-			0.0
-		};
-
-		Ok(velocity)
-	}
-
-	// Method to read distance
-	pub fn read(&self) -> Result<f32, &'static str> {
-		if self.faulted {
-			return Err("WheelEncoder is in Faulted state");
-		}
-
-		Ok(self.counter as f32 * DELTA_D)
-	}
-
 	// Private method to read the state of the encoder
 	fn read_state(&self) -> EncoderState {
 		encode_state(self.pin_a.is_high(), self.pin_b.is_high())
