@@ -7,8 +7,7 @@ use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
-//use log::info;
-use tokio::time;
+
 
 pub async fn blink(mut signal_light: SignalLight) {
 	let mut i = 0;
