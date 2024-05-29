@@ -7,7 +7,7 @@ const PIN_ENCODER_A: u8 = 1; //need to move
 const PIN_ENCODER_B: u8 = 2; //need to move
 
 // Constants for calculations
-const DELTA_D: f64 = 1.0 / 16.0;
+const DELTA_D: f32 = 1.0 / 16.0;
 
 type EncoderState = u8;
 type EncoderDiff = i8;
@@ -57,7 +57,7 @@ impl WheelEncoder {
     }
 
     // Method to measure speed and distance
-    pub fn measure(&mut self) -> Result<(f64, f64), &'static str> {
+    pub fn measure(&mut self) -> Result<(f32, f32), &'static str> {
         if self.faulted {
             return Err("WheelEncoder is in Faulted state");
         }
@@ -74,17 +74,51 @@ impl WheelEncoder {
         }
 
         if inc != 0 {
-            let delta_t = current_time.duration_since(self.last_time).as_secs_f64();
-            speed = inc as f64 * DELTA_D / delta_t;
+            let delta_t = current_time.duration_since(self.last_time).as_secs_f32();
+            speed = inc as f32 * DELTA_D / delta_t;
             self.last_time = current_time;
         }
 
         self.last_state = state;
         self.counter += inc as i32;
 
-        let distance = self.counter as f64 * DELTA_D;
+        let distance = self.counter as f32 * DELTA_D;
 
         Ok((speed, distance))
+    }
+
+    // Method to get velocity
+    pub fn get_velocity(&self) -> Result<f32, &'static str> {
+        if self.faulted {
+            return Err("WheelEncoder is in Faulted state");
+        }
+
+        let current_time = Instant::now();
+        let state = self.read_state();
+
+        let inc = state_difference(state, self.last_state);
+
+        if inc == 2 {
+            return Err("Undersampling. Cannot calculate velocity.");
+        }
+
+        let delta_t = current_time.duration_since(self.last_time).as_secs_f32();
+        let velocity = if delta_t != 0.0 {
+            inc as f32 * DELTA_D / delta_t
+        } else {
+            0.0
+        };
+
+        Ok(velocity)
+    }
+
+    // Method to read distance
+    pub fn read(&self) -> Result<f32, &'static str> {
+        if self.faulted {
+            return Err("WheelEncoder is in Faulted state");
+        }
+
+        Ok(self.counter as f32 * DELTA_D)
     }
 
     // Private method to read the state of the encoder
