@@ -16,10 +16,9 @@ impl Lidar {
 		Lidar { lidar_lite }
 	}
 
+	/// Convert the distance from centimeters to meters
 	pub fn read_distance(&mut self) -> f32 {
 		let distance = self.lidar_lite.read_distance(false).unwrap();
-		/// Convert the distance to meters
-		f32::from(distance)
-			/ 100.0
+		f32::from(distance) / 100.0
 	}
 }
