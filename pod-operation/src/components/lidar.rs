@@ -18,10 +18,10 @@ impl Lidar {
         Lidar { lidar_lite }
     }
 
-    pub fn read_distance(&mut self) -> Result<f32, Box<dyn Error>> {
-        let distance = self.lidar_lite.read_distance(false)?;;
+    pub fn read_distance(&mut self) -> f32 {
+        let distance = self.lidar_lite.read_distance(false).unwrap();
         let distance_meters = distance as f32 / 100.0;
 
-        Ok(distance_meters)
+        distance_meters
     }
 }
