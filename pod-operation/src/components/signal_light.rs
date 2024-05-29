@@ -12,7 +12,7 @@ impl SignalLight {
 		SignalLight {
 			pin: Gpio::new()
 				.unwrap()
-				.get(GpioPins::SIGNAL_LIGHT_RELAY)
+				.get(GpioPins::SIGNAL_LIGHT_RELAY.into())
 				.unwrap()
 				.into_output(),
 		}

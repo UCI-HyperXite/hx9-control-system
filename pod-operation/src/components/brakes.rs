@@ -12,7 +12,7 @@ impl Brakes {
 		Brakes {
 			pin: Gpio::new()
 				.unwrap()
-				.get(GpioPins::PNEUMATICS_RELAY)
+				.get(GpioPins::PNEUMATICS_RELAY.into())
 				.unwrap()
 				.into_output(),
 		}

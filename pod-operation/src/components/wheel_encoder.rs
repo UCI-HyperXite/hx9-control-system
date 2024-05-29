@@ -20,8 +20,14 @@ impl WheelEncoder {
 		let gpio = Gpio::new().unwrap();
 		WheelEncoder {
 			counter: 0.0,
-			pin_a: gpio.get(GpioPins::WHEEL_ENCODER_A).unwrap().into_input(),
-			pin_b: gpio.get(GpioPins::WHEEL_ENCODER_B).unwrap().into_input(),
+			pin_a: gpio
+				.get(GpioPins::WHEEL_ENCODER_A.into())
+				.unwrap()
+				.into_input(),
+			pin_b: gpio
+				.get(GpioPins::WHEEL_ENCODER_B.into())
+				.unwrap()
+				.into_input(),
 			a_last_read: Level::High,
 			b_last_read: Level::Low,
 			last_distance: 0.0,

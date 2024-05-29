@@ -12,7 +12,7 @@ impl HighVoltageSystem {
 		HighVoltageSystem {
 			pin: Gpio::new()
 				.unwrap()
-				.get(GpioPins::CONTACTOR_RELAY)
+				.get(GpioPins::CONTACTOR_RELAY.into())
 				.unwrap()
 				.into_output(),
 		}
