@@ -84,7 +84,7 @@ impl StateMachine {
 			io,
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new(),
+			wheel_encoder: WheelEncoder::new().expect("Failed to initialize WheelEncoder"),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 		}
