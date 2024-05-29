@@ -126,3 +126,4 @@ impl WheelEncoder {
         encode_state(self.pin_a.is_high(), self.pin_b.is_high())
     }
 }
+
