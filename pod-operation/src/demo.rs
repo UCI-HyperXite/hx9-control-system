@@ -3,6 +3,7 @@ use tracing::info;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::inverter_board::InverterBoard;
 use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
@@ -119,6 +120,13 @@ pub async fn high_voltage_system(mut high_voltage_system: HighVoltageSystem) {
 		}
 
 		i += 1;
+	}
+}
+
+pub async fn inverter_control(mut inverter_control: InverterBoard) {
+	loop {
+		inverter_control.send_control(0.0, 1.0);
+		tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 	}
 }
 pub async fn read_lidar(mut lidar: Lidar) {

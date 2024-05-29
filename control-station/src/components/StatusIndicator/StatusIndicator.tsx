@@ -1,11 +1,14 @@
+import { useContext } from "react";
+
+import PodContext from "@/services/PodContext";
 import { State } from "@/services/PodSocketClient";
+
 import "./StatusIndicator.css";
 
-interface StatusIndicatorProps {
-	state: State;
-}
+function StatusIndicator() {
+	const { podData } = useContext(PodContext);
+	const { state } = podData;
 
-function StatusIndicator({ state }: StatusIndicatorProps) {
 	return (
 		<div className="status-indicator">
 			{Object.values(State).map((s) => {
