@@ -7,7 +7,7 @@ use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
-use log::info;
+//use log::info;
 use tokio::time;
 
 pub async fn blink(mut signal_light: SignalLight) {
@@ -68,7 +68,7 @@ pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	info!("Starting wheel encoder demo.");
 	loop {
-		let (speed, distance) = wheel_encoder.measure().await.expect("Failed to measure speed and distance");
+		let (speed, distance) = wheel_encoder.measure().expect("Failed to measure speed and distance");
 		println!("Speed: {:.2} m/s, Distance: {:.2} m", speed, distance);
 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
 	}
