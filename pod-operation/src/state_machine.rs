@@ -221,9 +221,9 @@ impl StateMachine {
 		}
 		let default_readings = self.lim_temperature_port.read_lim_temps();
 		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		let all_readings = [default_readings, alternative_readings].concat();
-		if all_readings
+		if default_readings
 			.iter()
+			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
 			return State::Faulted;
