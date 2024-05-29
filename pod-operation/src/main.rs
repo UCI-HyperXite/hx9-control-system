@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_ads1015(ads1015));
 
-	let wheel_encoder = WheelEncoder::new();
+	let wheel_encoder = WheelEncoder::new().expect("Failed to initialize WheelEncoder");
 	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
 	let gyro: Gyroscope = Gyroscope::new();
