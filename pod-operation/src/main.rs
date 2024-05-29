@@ -5,7 +5,7 @@ use tracing_subscriber::FmtSubscriber;
 
 mod components;
 mod demo;
-mod state_machine;
+// mod state_machine;
 
 // use crate::components::brakes::Brakes;
 // use crate::components::gyro::Gyroscope;
@@ -15,7 +15,7 @@ mod state_machine;
 // use crate::components::signal_light::SignalLight;
 // use crate::components::wheel_encoder::WheelEncoder;
 use crate::components::lidar::Lidar;
-use crate::state_machine::StateMachine;
+// use crate::state_machine::StateMachine;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -53,10 +53,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 	
-	tokio::spawn(async {
-		let mut state_machine = StateMachine::new(io);
-		state_machine.run().await;
-	});
+	// tokio::spawn(async {
+	// 	let mut state_machine = StateMachine::new(io);
+	// 	state_machine.run().await;
+	// });
 
 	let app = axum::Router::new().layer(layer);
 
