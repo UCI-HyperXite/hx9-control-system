@@ -184,7 +184,7 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let (_, distance) = self.wheel_encoder.measure().unwrap_or(((), 0.0));
+		let (_, distance) = self.wheel_encoder.measure().unwrap_or((0.0, 0.0));
 		if distance > STOP_THRESHOLD {
 			return State::Stopped;
 		}
