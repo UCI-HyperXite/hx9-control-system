@@ -1,7 +1,7 @@
 use i2cdev::linux::LinuxI2CDevice;
 use lidar_lite_v3::LidarLiteV3;
 
-const I2C_ADDRESS: str = "/dev/i2c-1";
+const I2C_ADDRESS: &str = "/dev/i2c-1";
 
 pub struct Lidar {
 	lidar_lite: LidarLiteV3<LinuxI2CDevice>,
