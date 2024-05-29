@@ -5,17 +5,17 @@ use tracing_subscriber::FmtSubscriber;
 
 mod components;
 mod demo;
-// mod state_machine;
+mod state_machine;
 
-// use crate::components::brakes::Brakes;
-// use crate::components::gyro::Gyroscope;
-// use crate::components::high_voltage_system::HighVoltageSystem;
-// use crate::components::lim_temperature::LimTemperature;
-// use crate::components::pressure_transducer::PressureTransducer;
-// use crate::components::signal_light::SignalLight;
-// use crate::components::wheel_encoder::WheelEncoder;
+use crate::components::brakes::Brakes;
+use crate::components::gyro::Gyroscope;
+use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lidar::Lidar;
-// use crate::state_machine::StateMachine;
+use crate::components::lim_temperature::LimTemperature;
+use crate::components::pressure_transducer::PressureTransducer;
+use crate::components::signal_light::SignalLight;
+use crate::components::wheel_encoder::WheelEncoder;
+use crate::state_machine::StateMachine;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,40 +23,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let (layer, io) = SocketIo::new_layer();
 
-	// let signal_light = SignalLight::new();
-	// tokio::spawn(demo::blink(signal_light));
+	let signal_light = SignalLight::new();
+	tokio::spawn(demo::blink(signal_light));
 
-	// let upstream_pressure_transducer = PressureTransducer::upstream();
-	// tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
+	let upstream_pressure_transducer = PressureTransducer::upstream();
+	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
 
-	// let downstream_pressure_transducer = PressureTransducer::downstream();
-	// tokio::spawn(demo::read_pressure_transducer(
-	// 	downstream_pressure_transducer,
-	// ));
+	let downstream_pressure_transducer = PressureTransducer::downstream();
+	tokio::spawn(demo::read_pressure_transducer(
+		downstream_pressure_transducer,
+	));
 
-	// let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
-	// tokio::spawn(demo::read_ads1015(ads1015));
+	let ads1015 = LimTemperature::new(ads1x1x::SlaveAddr::Default);
+	tokio::spawn(demo::read_ads1015(ads1015));
 
-	// let wheel_encoder = WheelEncoder::new();
-	// tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
+	let wheel_encoder = WheelEncoder::new();
+	tokio::spawn(demo::read_wheel_encoder(wheel_encoder));
 
-	// let gyro: Gyroscope = Gyroscope::new();
-	// tokio::spawn(demo::read_gyroscope(gyro));
-	// let brakes = Brakes::new();
-	// tokio::spawn(demo::brake(brakes));
+	let gyro: Gyroscope = Gyroscope::new();
+	tokio::spawn(demo::read_gyroscope(gyro));
+	let brakes = Brakes::new();
+	tokio::spawn(demo::brake(brakes));
 
-	// let high_voltage_system = HighVoltageSystem::new();
-	// tokio::spawn(demo::high_voltage_system(high_voltage_system));
+	let high_voltage_system = HighVoltageSystem::new();
+	tokio::spawn(demo::high_voltage_system(high_voltage_system));
 
 	let lidar = Lidar::new();
 	tokio::spawn(demo::read_lidar(lidar));
 
-
-	
-	// tokio::spawn(async {
-	// 	let mut state_machine = StateMachine::new(io);
-	// 	state_machine.run().await;
-	// });
+	tokio::spawn(async {
+		let mut state_machine = StateMachine::new(io);
+		state_machine.run().await;
+	});
 
 	let app = axum::Router::new().layer(layer);
 
