@@ -7,8 +7,6 @@ function SensorContainer() {
 			<SensorBox />
 			<SensorBox />
 			<SensorBox />
-			<SensorBox />
-			<SensorBox />
 		</div>
 	);
 }
