@@ -23,8 +23,7 @@ const ROOM_TEMP: f32 = 25.0 + C_TO_K_CONVERSION; // Kelvins
 
 fn voltage_to_temp(voltage: i16) -> f32 {
 	let voltage = f32::from(voltage) / 500.0;
-
-	let thermistor_resistance = ((V_IN - voltage) * DIVIDER_RESISTANCE) / (voltage);
+	let thermistor_resistance = ((V_IN - voltage) * DIVIDER_RESISTANCE) / voltage;
 	let r_inf = R_0 * std::f32::consts::E.powf(-BETA / ROOM_TEMP);
 	let temp_kelvins = BETA / (thermistor_resistance / r_inf).ln();
 	temp_kelvins - C_TO_K_CONVERSION
@@ -36,7 +35,6 @@ pub struct LimTemperature {
 
 impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
-		sleep(Duration::from_secs(1));
 		let i2cdev = I2c::new().unwrap();
 		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
 		adc.set_full_scale_range(FullScaleRange::Within4_096V)
