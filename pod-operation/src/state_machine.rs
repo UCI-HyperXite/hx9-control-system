@@ -185,7 +185,8 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-		if encoder_value.unwrap() > STOP_THRESHOLD {
+		let (_, distance) = self.wheel_encoder.measure().unwrap_or(((), 0.0));
+		if distance > STOP_THRESHOLD {
 			return State::Stopped;
 		}
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
