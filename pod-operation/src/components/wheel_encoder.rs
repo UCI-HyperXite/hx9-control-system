@@ -1,6 +1,5 @@
 use rppal::gpio::{Gpio, InputPin};
-use std::time::{Duration, Instant};
-use tracing::{debug, error, info};
+
 
 // GPIO pins for the encoder
 const PIN_ENCODER_A: u8 = 1; //need to move
