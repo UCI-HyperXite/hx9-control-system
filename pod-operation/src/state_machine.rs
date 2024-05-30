@@ -94,7 +94,7 @@ impl StateMachine {
 			io,
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new().expect("Failed to initialize WheelEncoder"),
+			wheel_encoder: WheelEncoder::new(),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
@@ -212,10 +212,11 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let (_, distance) = self.wheel_encoder.measure().unwrap_or((0.0, 0.0));
-		if distance > STOP_THRESHOLD {
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
+
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}

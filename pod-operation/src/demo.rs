@@ -83,11 +83,10 @@ pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	info!("Starting wheel encoder demo.");
 	loop {
-		let (speed, distance) = wheel_encoder
-			.measure()
-			.expect("Failed to measure speed and distance");
-		println!("Speed: {:.2} m/s, Distance: {:.2} m", speed, distance);
-		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		let count = wheel_encoder.measure().expect("faulted");
+		let velocity = wheel_encoder.get_velocity();
+		println!("{:?} {:?}", count, velocity);
+		tokio::time::sleep(std::time::Duration::from_millis(1)).await;
 	}
 }
 
