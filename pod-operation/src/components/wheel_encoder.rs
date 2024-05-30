@@ -4,8 +4,9 @@ use rppal::gpio::{Gpio, InputPin, Level};
 
 use crate::utils::GpioPins;
 
-// TODO: wheel diameter
-const DELTA_D: f32 = 1.0 / 16.0;
+const WHEEL_DIAMETER: f32 = 0.25; // feet
+const ENCODER_RESOLUTION: f32 = 16.0; // pulses per revolution
+const DISTANCE_PER_COUNT: f32 = WHEEL_DIAMETER * std::f32::consts::PI / ENCODER_RESOLUTION; // feet
 
 #[derive(Clone, Copy, num_enum::FromPrimitive, num_enum::IntoPrimitive)]
 #[repr(i8)]
@@ -109,16 +110,19 @@ impl WheelEncoder {
 		let dt = time.duration_since(self.last_time).as_secs_f32();
 
 		if inc != EncoderDiff::Stationary {
-			self.velocity = DELTA_D * f32::from(i8::from(inc)) / dt;
+			self.velocity = DISTANCE_PER_COUNT * f32::from(i8::from(inc)) / dt;
 			self.last_time = time;
 		}
 
-		// TODO: fix resting velocity
+		// When exceeding expected time to next increment, decrease velocity
+		if self.velocity * dt > DISTANCE_PER_COUNT {
+			self.velocity = DISTANCE_PER_COUNT * self.velocity.signum() / dt;
+		}
 
 		self.counter += i16::from(inc);
 		self.last_state = state;
 
-		Ok(f32::from(self.counter) * DELTA_D)
+		Ok(f32::from(self.counter) * DISTANCE_PER_COUNT)
 	}
 
 	pub fn get_velocity(&self) -> f32 {
