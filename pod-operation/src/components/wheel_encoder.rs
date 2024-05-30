@@ -3,8 +3,8 @@ use rppal::gpio::{Gpio, InputPin};
 
 
 // GPIO pins for the encoder
-const PIN_ENCODER_A: u8 = 1; //need to move
-const PIN_ENCODER_B: u8 = 2; //need to move
+const PIN_ENCODER_A: u8 = 23; //need to move
+const PIN_ENCODER_B: u8 = 24; //need to move
 
 // Constants for calculations
 const DELTA_D: f32 = 1.0 / 16.0;
