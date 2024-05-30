@@ -19,8 +19,7 @@ const BETA: f32 = 3950.0; // Kelvins
 const R_0: f32 = 10000.0; // Ohms
 const ROOM_TEMP: f32 = 25.0 + C_TO_K_CONVERSION; // Kelvins
 
-fn voltage_to_temp(voltage: i16) -> f32 {
-	let voltage = f32::from(voltage) / 500.0;
+fn voltage_to_temp(voltage: f32) -> f32 {
 	let thermistor_resistance = ((V_IN - voltage) * DIVIDER_RESISTANCE) / voltage;
 	let r_inf = R_0 * std::f32::consts::E.powf(-BETA / ROOM_TEMP);
 	let temp_kelvins = BETA / (thermistor_resistance / r_inf).ln();
@@ -46,7 +45,7 @@ impl LimTemperature {
 
 	pub fn read_lim_temps(&mut self) -> (f32, f32, f32, f32) {
 		[SingleA0, SingleA1, SingleA2, SingleA3]
-			.map(|channel| block!(self.ads1015.read(channel)).unwrap())
+			.map(|channel| block!(f32::from(self.ads1015.read(channel)).unwrap()) / 500.0)
 			.map(voltage_to_temp)
 			.into()
 	}
