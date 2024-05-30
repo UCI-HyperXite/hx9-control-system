@@ -164,33 +164,33 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
-		// self.signal_light.disable();
+		self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		// self.brakes.disengage();
-		// self.signal_light.disable();
+		self.brakes.disengage();
+		self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		// self.high_voltage_system.enable(); // Enable high voltage system -- may move later
-		// self.signal_light.enable();
-		// self.brakes.disengage();
+		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
+		self.signal_light.enable();
+		self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		// self.signal_light.disable();
-		// self.brakes.engage();
+		self.signal_light.disable();
+		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		// self.signal_light.disable();
-		// self.brakes.engage();
-		// self.high_voltage_system.disable();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
@@ -200,9 +200,9 @@ impl StateMachine {
 			.unwrap()
 			.emit("fault", "123")
 			.ok();
-		// self.signal_light.disable();
-		// self.brakes.engage();
-		// self.high_voltage_system.disable();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
