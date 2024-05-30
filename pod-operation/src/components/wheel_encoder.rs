@@ -1,8 +1,8 @@
-use rppal::gpio::{Gpio, InputPin, Level};
 use std::time::Instant;
 
-const PIN_ENCODER_A: u8 = 1;
-const PIN_ENCODER_B: u8 = 2;
+use rppal::gpio::{Gpio, InputPin, Level};
+
+use crate::utils::GpioPins;
 
 pub struct WheelEncoder {
 	counter: f32,
@@ -20,8 +20,14 @@ impl WheelEncoder {
 		let gpio = Gpio::new().unwrap();
 		WheelEncoder {
 			counter: 0.0,
-			pin_a: gpio.get(PIN_ENCODER_A).unwrap().into_input(),
-			pin_b: gpio.get(PIN_ENCODER_B).unwrap().into_input(),
+			pin_a: gpio
+				.get(GpioPins::WHEEL_ENCODER_A.into())
+				.unwrap()
+				.into_input(),
+			pin_b: gpio
+				.get(GpioPins::WHEEL_ENCODER_B.into())
+				.unwrap()
+				.into_input(),
 			a_last_read: Level::High,
 			b_last_read: Level::Low,
 			last_distance: 0.0,
