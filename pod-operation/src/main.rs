@@ -11,6 +11,7 @@ use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::inverter_board::InverterBoard;
+use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
@@ -48,6 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let high_voltage_system = HighVoltageSystem::new();
 	tokio::spawn(demo::high_voltage_system(high_voltage_system));
+
+	let lidar = Lidar::new();
+	tokio::spawn(demo::read_lidar(lidar));
 
 	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
