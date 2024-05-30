@@ -32,13 +32,13 @@ enum EncoderDiff {
 
 impl From<EncoderDiff> for i16 {
 	fn from(value: EncoderDiff) -> Self {
-		return i16::from(i8::from(value));
+		i16::from(i8::from(value))
 	}
 }
 
 impl From<EncoderDiff> for f32 {
 	fn from(value: EncoderDiff) -> Self {
-		return f32::from(i8::from(value));
+		f32::from(i8::from(value))
 	}
 }
 
@@ -164,7 +164,6 @@ mod tests {
 	fn encoder_diff_undersampling() {
 		let state_1 = encode_state(Level::High, Level::Low);
 		let state_2 = encode_state(Level::Low, Level::High);
-		println!("{}", i8::from(state_2 - state_1));
 		assert_eq!(state_2 - state_1, EncoderDiff::Undersampling);
 	}
 }
