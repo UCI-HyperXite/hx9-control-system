@@ -19,7 +19,6 @@ enum EncoderState {
 	Unknown(i8) = -1,
 }
 
-// type EncoderDiff = i8;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, num_enum::FromPrimitive, num_enum::IntoPrimitive)]
 #[repr(i8)]
 enum EncoderDiff {
@@ -54,14 +53,8 @@ impl Sub for EncoderState {
 
 /// Encode wheel encoder state as gray code 00, 01, 11, 10
 fn encode_state(a: Level, b: Level) -> EncoderState {
-	let state = ((a as u8) << 1) + (a as u8 ^ b as u8);
-	match state {
-		0b00 => EncoderState::A,
-		0b01 => EncoderState::B,
-		0b11 => EncoderState::C,
-		0b10 => EncoderState::D,
-		_ => unreachable!(),
-	}
+	let state = ((a as i8) << 1) + (a as i8 ^ b as i8);
+	EncoderState::from(state)
 }
 
 pub struct WheelEncoder {
