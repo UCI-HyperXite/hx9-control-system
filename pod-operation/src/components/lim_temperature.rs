@@ -45,7 +45,7 @@ impl LimTemperature {
 
 	pub fn read_lim_temps(&mut self) -> (f32, f32, f32, f32) {
 		[SingleA0, SingleA1, SingleA2, SingleA3]
-			.map(|channel| block!(f32::from(self.ads1015.read(channel).unwrap())) / 500.0)
+			.map(|channel| f32::from(block!(self.ads1015.read(channel)).unwrap()) / 500.0)
 			.map(voltage_to_temp)
 			.into()
 	}
