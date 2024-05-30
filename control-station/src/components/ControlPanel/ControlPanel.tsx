@@ -1,8 +1,12 @@
+import { useContext } from "react";
+
+import PodContext from "@/services/PodContext";
+
 import "./ControlPanel.css";
-import usePodData from "@/services/usePodData";
 
 function ControlPanel() {
-	const { podSocketClient } = usePodData();
+	const { podSocketClient } = useContext(PodContext);
+
 	return (
 		<div className="controlpanel">
 			<button className="button run" onClick={() => podSocketClient.sendRun()}>

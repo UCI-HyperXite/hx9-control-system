@@ -1,19 +1,18 @@
+use rppal::gpio::{Gpio, OutputPin};
 use tracing::debug;
 
-use rppal::gpio::{Gpio, OutputPin};
+use crate::utils::GpioPins;
 
 pub struct HighVoltageSystem {
 	pin: OutputPin,
 }
-
-const PIN_CONTACTOR_RELAY: u8 = 20;
 
 impl HighVoltageSystem {
 	pub fn new() -> Self {
 		HighVoltageSystem {
 			pin: Gpio::new()
 				.unwrap()
-				.get(PIN_CONTACTOR_RELAY)
+				.get(GpioPins::CONTACTOR_RELAY.into())
 				.unwrap()
 				.into_output(),
 		}

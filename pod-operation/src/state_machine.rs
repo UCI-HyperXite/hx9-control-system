@@ -8,6 +8,8 @@ use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -16,6 +18,8 @@ const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 
+const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
 	Init,
@@ -23,6 +27,7 @@ pub enum State {
 	Running,
 	Stopped,
 	Halted,
+	Faulted,
 }
 
 type StateTransition = fn(&mut StateMachine) -> State;
@@ -38,6 +43,9 @@ pub struct StateMachine {
 	wheel_encoder: WheelEncoder,
 	//upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
+	lim_temperature_port: LimTemperature,
+	lim_temperature_starboard: LimTemperature,
+	high_voltage_system: HighVoltageSystem,
 }
 
 impl StateMachine {
@@ -50,6 +58,7 @@ impl StateMachine {
 			State::Running => StateMachine::_enter_running,
 			State::Stopped => StateMachine::_enter_stopped,
 			State::Halted => StateMachine::_enter_halted,
+			State::Faulted => StateMachine::_enter_faulted,
 		};
 
 		let state_transitions = enum_map! {
@@ -58,6 +67,7 @@ impl StateMachine {
 			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
 			State::Stopped => None,
 			State::Halted => None,
+			State::Faulted => None,
 		};
 
 		io.ns("/control-station", |socket: SocketRef| {
@@ -87,6 +97,11 @@ impl StateMachine {
 			wheel_encoder: WheelEncoder::new().expect("Failed to initialize WheelEncoder"),
 			//upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
+			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+				false, true,
+			)),
+			high_voltage_system: HighVoltageSystem::new(),
 		}
 	}
 
@@ -157,6 +172,7 @@ impl StateMachine {
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
+		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.signal_light.enable();
 		self.brakes.disengage();
 	}
@@ -169,9 +185,21 @@ impl StateMachine {
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		// self.hvs.disable()
 		self.signal_light.disable();
 		self.brakes.engage();
+		self.high_voltage_system.disable();
+	}
+
+	fn _enter_faulted(&mut self) {
+		info!("Entering Faulted state");
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("fault", "123")
+			.ok();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
@@ -189,8 +217,18 @@ impl StateMachine {
 			return State::Stopped;
 		}
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Halted;
+			return State::Faulted;
 		}
+		let default_readings = self.lim_temperature_port.read_lim_temps();
+		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		if default_readings
+			.iter()
+			.chain(alternative_readings.iter())
+			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		{
+			return State::Faulted;
+		}
+
 		State::Running
 	}
 

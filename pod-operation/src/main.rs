@@ -6,10 +6,14 @@ use tracing_subscriber::FmtSubscriber;
 mod components;
 mod demo;
 mod state_machine;
+mod utils;
 
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::inverter_board::InverterBoard;
+use crate::components::lidar::Lidar;
+use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -47,10 +51,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let high_voltage_system = HighVoltageSystem::new();
 	tokio::spawn(demo::high_voltage_system(high_voltage_system));
 
+	let lidar = Lidar::new();
+	tokio::spawn(demo::read_lidar(lidar));
+
 	tokio::spawn(async {
 		let mut state_machine = StateMachine::new(io);
 		state_machine.run().await;
 	});
+
+	let limcurrent = LimCurrent::new(ads1x1x::SlaveAddr::Default);
+	tokio::spawn(demo::read_lim_current(limcurrent));
+
+	let inverter_board = InverterBoard::new();
+	tokio::spawn(demo::inverter_control(inverter_board));
 
 	let app = axum::Router::new().layer(layer);
 

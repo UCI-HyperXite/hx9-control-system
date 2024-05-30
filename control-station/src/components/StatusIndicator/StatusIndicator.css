@@ -1,0 +1,53 @@
+.status-indicator {
+	background-color: lightgray;
+	border-radius: 10px;
+	padding: 1rem;
+	margin: 2rem;
+}
+
+.group {
+	margin-bottom: 1rem;
+}
+
+.state-text {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.circle {
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 20px;
+	background-color: gray;
+}
+
+.disconnected-state > .active {
+	background-color: white;
+}
+
+.init-state > .active {
+	background-color: pink;
+}
+
+.running-state > .active {
+	background-color: green;
+}
+
+.stopped-state > .active {
+	background-color: red;
+}
+
+.halted-state > .active {
+	background-color: darkred;
+}
+
+.faulted-state > .active {
+	background-color: darkred;
+}
+
+.load-state > .active {
+	background-color: rgb(0, 100, 188);
+}

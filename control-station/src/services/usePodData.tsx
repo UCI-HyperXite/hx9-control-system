@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import PodSocketClient, { PodData } from "./PodSocketClient";
+import PodSocketClient, { PodData, State } from "./PodSocketClient";
 
 function usePodData() {
 	const [podData, setPodData] = useState<PodData>({
+		state: State.Disconnected,
 		connected: false,
 	});
 

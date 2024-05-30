@@ -1,6 +1,7 @@
+use rppal::gpio::{Gpio, InputPin, Level};
 use tokio::time::Instant;
-use rppal::gpio::{Gpio, InputPin};
 
+use crate::utils::GpioPins;
 
 // GPIO pins for the encoder
 const PIN_ENCODER_A: u8 = 23; //need to move
@@ -41,8 +42,8 @@ impl WheelEncoder {
 	// Constructor to initialize the encoder
 	pub fn new() -> Result<Self, rppal::gpio::Error> {
 		let gpio = Gpio::new()?;
-		let pin_a = gpio.get(PIN_ENCODER_A)?.into_input();
-		let pin_b = gpio.get(PIN_ENCODER_B)?.into_input();
+		let pin_a = gpio.get(GpioPins::WHEEL_ENCODER_A.into())?.into_input();
+		let pin_b = gpio.get(GpioPins::WHEEL_ENCODER_B.into())?.into_input();
 
 		let initial_state = encode_state(pin_a.is_high(), pin_b.is_high());
 
