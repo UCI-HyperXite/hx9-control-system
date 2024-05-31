@@ -54,8 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let lidar = Lidar::new();
 	tokio::spawn(demo::read_lidar(lidar));
 
-	tokio::spawn(async {
-		let mut state_machine = StateMachine::new(io);
+	let mut state_machine = StateMachine::new(io);
+	tokio::spawn(async move {
 		state_machine.run().await;
 	});
 
