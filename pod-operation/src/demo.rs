@@ -3,6 +3,8 @@ use tracing::info;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::inverter_board::InverterBoard;
+use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
@@ -81,12 +83,10 @@ pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	info!("Starting wheel encoder demo.");
 	loop {
-		println!(
-			"{:?}{:?}",
-			wheel_encoder.read(),
-			wheel_encoder.get_velocity()
-		);
-		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		let count = wheel_encoder.measure().expect("faulted");
+		let velocity = wheel_encoder.get_velocity();
+		println!("{:?} {:?}", count, velocity);
+		tokio::time::sleep(std::time::Duration::from_millis(1)).await;
 	}
 }
 
@@ -119,5 +119,19 @@ pub async fn high_voltage_system(mut high_voltage_system: HighVoltageSystem) {
 		}
 
 		i += 1;
+	}
+}
+
+pub async fn inverter_control(mut inverter_control: InverterBoard) {
+	loop {
+		inverter_control.send_control(0.0, 1.0);
+		tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+	}
+}
+pub async fn read_lidar(mut lidar: Lidar) {
+	info!("Starting Lidar Demo.");
+	loop {
+		println!("{:?}", lidar.read_distance());
+		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 	}
 }

@@ -11,6 +11,7 @@ use tracing::info;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -19,7 +20,7 @@ use crate::components::wheel_encoder::WheelEncoder;
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
-
+const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
@@ -48,7 +49,7 @@ pub struct StateMachine {
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
-	gyro: Gyroscope,
+	lidar: Lidar,
 }
 
 impl StateMachine {
@@ -105,7 +106,7 @@ impl StateMachine {
 				false, true,
 			)),
 			high_voltage_system: HighVoltageSystem::new(),
-			gyro: Gyroscope::new(),
+			lidar: Lidar::new(),
 		}
 	}
 
@@ -224,20 +225,25 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
 		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
+
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}
-		let default_readings: [f32; 4] = self.lim_temperature_port.read_lim_temps().into();
-		let alternative_readings: [f32; 4] = self.lim_temperature_starboard.read_lim_temps().into();
-		let all_readings = [default_readings, alternative_readings].concat();
-		if all_readings
+		let default_readings = self.lim_temperature_port.read_lim_temps();
+		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		if default_readings
 			.iter()
+			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
+			return State::Faulted;
+		}
+		// Last 20% of the track, as indicated by braking
+		if self.lidar.read_distance() < END_OF_TRACK {
 			return State::Faulted;
 		}
 
