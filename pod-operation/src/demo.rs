@@ -10,6 +10,7 @@ use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
+
 pub async fn blink(mut signal_light: SignalLight) {
 	let mut i = 0;
 
@@ -82,12 +83,10 @@ pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	info!("Starting wheel encoder demo.");
 	loop {
-		println!(
-			"{:?}{:?}",
-			wheel_encoder.read(),
-			wheel_encoder.get_velocity()
-		);
-		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+		let count = wheel_encoder.measure().expect("faulted");
+		let velocity = wheel_encoder.get_velocity();
+		println!("{:?} {:?}", count, velocity);
+		tokio::time::sleep(std::time::Duration::from_millis(1)).await;
 	}
 }
 

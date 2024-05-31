@@ -215,24 +215,21 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-		// if encoder_value > STOP_THRESHOLD {
-		// 	return State::Stopped;
-		// }
-		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-		// 	return State::Faulted;
-		// }
-		// let default_readings = self.lim_temperature_port.read_lim_temps();
-		// let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		// if default_readings
-		// 	.iter()
-		// 	.chain(alternative_readings.iter())
-		// 	.any(|&reading| reading > LIM_TEMP_THRESHOLD)
-		// {
-		// 	return State::Faulted;
-		// }
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
+			return State::Stopped;
+		}
 
-		if self.lidar.read_distance() < 4 {
+		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			return State::Faulted;
+		}
+		let default_readings = self.lim_temperature_port.read_lim_temps();
+		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		if default_readings
+			.iter()
+			.chain(alternative_readings.iter())
+			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		{
 			return State::Faulted;
 		}
 
