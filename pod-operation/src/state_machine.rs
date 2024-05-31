@@ -154,12 +154,12 @@ impl StateMachine {
 
 		// Full JSON object
 		let full_json = json!({
-			"gyroscope": 20,
-			"wheel_encoder": 30,
-			"downstream_pressure_transducer": 40,
-			"upstream_pressure_transducer": 30,
-			"lim_temperature_port": 11,
-			"lim_temperature_starboard": 13,
+			"gyroscope": gyro_data,
+			"wheel_encoder": wheel_encoder_data,
+			"downstream_pressure_transducer": downstream_pressure_data,
+			"upstream_pressure_transducer": upstream_pressure_data,
+			"lim_temperature_port": lim_temp_port_data,
+			"lim_temperature_starboard": lim_temp_starboard_data,
 		});
 
 		self.io

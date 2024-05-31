@@ -2,7 +2,6 @@ import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import { ioNamespace } from "./socketHandler";
 
-
 export enum State {
 	Disconnected = "Disconnected",
 	Init = "Init",
