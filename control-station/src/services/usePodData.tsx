@@ -3,8 +3,14 @@ import PodSocketClient, { PodData, State } from "./PodSocketClient";
 
 function usePodData() {
 	const [podData, setPodData] = useState<PodData>({
-		state: State.Disconnected,
 		connected: false,
+		state: State.Disconnected,
+		gyroscope: 0,
+		wheel_encoder: 0,
+		downstream_pressure_transducer: 0,
+		upstream_pressure_transducer: 0,
+		lim_temperature_port: 0,
+		lim_temperature_starboard: 0,
 	});
 
 	const podSocketClient = useMemo(() => new PodSocketClient(setPodData), []);
