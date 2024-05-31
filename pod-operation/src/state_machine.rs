@@ -9,7 +9,6 @@ use tracing::info;
 
 use crate::components::brakes::Brakes;
 use crate::components::high_voltage_system::HighVoltageSystem;
-use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
