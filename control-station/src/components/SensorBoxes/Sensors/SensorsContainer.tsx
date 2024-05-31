@@ -1,20 +1,14 @@
 import SensorBox from "./SensorBox";
-import { useContext } from "react";
-import { podContext } from "@/App";
+import usePodData from "@/services/usePodData";
 
 function SensorContainer() {
-	const podData = useContext(podContext);
-
-	if (!podData) {
-		return <div>Loading...</div>;
-	}
-
+	const { podData } = usePodData();
 	return (
 		<div className="SensorContainer">
 			<SensorBox value={podData.gyroscope} />
 			<SensorBox value={podData.wheel_encoder} />
+			<SensorBox value={podData.wheel_encoder} />
 			<SensorBox value={podData.downstream_pressure_transducer} />
-			<SensorBox value={podData.upstream_pressure_transducer} />
 		</div>
 	);
 }
