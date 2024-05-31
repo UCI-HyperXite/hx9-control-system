@@ -47,7 +47,6 @@ pub struct StateMachine {
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
-	lidar: Lidar,
 }
 
 impl StateMachine {
@@ -104,7 +103,6 @@ impl StateMachine {
 				false, true,
 			)),
 			high_voltage_system: HighVoltageSystem::new(),
-			lidar: Lidar::new(),
 		}
 	}
 
