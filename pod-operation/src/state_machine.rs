@@ -9,6 +9,7 @@ use tracing::info;
 
 use crate::components::brakes::Brakes;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -38,14 +39,15 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	brakes: Brakes,
-	signal_light: SignalLight,
-	wheel_encoder: WheelEncoder,
-	//upstream_pressure_transducer: PressureTransducer,
-	downstream_pressure_transducer: PressureTransducer,
-	lim_temperature_port: LimTemperature,
-	lim_temperature_starboard: LimTemperature,
-	high_voltage_system: HighVoltageSystem,
+	// brakes: Brakes,
+	// signal_light: SignalLight,
+	// wheel_encoder: WheelEncoder,
+	// //upstream_pressure_transducer: PressureTransducer,
+	// downstream_pressure_transducer: PressureTransducer,
+	// lim_temperature_port: LimTemperature,
+	// lim_temperature_starboard: LimTemperature,
+	// high_voltage_system: HighVoltageSystem,
+	lidar: Lidar,
 }
 
 impl StateMachine {
@@ -92,16 +94,17 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			brakes: Brakes::new(),
-			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new(),
-			//upstream_pressure_transducer: PressureTransducer::upstream(),
-			downstream_pressure_transducer: PressureTransducer::downstream(),
-			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
-				false, true,
-			)),
-			high_voltage_system: HighVoltageSystem::new(),
+			// brakes: Brakes::new(),
+			// signal_light: SignalLight::new(),
+			// wheel_encoder: WheelEncoder::new(),
+			// //upstream_pressure_transducer: PressureTransducer::upstream(),
+			// downstream_pressure_transducer: PressureTransducer::downstream(),
+			// lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			// lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+			// 	false, true,
+			// )),
+			// high_voltage_system: HighVoltageSystem::new(),
+			lidar: Lidar::new(),
 		}
 	}
 
@@ -161,33 +164,33 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
-		self.signal_light.disable();
+		// self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		self.brakes.disengage();
-		self.signal_light.disable();
+		// self.brakes.disengage();
+		// self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
-		self.signal_light.enable();
-		self.brakes.disengage();
+		// self.high_voltage_system.enable(); // Enable high voltage system -- may move later
+		// self.signal_light.enable();
+		// self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		self.signal_light.disable();
-		self.brakes.engage();
+		// self.signal_light.disable();
+		// self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		self.signal_light.disable();
-		self.brakes.engage();
-		self.high_voltage_system.disable();
+		// self.signal_light.disable();
+		// self.brakes.engage();
+		// self.high_voltage_system.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
@@ -197,9 +200,9 @@ impl StateMachine {
 			.unwrap()
 			.emit("fault", "123")
 			.ok();
-		self.signal_light.disable();
-		self.brakes.engage();
-		self.high_voltage_system.disable();
+		// self.signal_light.disable();
+		// self.brakes.engage();
+		// self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
@@ -212,20 +215,24 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
-			return State::Stopped;
-		}
-		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Faulted;
-		}
-		let default_readings = self.lim_temperature_port.read_lim_temps();
-		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		if default_readings
-			.iter()
-			.chain(alternative_readings.iter())
-			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
-		{
+		// let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		// if encoder_value > STOP_THRESHOLD {
+		// 	return State::Stopped;
+		// }
+		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+		// 	return State::Faulted;
+		// }
+		// let default_readings = self.lim_temperature_port.read_lim_temps();
+		// let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		// if default_readings
+		// 	.iter()
+		// 	.chain(alternative_readings.iter())
+		// 	.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		// {
+		// 	return State::Faulted;
+		// }
+
+		if self.lidar.read_distance() < 4 {
 			return State::Faulted;
 		}
 
