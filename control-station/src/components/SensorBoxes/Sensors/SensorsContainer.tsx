@@ -6,10 +6,10 @@ function SensorContainer() {
 	const { podData } = useContext(PodContext);
 	return (
 		<div className="SensorContainer">
-			<SensorBox value={podData.gyroscope} />
-			<SensorBox value={podData.wheel_encoder} />
-			<SensorBox value={podData.downstream_pressure_transducer} />
-			<SensorBox value={podData.upstream_pressure_transducer} />
+			<SensorBox title="Speed" value={podData.gyroscope} />
+			<SensorBox title="Distance" value={podData.wheel_encoder} />
+			<SensorBox title="PT1" value={podData.downstream_pressure_transducer} />
+			<SensorBox title="PT2" value={podData.upstream_pressure_transducer} />
 		</div>
 	);
 }
