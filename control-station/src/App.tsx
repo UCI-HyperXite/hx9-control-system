@@ -5,7 +5,6 @@ import { PodData } from "./services/PodSocketClient";
 
 const { podData, podSocketClient } = usePodData();
 export const podContext = createContext<PodData>(podData);
-
 function App() {
 	return (
 		<main>
