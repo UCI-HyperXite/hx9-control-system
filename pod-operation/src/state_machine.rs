@@ -17,7 +17,7 @@ use crate::components::wheel_encoder::WheelEncoder;
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
-
+const BRAKING_THRESHOLD: f32 = 9.1; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
@@ -214,6 +214,9 @@ impl StateMachine {
 		info!("Rolling Running state");
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
 		if encoder_value > STOP_THRESHOLD {
+			return State::Stopped;
+		}
+		if self.wheel_encoder.get_braking_distance() <= BRAKING_THRESHOLD {
 			return State::Stopped;
 		}
 
