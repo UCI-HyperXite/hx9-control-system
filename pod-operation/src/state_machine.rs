@@ -152,16 +152,6 @@ impl StateMachine {
 		let lim_temp_port_data = self.lim_temperature_port.read_lim_temps();
 		let lim_temp_starboard_data = self.lim_temperature_starboard.read_lim_temps();
 
-		let gyro_json = json!({ "gyroscope": gyro_data });
-		let wheel_encoder_json = json!({ "wheel_encoder": wheel_encoder_data });
-		let downstream_pressure_json =
-			json!({ "downstream_pressure_transducer": downstream_pressure_data });
-		let upstream_pressure_json =
-			json!({ "upstream_pressure_transducer": upstream_pressure_data });
-		let lim_temp_port_json = json!({ "lim_temperature_port": lim_temp_port_data });
-		let lim_temp_starboard_json =
-			json!({ "lim_temperature_starboard": lim_temp_starboard_data });
-
 		// Full JSON object
 		let full_json = json!({
 			"gyroscope": gyro_data,
