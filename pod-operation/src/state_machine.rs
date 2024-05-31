@@ -212,10 +212,11 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.read(); // Read the encoder value
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
 		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
+
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}
