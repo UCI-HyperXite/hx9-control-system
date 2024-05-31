@@ -1,10 +1,9 @@
-import { SensorData, StatusIndicator } from "@/components";
+import { SensorData } from "@/components";
 
 function Dashboard() {
 	return (
 		<div>
 			<SensorData />
-			<StatusIndicator />
 		</div>
 	);
 }
