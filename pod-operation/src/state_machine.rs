@@ -21,6 +21,7 @@ const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Metersconst BRAKING_THRESHOLD: f32 = 9.1; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 const BRAKING_THRESHOLD: f32 = 9.1; // Meters
+const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
