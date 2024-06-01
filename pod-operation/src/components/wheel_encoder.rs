@@ -67,6 +67,7 @@ pub struct WheelEncoder {
 	last_state: EncoderState,
 	last_time: Instant,
 	velocity: f32,
+	faulted: bool,
 }
 
 impl WheelEncoder {
@@ -102,6 +103,7 @@ impl WheelEncoder {
 			pin_a,
 			pin_b,
 			velocity: 0.0,
+			faulted: false,
 		}
 	}
 
@@ -111,6 +113,7 @@ impl WheelEncoder {
 		let inc = state - self.last_state;
 
 		if inc == EncoderDiff::Undersampling {
+			self.faulted = true;
 			return Err("Wheel encoder faulted");
 		}
 
@@ -139,6 +142,10 @@ impl WheelEncoder {
 
 	pub fn get_distance(&self) -> f32 {
 		f32::from(self.counter) * DISTANCE_PER_COUNT
+	}
+
+	pub fn faulted(&self) -> bool {
+		self.faulted
 	}
 
 	fn read_state(&self) -> EncoderState {

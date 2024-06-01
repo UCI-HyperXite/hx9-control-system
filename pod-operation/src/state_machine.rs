@@ -6,8 +6,7 @@ use serde_json::json;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
-
-use tracing::info;
+use tracing::{error, info};
 
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
@@ -138,7 +137,7 @@ impl StateMachine {
 				match encoder.measure() {
 					Ok(value) => value,
 					Err(e) => {
-						info!("Wheel encoder error: {:?}", e);
+						error!("Wheel encoder error: {:?}", e);
 						continue;
 					}
 				}
@@ -260,6 +259,15 @@ impl StateMachine {
 		let encoder_value = self.wheel_encoder.lock().unwrap();
 		let distance = encoder_value.get_distance();
 		let velocity = encoder_value.get_velocity();
+		if encoder_value.faulted() {
+			error!("Wheel encoder faulted");
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", "Wheel encoder faulted.")
+				.ok();
+			return State::Faulted;
+		}
 		drop(encoder_value);
 
 		let full_json = json!({
