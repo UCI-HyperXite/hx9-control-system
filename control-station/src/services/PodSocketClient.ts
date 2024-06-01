@@ -9,14 +9,14 @@ export enum State {
 	Running = "Running",
 	Stopped = "Stopped",
 	Halted = "Halted",
-	Faulted = "Faulted",
+	fault = "Faulted",
 }
 
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
 	serverResponse: (data: string) => void;
-	faulted: (data: string) => void;
+	fault: (data: string) => void;
 }
 
 interface Message {
@@ -56,7 +56,7 @@ class PodSocketClient {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),
 			serverResponse: this.onData.bind(this),
-			faulted: this.onFault.bind(this),
+			fault: this.onFault.bind(this),
 		} as const;
 		this.setPodData = setPodData;
 	}
@@ -124,8 +124,8 @@ class PodSocketClient {
 	}
 
 	private onFault(data: string): void {
-		console.error("Server faulted with message:", data);
-		this.addMessage(data, State.Faulted);
+		console.error("Server fault with message:", data);
+		this.addMessage(data, State.fault);
 	}
 
 	private addMessage(response: string, newState: State): void {

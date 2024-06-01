@@ -219,7 +219,7 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", "Low pressure detected.")
+				.emit("fault", ("Low pressure detected. Currently {}, should be above 126 PSI.", self.downstream_pressure_transducer.read_pressure()))
 				.ok();
 			return State::Faulted;
 		}
@@ -233,7 +233,7 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", "High temperature detected.")
+				.emit("fault", ("High temperature detected, currently {}, should be below {} C.", reading, LIM_TEMP_THRESHOLD))
 				.ok();
 			return State::Faulted;
 		}
@@ -242,7 +242,7 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", "End of track detected.")
+				.emit("fault", ("End of track detected. Current distance to end: {}, less than {} meters away", self.lidar.read_distance(), END_OF_TRACK))
 				.ok();
 			return State::Faulted;
 		}
