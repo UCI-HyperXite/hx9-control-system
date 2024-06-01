@@ -11,6 +11,7 @@ function usePodData() {
 		upstream_pressure_transducer: 0,
 		lim_temperature_port: 0,
 		lim_temperature_starboard: 0,
+		messages: [],
 	});
 
 	const podSocketClient = useMemo(() => new PodSocketClient(setPodData), []);

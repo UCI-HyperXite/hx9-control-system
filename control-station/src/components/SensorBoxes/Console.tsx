@@ -1,14 +1,32 @@
+import { useContext, useEffect, useRef } from "react";
 import "./SensorData.css";
+import PodContext from "@/services/PodContext";
 
 function Console() {
+	const { podData } = useContext(PodContext);
+	const listEndRef = useRef<HTMLLIElement | null>(null);
+
+	useEffect(() => {
+		if (listEndRef.current) {
+			listEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+		console.log(podData.messages);
+	}, [podData.messages]);
+
 	return (
 		<div className="console">
 			<h2>Console</h2>
 			<ul className="console-list">
-				<li className="console-list-item">Start Sent</li>
-				<li className="console-list-item">Stop Sent</li>
-				<li className="console-list-item">Load Sent</li>
-				<li className="console-list-item">Force Stop Sent</li>
+				{podData.messages.map((prop, index) => (
+					<li
+						key={index}
+						className="console-list-item"
+						ref={index === podData.messages.length - 1 ? listEndRef : null}
+					>
+						{prop.timestamp.toLocaleTimeString("en-US", { hour12: false })} &nbsp;
+						{prop.message.toUpperCase()}
+					</li>
+				))}
 			</ul>
 		</div>
 	);
