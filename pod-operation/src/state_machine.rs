@@ -195,11 +195,6 @@ impl StateMachine {
 
 	fn _enter_faulted(&mut self) {
 		info!("Entering Faulted state");
-		self.io
-			.of("/control-station")
-			.unwrap()
-			.emit("fault", "123")
-			.ok();
 		self.signal_light.disable();
 		self.brakes.engage();
 		self.high_voltage_system.disable();
@@ -221,6 +216,11 @@ impl StateMachine {
 		}
 
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", "Low pressure detected.")
+				.ok();
 			return State::Faulted;
 		}
 		let default_readings = self.lim_temperature_port.read_lim_temps();
@@ -230,10 +230,20 @@ impl StateMachine {
 			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", "High temperature detected.")
+				.ok();
 			return State::Faulted;
 		}
 		// Last 20% of the track, as indicated by braking
 		if self.lidar.read_distance() < END_OF_TRACK {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", "End of track detected.")
+				.ok();
 			return State::Faulted;
 		}
 

@@ -16,6 +16,7 @@ interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
 	serverResponse: (data: string) => void;
+	faulted: (data: string) => void;
 }
 
 interface Message {
@@ -55,6 +56,7 @@ class PodSocketClient {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),
 			serverResponse: this.onData.bind(this),
+			faulted: this.onFault.bind(this),
 		} as const;
 		this.setPodData = setPodData;
 	}
@@ -119,6 +121,11 @@ class PodSocketClient {
 
 	private onData(data: string): void {
 		console.log("server says", data);
+	}
+
+	private onFault(data: string): void {
+		console.error("Server faulted with message:", data);
+		this.addMessage(data, State.Faulted);
 	}
 
 	private addMessage(response: string, newState: State): void {
