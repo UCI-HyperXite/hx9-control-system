@@ -5,7 +5,7 @@ use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, MutexGuard};
 use tracing::info;
 
 use crate::components::brakes::Brakes;
@@ -33,7 +33,7 @@ pub enum State {
 	Faulted,
 }
 
-type StateTransition = fn(&mut StateMachine) -> State;
+type StateTransition = fn(&mut StateMachine, f32) -> State;
 
 pub struct StateMachine {
 	last_state: State,
@@ -41,21 +41,21 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	brakes: Brakes,
-	signal_light: SignalLight,
-	wheel_encoder: WheelEncoder,
-	//upstream_pressure_transducer: PressureTransducer,
-	downstream_pressure_transducer: PressureTransducer,
-	lim_temperature_port: LimTemperature,
-	lim_temperature_starboard: LimTemperature,
-	high_voltage_system: HighVoltageSystem,
-	lidar: Lidar,
+	// brakes: Brakes,
+	// signal_light: SignalLight,
+	// //upstream_pressure_transducer: PressureTransducer,
+	// downstream_pressure_transducer: PressureTransducer,
+	// lim_temperature_port: LimTemperature,
+	// lim_temperature_starboard: LimTemperature,
+	// high_voltage_system: HighVoltageSystem,
+	// lidar: Lidar,
 	encoder_value: Arc<Mutex<f32>>,
 }
 
 impl StateMachine {
 	pub fn new(io: SocketIo) -> Self {
 		static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::Init));
+
 
 		let enter_actions = enum_map! {
 			State::Init => StateMachine::_enter_init,
@@ -68,8 +68,8 @@ impl StateMachine {
 
 		let state_transitions = enum_map! {
 			State::Init => None,
-			State::Load => Some(StateMachine::_load_periodic as fn(&mut Self) -> State),
-			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
+			State::Load => Some(StateMachine::_load_periodic as fn(&mut Self, f32) -> State),
+            State::Running => Some(StateMachine::_running_periodic as fn(&mut Self, f32) -> State),
 			State::Stopped => None,
 			State::Halted => None,
 			State::Faulted => None,
@@ -97,28 +97,25 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			brakes: Brakes::new(),
-			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new(),
-			//upstream_pressure_transducer: PressureTransducer::upstream(),
-			downstream_pressure_transducer: PressureTransducer::downstream(),
-			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
-				false, true,
-			)),
-			high_voltage_system: HighVoltageSystem::new(),
-			lidar: Lidar::new(),
+			// brakes: Brakes::new(),
+			// signal_light: SignalLight::new(),
+			// //upstream_pressure_transducer: PressureTransducer::upstream(),
+			// downstream_pressure_transducer: PressureTransducer::downstream(),
+			// lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			// lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+			// 	false, true,
+			// )),
+			// high_voltage_system: HighVoltageSystem::new(),
+			// lidar: Lidar::new(),
 			encoder_value: Arc::new(Mutex::new(0.0)),
 		}
 	}
 
 	pub async fn run(&mut self) {
 		let mut interval = tokio::time::interval(TICK_INTERVAL);
-		let encoder_value = self.encoder_value.clone(); // Clone the Arc to pass to the task
-		tokio::spawn(Self::wheel_encoder_task(
-			self.wheel_encoder.clone(),
-			encoder_value,
-		)); // Spawn the wheel encoder task
+		let encoder_value = self.encoder_value.clone();
+
+		tokio::spawn(Self::wheel_encoder_task(encoder_value));
 
 		loop {
 			self.tick().await;
@@ -126,8 +123,10 @@ impl StateMachine {
 		}
 	}
 
-	async fn wheel_encoder_task(mut wheel_encoder: WheelEncoder, encoder_value: Arc<Mutex<f32>>) {
+	async fn wheel_encoder_task(encoder_value: Arc<Mutex<f32>>) {
 		let mut interval = tokio::time::interval(ENCODER_SAMPLE_INTERVAL);
+		let mut wheel_encoder = WheelEncoder::new();
+
 
 		loop {
 			match wheel_encoder.measure() {
@@ -150,23 +149,19 @@ impl StateMachine {
 	/// Tick the state machine by running the transition for the current state
 	/// and actions for when entering a new state
 	async fn tick(&mut self) {
-		// Acquire lock for state to prevent socket handlers from overwriting
-		let mut state = self.state.lock().await;
+        let mut state = self.state.lock().await;
 
-		// Run enter action when entering a new state
-		if *state != self.last_state {
-			info!("State changed from {:?} to {:?}", self.last_state, state);
-			self.enter_state(&state);
-		}
+        if *state != self.last_state {
+            info!("State changed from {:?} to {:?}", self.last_state, state);
+            self.enter_state(&state);
+        }
 
-		self.pod_periodic();
+        self.pod_periodic();
 
-		// Proceed to the next state by transition
-		let next_state = self.run_state_transition(&state);
-		self.last_state = *state;
-		*state = next_state;
-		// state is dropped, releasing the lock
-	}
+        let next_state = self.run_state_transition(&state).await;
+        self.last_state = *state;
+        *state = next_state;
+    }
 
 	/// Perform operations on every FSM tick
 	fn pod_periodic(&mut self) {
@@ -185,90 +180,93 @@ impl StateMachine {
 
 	/// Run the transition function for a given state if it exists.
 	/// Otherwise, remain in the same state.
-	fn run_state_transition(&mut self, state: &State) -> State {
-		match self.state_transitions[*state] {
-			Some(state_transition) => state_transition(self),
-			None => *state,
-		}
-	}
+	async fn run_state_transition(&mut self, state: &MutexGuard<'_, State>) -> State {
+        let encoder_value = {
+            let encoder_value_guard = self.encoder_value.lock().await;
+            *encoder_value_guard
+        };
+        
+        match self.state_transitions[**state] {
+            Some(state_transition) => state_transition(self, encoder_value),
+            None => **state,
+        }
+    }
+
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
-		self.signal_light.disable();
+		//self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		self.brakes.disengage();
-		self.signal_light.disable();
+		// self.brakes.disengage();
+		// self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
-		self.signal_light.enable();
-		self.brakes.disengage();
+		// self.high_voltage_system.enable(); // Enable high voltage system -- may move later
+		// self.signal_light.enable();
+		// self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		self.signal_light.disable();
-		self.brakes.engage();
+		// self.signal_light.disable();
+		// self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		self.signal_light.disable();
-		self.brakes.engage();
-		self.high_voltage_system.disable();
+		// self.signal_light.disable();
+		// self.brakes.engage();
+		// self.high_voltage_system.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
 		info!("Entering Faulted state");
-		self.io
-			.of("/control-station")
-			.unwrap()
-			.emit("fault", "123")
-			.ok();
-		self.signal_light.disable();
-		self.brakes.engage();
-		self.high_voltage_system.disable();
+		// self.io
+		// 	.of("/control-station")
+		// 	.unwrap()
+		// 	.emit("fault", "123")
+		// 	.ok();
+		// self.signal_light.disable();
+		// self.brakes.engage();
+		// self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
-	fn _load_periodic(&mut self) -> State {
-		info!("Rolling Load state");
-
-		State::Load
-	}
+	fn _load_periodic(&mut self, _encoder_value: f32) -> State {
+        info!("Rolling Load state");
+        State::Load
+    }
 
 	/// Perform operations when the pod is running
-	fn _running_periodic(&mut self) -> State {
+	fn _running_periodic(&mut self, encoder_value: f32) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		let encoder_value = self.encoder_value.lock().await; // Access the encoder value
+		
+        if encoder_value > STOP_THRESHOLD {
+            return State::Stopped;
+        }
 
-		if *encoder_value > STOP_THRESHOLD {
-			return State::Stopped;
-		}
+		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+		// 	return State::Faulted;
+		// }
 
-		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-			return State::Faulted;
-		}
-
-		let default_readings = self.lim_temperature_port.read_lim_temps();
-		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		if default_readings
-			.iter()
-			.chain(alternative_readings.iter())
-			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
-		{
-			return State::Faulted;
-		}
-		// Last 20% of the track, as indicated by braking
-		if self.lidar.read_distance() < END_OF_TRACK {
-			return State::Faulted;
-		}
+		// let default_readings = self.lim_temperature_port.read_lim_temps();
+		// let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		// if default_readings
+		// 	.iter()
+		// 	.chain(alternative_readings.iter())
+		// 	.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		// {
+		// 	return State::Faulted;
+		// }
+		// // Last 20% of the track, as indicated by braking
+		// if self.lidar.read_distance() < END_OF_TRACK {
+		// 	return State::Faulted;
+		// }
 
 		State::Running
 	}
