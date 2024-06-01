@@ -11,22 +11,26 @@ function Dynamics() {
 	return (
 		<div className="dynamics">
 			<div className="dynamics-sensorbox">
-				<SensorBox title="Roll" value={gyroscope.roll} />
-				<SensorBox title="Pitch" value={gyroscope.pitch} />
+				<SensorBox title="Roll" value={Math.round(gyroscope.roll * 100) / 100} />
+				<SensorBox title="Pitch" value={Math.round(gyroscope.pitch * 100) / 100} />
 			</div>
 			<div className="dynamics-pictures">
 				<div className="pod-picture-container">
 					<img
 						src={FrontPod}
 						alt="front view of the pod"
-						style={{ transform: `rotate(${gyroscope.roll}deg)` }}
+						style={{
+							transform: `rotate(${Math.round(gyroscope.roll * 100) / 100}deg)`,
+						}}
 					/>
 				</div>
 				<div className="pod-picture-container">
 					<img
 						src={SidePod}
 						alt="side view of the pod"
-						style={{ transform: `rotate(${gyroscope.pitch}deg)` }}
+						style={{
+							transform: `rotate(${Math.round(gyroscope.pitch * 100) / 100}deg)`,
+						}}
 					/>
 				</div>
 			</div>

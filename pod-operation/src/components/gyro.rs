@@ -1,3 +1,4 @@
+pub const PI: f32 = 3.14159265358979323846264338327950288_f32; // 3.1415926535897931f64
 #[cfg(feature = "mpu6050")]
 use {
 	mpu6050::Mpu6050,
@@ -30,8 +31,8 @@ impl Gyroscope {
 	pub fn read_orientation(&mut self) -> Orientation {
 		let angles = self.mpu6050.get_acc_angles().unwrap();
 		Orientation {
-			pitch: angles[1],
-			roll: angles[0],
+			pitch: (angles[1] * 180.0 / PI),
+			roll: (angles[0] * 180.0 / PI),
 		}
 	}
 
