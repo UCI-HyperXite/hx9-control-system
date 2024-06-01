@@ -171,8 +171,6 @@ impl StateMachine {
 	fn pod_periodic(&mut self) {
 		// Reading each value individually
 		let gyro_data = self.gyro.read_orientation();
-		let wheel_encoder_distance = self.wheel_encoder.measure().expect("wheel encoder faulted");
-		let wheel_encoder_velocity = self.wheel_encoder.get_velocity();
 		let downstream_pressure_data = self.downstream_pressure_transducer.read_pressure();
 		let upstream_pressure_data = self.upstream_pressure_transducer.read_pressure();
 		let lim_temp_port_data = self.lim_temperature_port.read_lim_temps();
@@ -181,7 +179,6 @@ impl StateMachine {
 		// Full JSON object
 		let full_json = json!({
 			"gyroscope": gyro_data,
-			"wheel_encoder": { "distance": wheel_encoder_distance, "velocity": wheel_encoder_velocity },
 			"downstream_pressure_transducer": downstream_pressure_data,
 			"upstream_pressure_transducer": upstream_pressure_data,
 			"lim_temperature_port": lim_temp_port_data,
@@ -261,8 +258,17 @@ impl StateMachine {
 		let encoder_value = self.wheel_encoder.lock().unwrap();
 		let distance = encoder_value.get_distance();
 		let velocity: f32 = encoder_value.get_velocity();
-		info!("Distance: {:?}", distance);
-		info!("Velocity: {:?}", velocity);
+
+		let full_json = json!({
+			"distance": distance,
+			"velocity": velocity,
+		});
+
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("serverResponse", full_json)
+			.ok();
 
 		if distance > STOP_THRESHOLD {
 			return State::Stopped;
