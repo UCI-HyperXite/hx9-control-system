@@ -113,6 +113,7 @@ impl WheelEncoder {
 		let inc = state - self.last_state;
 
 		if inc == EncoderDiff::Undersampling {
+			self.faulted = true;
 			return Err("Wheel encoder faulted");
 		}
 
@@ -144,10 +145,6 @@ impl WheelEncoder {
 	}
 
 	pub fn faulted(&self) -> bool {
-		self.faulted
-	}
-
-	pub fn is_faulted(&self) -> bool {
 		self.faulted
 	}
 
