@@ -218,13 +218,21 @@ impl StateMachine {
 		info!("Rolling Running state");
 
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+
+		let current_braking_distance = self.wheel_encoder.get_braking_distance();
+
+		// Predict next tick's braking distance
 		let current_velocity = self.wheel_encoder.get_velocity();
+		let predicted_velocity =
+			current_velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
+		let predicted_braking_distance = -predicted_velocity.powi(2) / (2.0 * BRAKING_DECELERATION);
+
 		// Check if the predicted braking distance requires stopping
 		if encoder_value + current_velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
 			return State::Stopped;
 		}
 
-		if encoder_value <= STOP_THRESHOLD {
+		if predicted_braking_distance <= BRAKING_THRESHOLD {
 			return State::Stopped;
 		}
 
