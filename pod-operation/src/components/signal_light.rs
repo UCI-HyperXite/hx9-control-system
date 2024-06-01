@@ -1,4 +1,8 @@
+#[cfg(not(feature = "gpio"))]
+use crate::utils::mock::gpio::OutputPin;
+#[cfg(feature = "gpio")]
 use rppal::gpio::{Gpio, OutputPin};
+
 use tracing::debug;
 
 use crate::utils::GpioPins;
@@ -10,6 +14,11 @@ pub struct SignalLight {
 impl SignalLight {
 	pub fn new() -> Self {
 		SignalLight {
+			#[cfg(not(feature = "gpio"))]
+			pin: OutputPin {
+				pin: GpioPins::CONTACTOR_RELAY.into(),
+			},
+			#[cfg(feature = "gpio")]
 			pin: Gpio::new()
 				.unwrap()
 				.get(GpioPins::SIGNAL_LIGHT_RELAY.into())

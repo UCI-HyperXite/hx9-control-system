@@ -1,10 +1,15 @@
 import "./SensorBox.css";
 
-function SensorBox() {
+interface SensorBoxProps {
+	title: string;
+	value: number;
+}
+
+function SensorBox({ title, value }: SensorBoxProps) {
 	return (
 		<div className="sensorbox">
-			<h3 style={{ textAlign: "center", height: "10%" }}>Title</h3>
-			<p className="sensor-value">0</p>
+			<h3 style={{ textAlign: "center", height: "10%" }}>{title}</h3>
+			<p className="sensor-value">{value}</p>
 		</div>
 	);
 }

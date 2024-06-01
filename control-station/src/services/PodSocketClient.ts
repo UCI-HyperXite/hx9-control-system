@@ -15,7 +15,7 @@ export enum State {
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
-	serverResponse: (data: string) => void;
+	serverResponse: (data: Partial<PodData>) => void;
 	fault: (data: string) => void;
 }
 
@@ -31,9 +31,25 @@ interface ClientToServerEvents {
 	halt: (ack: (data: string) => void) => void;
 }
 
+interface WheelEncoder {
+	distance: number;
+	velocity: number;
+}
+
+interface Gyroscope {
+	pitch: number;
+	roll: number;
+}
+
 export interface PodData {
 	connected: boolean;
 	state: State;
+	gyroscope: Gyroscope;
+	wheel_encoder: WheelEncoder;
+	downstream_pressure_transducer: number;
+	upstream_pressure_transducer: number;
+	lim_temperature_port: number;
+	lim_temperature_starboard: number;
 	messages: Message[];
 }
 
@@ -119,8 +135,9 @@ class PodSocketClient {
 		this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
 	}
 
-	private onData(data: string): void {
+	private onData(data: Partial<PodData>): void {
 		console.log("server says", data);
+		this.setPodData((d) => ({ ...d, ...data }));
 	}
 
 	private onFault(data: string): void {

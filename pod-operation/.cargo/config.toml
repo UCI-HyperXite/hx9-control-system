@@ -1,6 +1,9 @@
 # Configuration to cross-compile for Raspberry Pi
 # Uncomment lines as needed
 
+[alias]
+brpi = "build --release --features rpi --target=aarch64-unknown-linux-gnu"
+
 [build]
 # target = "aarch64-unknown-linux-gnu"
 
