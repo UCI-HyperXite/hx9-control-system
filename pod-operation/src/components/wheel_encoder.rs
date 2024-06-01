@@ -123,10 +123,6 @@ impl WheelEncoder {
 		self.velocity
 	}
 
-	pub fn get_braking_distance(&self) -> f32 {
-		-self.velocity.powi(2) / (2.0 * BRAKING_DECELERATION)
-	}
-
 	fn read_state(&self) -> EncoderState {
 		encode_state(self.pin_a.read(), self.pin_b.read())
 	}
