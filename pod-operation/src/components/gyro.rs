@@ -1,11 +1,13 @@
 use mpu6050::Mpu6050;
 use rppal::hal::Delay;
 use rppal::i2c::I2c;
+use serde::Serialize;
 
 pub struct Gyroscope {
 	mpu6050: Mpu6050<I2c>,
 }
 
+#[derive(Serialize)]
 pub struct Orientation {
 	pub pitch: f32,
 	pub roll: f32,
