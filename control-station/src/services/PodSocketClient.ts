@@ -136,7 +136,7 @@ class PodSocketClient {
 		this.setPodData((d) => ({
 			...d,
 			state: newState,
-			messages: d.messages ? [...d.messages, newMessage] : [newMessage],
+			messages: [...d.messages, newMessage],
 		}));
 	}
 }
