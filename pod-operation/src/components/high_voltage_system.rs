@@ -1,4 +1,8 @@
+#[cfg(not(feature = "rpi"))]
+use crate::utils::mock::OutputPin;
+#[cfg(feature = "rpi")]
 use rppal::gpio::{Gpio, OutputPin};
+
 use tracing::debug;
 
 use crate::utils::GpioPins;
@@ -10,6 +14,11 @@ pub struct HighVoltageSystem {
 impl HighVoltageSystem {
 	pub fn new() -> Self {
 		HighVoltageSystem {
+			#[cfg(not(feature = "rpi"))]
+			pin: OutputPin {
+				pin: GpioPins::CONTACTOR_RELAY.into(),
+			},
+			#[cfg(feature = "rpi")]
 			pin: Gpio::new()
 				.unwrap()
 				.get(GpioPins::CONTACTOR_RELAY.into())

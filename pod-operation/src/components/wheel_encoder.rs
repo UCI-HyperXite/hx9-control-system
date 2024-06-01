@@ -1,5 +1,8 @@
 use std::{ops::Sub, time::Instant};
 
+#[cfg(not(feature = "rpi"))]
+use crate::utils::mock::{InputPin, Level};
+#[cfg(feature = "rpi")]
 use rppal::gpio::{Gpio, InputPin, Level};
 
 use crate::utils::GpioPins;
@@ -68,15 +71,27 @@ pub struct WheelEncoder {
 
 impl WheelEncoder {
 	pub fn new() -> Self {
+		#[cfg(feature = "rpi")]
 		let gpio = Gpio::new().unwrap();
+		#[cfg(feature = "rpi")]
 		let pin_a = gpio
 			.get(GpioPins::WHEEL_ENCODER_A.into())
 			.unwrap()
 			.into_input();
+		#[cfg(feature = "rpi")]
 		let pin_b = gpio
 			.get(GpioPins::WHEEL_ENCODER_B.into())
 			.unwrap()
 			.into_input();
+
+		#[cfg(not(feature = "rpi"))]
+		let pin_a = InputPin {
+			pin: GpioPins::WHEEL_ENCODER_A.into(),
+		};
+		#[cfg(not(feature = "rpi"))]
+		let pin_b = InputPin {
+			pin: GpioPins::WHEEL_ENCODER_B.into(),
+		};
 
 		let initial_state = encode_state(pin_a.read(), pin_b.read());
 
