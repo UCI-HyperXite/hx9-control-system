@@ -256,7 +256,7 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", ("High temperature detected, currently {}, should be below {} C.", reading, LIM_TEMP_THRESHOLD))
+				.emit("fault", ("High temperature detected, should be below {} C.", LIM_TEMP_THRESHOLD))
 				.ok();
 			return State::Faulted;
 		}
