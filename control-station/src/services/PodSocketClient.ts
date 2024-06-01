@@ -15,7 +15,7 @@ export enum State {
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
-	serverResponse: (data: PodData) => void;
+	serverResponse: (data: Partial<PodData>) => void;
 }
 
 interface Message {
