@@ -67,6 +67,6 @@ impl LimTemperature {
 
 	#[cfg(not(feature = "ads1015"))]
 	pub fn read_lim_temps(&mut self) -> [f32; 4] {
-		[0.0, 0.0, 0.0, 0.0].map(voltage_to_temp)
+		[0.45, 0.45, 0.45, 0.45].map(voltage_to_temp)
 	}
 }

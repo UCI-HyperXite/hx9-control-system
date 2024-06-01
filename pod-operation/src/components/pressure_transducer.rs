@@ -96,7 +96,7 @@ impl PressureTransducer {
 		#[cfg(feature = "ina219")]
 		let current = self.read_current();
 		#[cfg(not(feature = "ina219"))]
-		let current = 4.0;
+		let current = 11.5; // demo value
 
 		let Reference {
 			pressure_lo,
