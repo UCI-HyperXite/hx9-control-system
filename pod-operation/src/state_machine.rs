@@ -218,20 +218,10 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 
-		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		let distance = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		let velocity = self.wheel_encoder.get_velocity();
 
-		// Predict next tick's braking distance
-		let current_velocity = self.wheel_encoder.get_velocity();
-		let predicted_velocity =
-			current_velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
-		let predicted_braking_distance = -predicted_velocity.powi(2) / (2.0 * BRAKING_DECELERATION);
-
-		// Check if the predicted braking distance requires stopping
-		if encoder_value + current_velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
-			return State::Stopped;
-		}
-
-		if predicted_braking_distance <= BRAKING_THRESHOLD {
+		if StateMachine::_should_stop(distance, velocity) {
 			return State::Stopped;
 		}
 
@@ -254,6 +244,21 @@ impl StateMachine {
 		}
 
 		State::Running
+	}
+
+	/// Consider two stopping conditions based on the pod's distance and velocity
+	/// at the next tickwhich is when the stopping will actually initiate
+	fn _should_stop(distance: f32, velocity: f32) -> bool {
+		// Predict next tick's braking distance
+		let predicted_velocity = velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
+		let predicted_braking_distance = -predicted_velocity.powi(2) / (2.0 * BRAKING_DECELERATION);
+
+		// Check if the predicted braking distance requires stopping
+		if distance + velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
+			return true;
+		}
+
+		predicted_braking_distance <= BRAKING_THRESHOLD
 	}
 
 	// To avoid conflicts with the state-transition model,
