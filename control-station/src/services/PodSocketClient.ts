@@ -123,10 +123,7 @@ class PodSocketClient {
 
 	private addMessage(response: string, newState: State): void {
 		const currentTime = new Date();
-		const hours = currentTime.getHours().toString().padStart(2, "0");
-		const minutes = currentTime.getMinutes().toString().padStart(2, "0");
-		const seconds = currentTime.getSeconds().toString().padStart(2, "0");
-		const timestamp = `${hours}:${minutes}:${seconds}`;
+		const timestamp = currentTime.toLocaleTimeString("en-US", { hour12: false });
 
 		const newMessage: Message = {
 			timestamp: timestamp,
