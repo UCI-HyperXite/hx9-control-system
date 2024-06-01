@@ -130,7 +130,7 @@ impl StateMachine {
 
 		loop {
 			// Lock the mutex, measure, then immediately unlock
-			let value = {
+			let _value = {
 				let mut encoder = wheel_encoder.lock().unwrap();
 				match encoder.measure() {
 					Ok(value) => value,
