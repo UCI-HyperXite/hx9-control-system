@@ -1,11 +1,10 @@
-use std::sync::Arc;
 use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
@@ -16,12 +15,12 @@ use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(10);
+const TICK_INTERVAL: Duration = Duration::from_millis(100);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
-const ENCODER_SAMPLE_INTERVAL: Duration = Duration::from_millis(1);
+const ENCODER_SAMPLE_INTERVAL: Duration = Duration::from_micros(100);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -33,7 +32,7 @@ pub enum State {
 	Faulted,
 }
 
-type StateTransition = fn(&mut StateMachine, f32) -> State;
+type StateTransition = fn(&mut StateMachine) -> State;
 
 pub struct StateMachine {
 	last_state: State,
@@ -49,13 +48,12 @@ pub struct StateMachine {
 	// lim_temperature_starboard: LimTemperature,
 	// high_voltage_system: HighVoltageSystem,
 	// lidar: Lidar,
-	encoder_value: Arc<Mutex<f32>>,
+	wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>,
 }
 
 impl StateMachine {
 	pub fn new(io: SocketIo) -> Self {
 		static STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::Init));
-
 
 		let enter_actions = enum_map! {
 			State::Init => StateMachine::_enter_init,
@@ -68,8 +66,8 @@ impl StateMachine {
 
 		let state_transitions = enum_map! {
 			State::Init => None,
-			State::Load => Some(StateMachine::_load_periodic as fn(&mut Self, f32) -> State),
-            State::Running => Some(StateMachine::_running_periodic as fn(&mut Self, f32) -> State),
+			State::Load => Some(StateMachine::_load_periodic as fn(&mut Self) -> State),
+			State::Running => Some(StateMachine::_running_periodic as fn(&mut Self) -> State),
 			State::Stopped => None,
 			State::Halted => None,
 			State::Faulted => None,
@@ -107,15 +105,15 @@ impl StateMachine {
 			// )),
 			// high_voltage_system: HighVoltageSystem::new(),
 			// lidar: Lidar::new(),
-			encoder_value: Arc::new(Mutex::new(0.0)),
+			wheel_encoder: std::sync::Arc::new(std::sync::Mutex::new(WheelEncoder::new())),
 		}
 	}
 
 	pub async fn run(&mut self) {
 		let mut interval = tokio::time::interval(TICK_INTERVAL);
-		let encoder_value = self.encoder_value.clone();
+		let encoder = self.wheel_encoder.clone();
 
-		tokio::spawn(Self::wheel_encoder_task(encoder_value));
+		tokio::spawn(Self::wheel_encoder_task(encoder));
 
 		loop {
 			self.tick().await;
@@ -123,24 +121,22 @@ impl StateMachine {
 		}
 	}
 
-	async fn wheel_encoder_task(encoder_value: Arc<Mutex<f32>>) {
+	async fn wheel_encoder_task(wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>) {
 		let mut interval = tokio::time::interval(ENCODER_SAMPLE_INTERVAL);
-		let mut wheel_encoder = WheelEncoder::new();
-
 
 		loop {
-			match wheel_encoder.measure() {
-				Ok(value) => {
-					// Write the encoder value to the mutex
-					let mut encoder_value_guard = encoder_value.lock().await;
-					*encoder_value_guard = value;
-					info!("Wheel encoder value: {}", value);
+			// Lock the mutex, measure, then immediately unlock
+			let value = {
+				let mut encoder = wheel_encoder.lock().unwrap();
+				match encoder.measure() {
+					Ok(value) => value,
+					Err(e) => {
+						info!("Wheel encoder error: {:?}", e);
+						continue;
+					}
 				}
-				Err(e) => {
-					// Handle measurement error
-					info!("Wheel encoder error: {:?}", e);
-				}
-			}
+			};
+			//info!("Wheel encoder value: {}", value);
 
 			interval.tick().await;
 		}
@@ -149,19 +145,23 @@ impl StateMachine {
 	/// Tick the state machine by running the transition for the current state
 	/// and actions for when entering a new state
 	async fn tick(&mut self) {
-        let mut state = self.state.lock().await;
+		// Acquire lock for state to prevent socket handlers from overwriting
+		let mut state = self.state.lock().await;
 
-        if *state != self.last_state {
-            info!("State changed from {:?} to {:?}", self.last_state, state);
-            self.enter_state(&state);
-        }
+		// Run enter action when entering a new state
+		if *state != self.last_state {
+			info!("State changed from {:?} to {:?}", self.last_state, state);
+			self.enter_state(&state);
+		}
 
-        self.pod_periodic();
+		self.pod_periodic();
 
-        let next_state = self.run_state_transition(&state).await;
-        self.last_state = *state;
-        *state = next_state;
-    }
+		// Proceed to the next state by transition
+		let next_state = self.run_state_transition(&state);
+		self.last_state = *state;
+		*state = next_state;
+		// state is dropped, releasing the lock
+	}
 
 	/// Perform operations on every FSM tick
 	fn pod_periodic(&mut self) {
@@ -180,18 +180,12 @@ impl StateMachine {
 
 	/// Run the transition function for a given state if it exists.
 	/// Otherwise, remain in the same state.
-	async fn run_state_transition(&mut self, state: &MutexGuard<'_, State>) -> State {
-        let encoder_value = {
-            let encoder_value_guard = self.encoder_value.lock().await;
-            *encoder_value_guard
-        };
-        
-        match self.state_transitions[**state] {
-            Some(state_transition) => state_transition(self, encoder_value),
-            None => **state,
-        }
-    }
-
+	fn run_state_transition(&mut self, state: &State) -> State {
+		match self.state_transitions[*state] {
+			Some(state_transition) => state_transition(self),
+			None => *state,
+		}
+	}
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
@@ -237,18 +231,24 @@ impl StateMachine {
 	}
 
 	/// Perform operations when the pod is loading
-	fn _load_periodic(&mut self, _encoder_value: f32) -> State {
-        info!("Rolling Load state");
-        State::Load
-    }
+	fn _load_periodic(&mut self) -> State {
+		info!("Rolling Load state");
+		State::Load
+	}
 
 	/// Perform operations when the pod is running
-	fn _running_periodic(&mut self, encoder_value: f32) -> State {
+	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		
-        if encoder_value > STOP_THRESHOLD {
-            return State::Stopped;
-        }
+
+		let encoder_value = self.wheel_encoder.lock().unwrap();
+		let distance = encoder_value.get_distance();
+		let velocity: f32 = encoder_value.get_velocity();
+		info!("Distance: {:?}", distance);
+		info!("Velocity: {:?}", velocity);
+
+		if distance > STOP_THRESHOLD {
+			return State::Stopped;
+		}
 
 		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 		// 	return State::Faulted;

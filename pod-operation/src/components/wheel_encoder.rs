@@ -122,6 +122,10 @@ impl WheelEncoder {
 		self.velocity
 	}
 
+	pub fn get_distance(&self) -> f32 {
+		f32::from(self.counter) * DISTANCE_PER_COUNT
+	}
+
 	fn read_state(&self) -> EncoderState {
 		encode_state(self.pin_a.read(), self.pin_b.read())
 	}
