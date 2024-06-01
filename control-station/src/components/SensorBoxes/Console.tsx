@@ -1,10 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "./SensorData.css";
 import PodContext from "@/services/PodContext";
 
 function Console() {
 	const { podData } = useContext(PodContext);
 	const [stateList, setStateList] = useState<string[]>([]);
+	const listEndRef = useRef<HTMLLIElement | null>(null);
 
 	useEffect(() => {
 		if (podData.state) {
@@ -12,19 +13,25 @@ function Console() {
 		}
 	}, [podData.state]);
 
+	useEffect(() => {
+		if (listEndRef.current) {
+			listEndRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [stateList]);
+
 	return (
 		<div className="console">
 			<h2>Console</h2>
 			<ul className="console-list">
 				{stateList.map((prop, index) => (
-					<li key={index} className="console-list-item">
+					<li
+						key={index}
+						className="console-list-item"
+						ref={index === stateList.length - 1 ? listEndRef : null}
+					>
 						{prop} State
 					</li>
 				))}
-				<li className="console-list-item">Start Sent</li>
-				<li className="console-list-item">Stop Sent</li>
-				<li className="console-list-item">Load Sent</li>
-				<li className="console-list-item">Force Stop Sent</li>
 			</ul>
 		</div>
 	);

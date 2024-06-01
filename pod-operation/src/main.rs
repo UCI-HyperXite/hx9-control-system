@@ -54,16 +54,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let lidar = Lidar::new();
 	tokio::spawn(demo::read_lidar(lidar));
 
-	let mut state_machine = StateMachine::new(io);
-	tokio::spawn(async move {
-		state_machine.run().await;
-	});
-
 	let limcurrent = LimCurrent::new(ads1x1x::SlaveAddr::Default);
 	tokio::spawn(demo::read_lim_current(limcurrent));
 
 	let inverter_board = InverterBoard::new();
 	tokio::spawn(demo::inverter_control(inverter_board));
+
+	let mut state_machine = StateMachine::new(io);
+	tokio::spawn(async move {
+		state_machine.run().await;
+	});
 
 	let app = axum::Router::new().layer(layer);
 
