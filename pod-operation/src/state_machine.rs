@@ -259,12 +259,14 @@ impl StateMachine {
 
 		let encoder_value = self.wheel_encoder.lock().unwrap();
 		let distance = encoder_value.get_distance();
-		let velocity: f32 = encoder_value.get_velocity();
+		let velocity = encoder_value.get_velocity();
 		drop(encoder_value);
 
 		let full_json = json!({
-			"distance": distance,
-			"velocity": velocity,
+			"wheel_encoder": {
+				"distance": distance,
+				"velocity": velocity,
+			},
 		});
 
 		self.io
