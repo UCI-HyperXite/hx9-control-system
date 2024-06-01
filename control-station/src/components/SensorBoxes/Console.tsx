@@ -23,7 +23,7 @@ function Console() {
 						className="console-list-item"
 						ref={index === podData.messages.length - 1 ? listEndRef : null}
 					>
-						{prop.timestamp} &nbsp;
+						{prop.timestamp.toLocaleTimeString("en-US", { hour12: false })} &nbsp;
 						{prop.message.toUpperCase()}
 					</li>
 				))}

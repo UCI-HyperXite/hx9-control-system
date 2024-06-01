@@ -19,7 +19,7 @@ interface ServerToClientEvents {
 }
 
 interface Message {
-	timestamp: string;
+	timestamp: Date;
 	message: string;
 }
 
@@ -122,9 +122,7 @@ class PodSocketClient {
 	}
 
 	private addMessage(response: string, newState: State): void {
-		const currentTime = new Date();
-		const timestamp = currentTime.toLocaleTimeString("en-US", { hour12: false });
-
+		const timestamp = new Date();
 		const newMessage = {
 			timestamp,
 			message: response,
