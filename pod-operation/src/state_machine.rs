@@ -242,7 +242,13 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", ("Low pressure detected. Currently {}, should be above 126 PSI.", self.downstream_pressure_transducer.read_pressure()))
+				.emit(
+					"fault",
+					(
+						"Low pressure detected. Currently {}, should be above 126 PSI.",
+						self.downstream_pressure_transducer.read_pressure(),
+					),
+				)
 				.ok();
 			return State::Faulted;
 		}
@@ -256,7 +262,13 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", ("High temperature detected, should be below {} C.", LIM_TEMP_THRESHOLD))
+				.emit(
+					"fault",
+					(
+						"High temperature detected, should be below {} C.",
+						LIM_TEMP_THRESHOLD,
+					),
+				)
 				.ok();
 			return State::Faulted;
 		}
