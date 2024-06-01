@@ -11,6 +11,7 @@ function Camera() {
 	const [lidarList, setLidarList] = useState<number[]>([]);
 
 	useEffect(() => {
+		console.log(podData.lidar);
 		setLidarList((prevLidarList) => [...prevLidarList, podData.lidar]);
 	}, [podData]);
 
