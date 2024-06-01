@@ -265,7 +265,7 @@ impl StateMachine {
 			self.io
 				.of("/control-station")
 				.unwrap()
-				.emit("fault", ("Wheel encoder faulted."))
+				.emit("fault", "Wheel encoder faulted.")
 				.ok();
 			return State::Faulted;
 		}
