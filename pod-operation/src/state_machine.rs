@@ -187,33 +187,33 @@ impl StateMachine {
 
 	fn _enter_init(&mut self) {
 		info!("Entering Init state");
-		// self.signal_light.disable();
+		self.signal_light.disable();
 	}
 
 	fn _enter_load(&mut self) {
 		info!("Entering Load state");
-		// self.brakes.disengage();
-		// self.signal_light.disable();
+		self.brakes.disengage();
+		self.signal_light.disable();
 	}
 
 	fn _enter_running(&mut self) {
 		info!("Entering Running state");
-		// self.high_voltage_system.enable(); // Enable high voltage system -- may move later
-		// self.signal_light.enable();
-		// self.brakes.disengage();
+		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
+		self.signal_light.enable();
+		self.brakes.disengage();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
-		// self.signal_light.disable();
-		// self.brakes.engage();
+		self.signal_light.disable();
+		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
-		// self.signal_light.disable();
-		// self.brakes.engage();
-		// self.high_voltage_system.disable();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
@@ -233,27 +233,27 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		// let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		// if encoder_value > STOP_THRESHOLD {
-		// 	return State::Stopped;
-		// }
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
+			return State::Stopped;
+		}
 
-		// if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
-		// 	return State::Faulted;
-		// }
-		// let default_readings = self.lim_temperature_port.read_lim_temps();
-		// let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		// if default_readings
-		// 	.iter()
-		// 	.chain(alternative_readings.iter())
-		// 	.any(|&reading| reading > LIM_TEMP_THRESHOLD)
-		// {
-		// 	return State::Faulted;
-		// }
-		// // Last 20% of the track, as indicated by braking
-		// if self.lidar.read_distance() < END_OF_TRACK {
-		// 	return State::Faulted;
-		// }
+		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			return State::Faulted;
+		}
+		let default_readings = self.lim_temperature_port.read_lim_temps();
+		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
+		if default_readings
+			.iter()
+			.chain(alternative_readings.iter())
+			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
+		{
+			return State::Faulted;
+		}
+		// Last 20% of the track, as indicated by braking
+		if self.lidar.read_distance() < END_OF_TRACK {
+			return State::Faulted;
+		}
 
 		State::Running
 	}
