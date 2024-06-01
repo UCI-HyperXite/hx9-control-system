@@ -1,4 +1,4 @@
-pub const PI: f32 = 3.14159265358979323846264338327950288_f32; // 3.1415926535897931f64
+use std::f32::consts::PI;
 #[cfg(feature = "mpu6050")]
 use {
 	mpu6050::Mpu6050,
@@ -17,7 +17,6 @@ pub struct Orientation {
 	pub pitch: f32,
 	pub roll: f32,
 }
-
 impl Gyroscope {
 	#[cfg(feature = "mpu6050")]
 	pub fn new() -> Self {
