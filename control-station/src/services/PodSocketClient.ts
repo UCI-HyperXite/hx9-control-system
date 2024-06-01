@@ -50,6 +50,7 @@ export interface PodData {
 	lim_temperature_port: number;
 	lim_temperature_starboard: number;
 	messages: Message[];
+	lidar: number;
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
