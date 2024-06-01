@@ -1,3 +1,4 @@
+use std::thread::sleep;
 use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
@@ -6,6 +7,7 @@ use serde_json::json;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
+
 use tracing::info;
 
 use crate::components::brakes::Brakes;
@@ -141,7 +143,6 @@ impl StateMachine {
 				}
 			};
 			//info!("Wheel encoder value: {}", value);
-
 			interval.tick().await;
 		}
 	}
@@ -258,7 +259,8 @@ impl StateMachine {
 		let encoder_value = self.wheel_encoder.lock().unwrap();
 		let distance = encoder_value.get_distance();
 		let velocity: f32 = encoder_value.get_velocity();
-
+		drop(encoder_value);
+		
 		let full_json = json!({
 			"distance": distance,
 			"velocity": velocity,
