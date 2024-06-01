@@ -139,6 +139,7 @@ impl StateMachine {
 					Ok(value) => value,
 					Err(e) => {
 						info!("Wheel encoder error: {:?}", e);
+						encoder.faulted();
 						continue;
 					}
 				}
@@ -260,6 +261,14 @@ impl StateMachine {
 		let encoder_value = self.wheel_encoder.lock().unwrap();
 		let distance = encoder_value.get_distance();
 		let velocity = encoder_value.get_velocity();
+		if encoder_value.is_faulted() {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", ("Wheel encoder faulted."))
+				.ok();
+			return State::Faulted;
+		}
 		drop(encoder_value);
 
 		let full_json = json!({
