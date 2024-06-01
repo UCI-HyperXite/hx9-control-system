@@ -9,6 +9,7 @@ use tracing::info;
 
 use crate::components::brakes::Brakes;
 use crate::components::high_voltage_system::HighVoltageSystem;
+use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
@@ -17,7 +18,7 @@ use crate::components::wheel_encoder::WheelEncoder;
 const TICK_INTERVAL: Duration = Duration::from_millis(10);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
-const BRAKING_THRESHOLD: f32 = 9.1; // Meters
+const END_OF_TRACK: f32 = 8.7; // Metersconst BRAKING_THRESHOLD: f32 = 9.1; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 
@@ -47,6 +48,7 @@ pub struct StateMachine {
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
+	lidar: Lidar,
 }
 
 impl StateMachine {
@@ -103,6 +105,7 @@ impl StateMachine {
 				false, true,
 			)),
 			high_voltage_system: HighVoltageSystem::new(),
+			lidar: Lidar::new(),
 		}
 	}
 
@@ -239,6 +242,10 @@ impl StateMachine {
 			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
+			return State::Faulted;
+		}
+		// Last 20% of the track, as indicated by braking
+		if self.lidar.read_distance() < END_OF_TRACK {
 			return State::Faulted;
 		}
 
