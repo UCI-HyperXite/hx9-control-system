@@ -4,6 +4,7 @@ import FrontPod from "@/data/images/FrontPod.png";
 import SidePod from "@/data/images/SidePod.png";
 import "./Dynamics.css";
 import { useContext } from "react";
+
 function Dynamics() {
 	const { podData } = useContext(PodContext);
 	const { gyroscope } = podData;
@@ -15,10 +16,18 @@ function Dynamics() {
 			</div>
 			<div className="dynamics-pictures">
 				<div className="pod-picture-container">
-					<img src={FrontPod} />
+					<img
+						src={FrontPod}
+						alt="front view of the pod"
+						style={{ transform: `rotate(${gyroscope.roll}deg)` }}
+					/>
 				</div>
 				<div className="pod-picture-container">
-					<img src={SidePod} />
+					<img
+						src={SidePod}
+						alt="side view of the pod"
+						style={{ transform: `rotate(${gyroscope.pitch}deg)` }}
+					/>
 				</div>
 			</div>
 		</div>
