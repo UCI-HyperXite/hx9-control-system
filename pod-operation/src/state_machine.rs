@@ -23,6 +23,8 @@ const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
+const BRAKING_THRESHOLD: f32 = 9.1; // Meters
+const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 const ENCODER_SAMPLE_INTERVAL: Duration = Duration::from_micros(100);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
@@ -254,28 +256,23 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-
-		let encoder_value = self.wheel_encoder.lock().unwrap();
-		let distance = encoder_value.get_distance();
-		let velocity: f32 = encoder_value.get_velocity();
-		drop(encoder_value);
-
-		let full_json = json!({
-			"distance": distance,
-			"velocity": velocity,
-		});
-
-		self.io
-			.of("/control-station")
-			.unwrap()
-			.emit("serverResponse", full_json)
-			.ok();
-
-		if distance > STOP_THRESHOLD {
+		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		if encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
 
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit(
+					"fault",
+					(
+						"Low pressure detected. Currently {}, should be above 126 PSI.",
+						self.downstream_pressure_transducer.read_pressure(),
+					),
+				)
+				.ok();
 			return State::Faulted;
 		}
 
@@ -286,14 +283,45 @@ impl StateMachine {
 			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit(
+					"fault",
+					(
+						"High temperature detected, should be below {} C.",
+						LIM_TEMP_THRESHOLD,
+					),
+				)
+				.ok();
 			return State::Faulted;
 		}
 		// Last 20% of the track, as indicated by braking
 		if self.lidar.read_distance() < END_OF_TRACK {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", ("End of track detected. Current distance to end: {}, less than {} meters away", self.lidar.read_distance(), END_OF_TRACK))
+				.ok();
 			return State::Faulted;
 		}
 
 		State::Running
+	}
+
+	/// Consider two stopping conditions based on the pod's distance and velocity
+	/// at the next tickwhich is when the stopping will actually initiate
+	fn _should_stop(distance: f32, velocity: f32) -> bool {
+		// Predict next tick's braking distance
+		let predicted_velocity = velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
+		let predicted_braking_distance = -predicted_velocity.powi(2) / (2.0 * BRAKING_DECELERATION);
+
+		// Check if the predicted braking distance requires stopping
+		if distance + velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
+			return true;
+		}
+
+		predicted_braking_distance <= BRAKING_THRESHOLD
 	}
 
 	// To avoid conflicts with the state-transition model,

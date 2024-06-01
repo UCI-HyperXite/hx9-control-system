@@ -9,13 +9,14 @@ export enum State {
 	Running = "Running",
 	Stopped = "Stopped",
 	Halted = "Halted",
-	Faulted = "Faulted",
+	fault = "Faulted",
 }
 
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
 	serverResponse: (data: Partial<PodData>) => void;
+	fault: (data: string) => void;
 }
 
 interface Message {
@@ -50,6 +51,7 @@ export interface PodData {
 	lim_temperature_port: number;
 	lim_temperature_starboard: number;
 	messages: Message[];
+	lidar: number;
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
@@ -71,6 +73,7 @@ class PodSocketClient {
 			connect: this.onConnect.bind(this),
 			disconnect: this.onDisconnect.bind(this),
 			serverResponse: this.onData.bind(this),
+			fault: this.onFault.bind(this),
 		} as const;
 		this.setPodData = setPodData;
 	}
@@ -122,9 +125,9 @@ class PodSocketClient {
 	}
 
 	private onConnect(): void {
-		console.log("Connected to server as", this.socket.id);
 		// TODO: On connecting, the state below should be what's provided by the pod
 		// if it's already running. Otherwise, the states should be State.Init
+		console.log("Connected to server as", this.socket.id);
 		this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
 	}
 
@@ -136,6 +139,11 @@ class PodSocketClient {
 	private onData(data: Partial<PodData>): void {
 		console.log("server says", data);
 		this.setPodData((d) => ({ ...d, ...data }));
+	}
+
+	private onFault(data: string): void {
+		console.error("Server fault with message:", data);
+		this.addMessage(data, State.fault);
 	}
 
 	private addMessage(response: string, newState: State): void {
