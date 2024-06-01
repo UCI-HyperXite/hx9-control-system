@@ -117,7 +117,7 @@ class PodSocketClient {
 		this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
 	}
 
-	private onData(data: PodData): void {
+	private onData(data: Partial<PodData>): void {
 		console.log("server says", data);
 		this.setPodData((d) => ({ ...d, ...data }));
 	}
