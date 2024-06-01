@@ -13,7 +13,6 @@ use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lidar::Lidar;
-use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -49,8 +48,6 @@ pub struct StateMachine {
 	signal_light: SignalLight,
 	upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
-	lim_temperature_port: LimTemperature,
-	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
 	lidar: Lidar,
 	wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>,
@@ -105,10 +102,6 @@ impl StateMachine {
 			signal_light: SignalLight::new(),
 			upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
-			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
-				false, true,
-			)),
 			high_voltage_system: HighVoltageSystem::new(),
 			lidar: Lidar::new(),
 			gyro: Gyroscope::new(),
@@ -175,16 +168,11 @@ impl StateMachine {
 		let gyro_data = self.gyro.read_orientation();
 		let downstream_pressure_data = self.downstream_pressure_transducer.read_pressure();
 		let upstream_pressure_data = self.upstream_pressure_transducer.read_pressure();
-		let lim_temp_port_data = self.lim_temperature_port.read_lim_temps();
-		let lim_temp_starboard_data = self.lim_temperature_starboard.read_lim_temps();
-
 		// Full JSON object
 		let full_json = json!({
 			"gyroscope": gyro_data,
 			"downstream_pressure_transducer": downstream_pressure_data,
 			"upstream_pressure_transducer": upstream_pressure_data,
-			"lim_temperature_port": lim_temp_port_data,
-			"lim_temperature_starboard": lim_temp_starboard_data,
 		});
 
 		self.io
@@ -294,26 +282,6 @@ impl StateMachine {
 			return State::Faulted;
 		}
 
-		let default_readings = self.lim_temperature_port.read_lim_temps();
-		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
-		if default_readings
-			.iter()
-			.chain(alternative_readings.iter())
-			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
-		{
-			self.io
-				.of("/control-station")
-				.unwrap()
-				.emit(
-					"fault",
-					(
-						"High temperature detected, should be below {} C.",
-						LIM_TEMP_THRESHOLD,
-					),
-				)
-				.ok();
-			return State::Faulted;
-		}
 		// Last 20% of the track, as indicated by braking
 		if self.lidar.read_distance() < END_OF_TRACK {
 			self.io
