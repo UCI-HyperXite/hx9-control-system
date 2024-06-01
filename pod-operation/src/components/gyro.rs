@@ -2,6 +2,7 @@
 use {
 	mpu6050::Mpu6050,
 	rppal::{hal::Delay, i2c::I2c},
+	std::f32::consts::PI,
 };
 
 use serde::Serialize;
@@ -16,7 +17,6 @@ pub struct Orientation {
 	pub pitch: f32,
 	pub roll: f32,
 }
-
 impl Gyroscope {
 	#[cfg(feature = "mpu6050")]
 	pub fn new() -> Self {
@@ -27,11 +27,12 @@ impl Gyroscope {
 	}
 
 	#[cfg(feature = "mpu6050")]
+
 	pub fn read_orientation(&mut self) -> Orientation {
 		let angles = self.mpu6050.get_acc_angles().unwrap();
 		Orientation {
-			pitch: angles[1],
-			roll: angles[0],
+			pitch: (angles[1] * 180.0 / PI),
+			roll: (angles[0] * 180.0 / PI),
 		}
 	}
 

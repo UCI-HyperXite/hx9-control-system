@@ -1,0 +1,30 @@
+.dynamics {
+	display: flex;
+}
+
+.dynamics-sensorbox {
+	width: 40%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: center;
+}
+
+.dynamics-pictures {
+	width: 60%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.pod-picture-container {
+	background-color: rgb(209, 209, 209);
+	width: 60%;
+	height: 40%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 40px;
+	overflow: hidden;
+}
