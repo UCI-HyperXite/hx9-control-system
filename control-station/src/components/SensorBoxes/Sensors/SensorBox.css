@@ -5,6 +5,7 @@
 	margin-top: 1%;
 	margin-bottom: 1%;
 	background: #e0e0e0;
+	position: relative;
 }
 .SensorContainer {
 	width: 65vw;
@@ -20,6 +21,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 90%;
+	height: auto;
 	font-size: 3rem;
+	position: relative;
 }
