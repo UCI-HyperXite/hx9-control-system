@@ -125,8 +125,8 @@ class PodSocketClient {
 		const currentTime = new Date();
 		const timestamp = currentTime.toLocaleTimeString("en-US", { hour12: false });
 
-		const newMessage: Message = {
-			timestamp: timestamp,
+		const newMessage = {
+			timestamp,
 			message: response,
 		};
 

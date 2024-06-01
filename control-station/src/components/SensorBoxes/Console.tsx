@@ -24,7 +24,7 @@ function Console() {
 						ref={index === podData.messages.length - 1 ? listEndRef : null}
 					>
 						{prop.timestamp} &nbsp;
-						{prop.message.toUpperCase()} State
+						{prop.message.toUpperCase()}
 					</li>
 				))}
 			</ul>
