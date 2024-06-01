@@ -219,9 +219,6 @@ impl StateMachine {
 
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
 		let current_velocity = self.wheel_encoder.get_velocity();
-		let predicted_velocity =
-			current_velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
-
 		// Check if the predicted braking distance requires stopping
 		if encoder_value + current_velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
 			return State::Stopped;
