@@ -1,6 +1,6 @@
-use std::f32::consts::PI;
 #[cfg(feature = "mpu6050")]
 use {
+	std::f32::consts::PI,
 	mpu6050::Mpu6050,
 	rppal::{hal::Delay, i2c::I2c},
 };
