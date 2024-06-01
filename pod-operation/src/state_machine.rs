@@ -220,8 +220,6 @@ impl StateMachine {
 
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
 
-		let current_braking_distance = self.wheel_encoder.get_braking_distance();
-
 		// Predict next tick's braking distance
 		let current_velocity = self.wheel_encoder.get_velocity();
 		let predicted_velocity =
