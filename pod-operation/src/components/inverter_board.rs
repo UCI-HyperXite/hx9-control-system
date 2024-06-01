@@ -1,9 +1,9 @@
-#[cfg(feature = "rpi")]
+#[cfg(feature = "inverter")]
 use rppal::uart::{Parity, Uart};
 
 use tracing::info;
 
-#[cfg(feature = "rpi")]
+#[cfg(feature = "inverter")]
 mod serial_constants {
 	use super::Parity;
 	pub const SERIAL_PATH: &str = "/dev/ttyACM0";
@@ -14,12 +14,12 @@ mod serial_constants {
 }
 
 pub struct InverterBoard {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "inverter")]
 	uart: Uart,
 }
 
 impl InverterBoard {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "inverter")]
 	pub fn new() -> Self {
 		use serial_constants::*;
 		let uart = Uart::with_path(SERIAL_PATH, BAUD_RATE, PARITY, DATA_BITS, STOP_BITS).unwrap();
@@ -28,19 +28,19 @@ impl InverterBoard {
 
 	/// Combine velocity and throttle into a space-separated string message and then send it over to
 	/// the Pico as bytes.
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "inverter")]
 	pub fn send_control(&mut self, velocity: f32, throttle: f32) {
 		let message = format!("{velocity} {throttle}\n");
 		self.uart.write(message.as_bytes()).unwrap();
 	}
 
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "inverter"))]
 	pub fn new() -> Self {
 		InverterBoard {}
 	}
 
 	/// Combine velocity and throttle into a space-separated string message
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "inverter"))]
 	pub fn send_control(&mut self, velocity: f32, throttle: f32) {
 		info!(
 			"Mocking inverter sending message: {} {}",

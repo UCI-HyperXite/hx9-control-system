@@ -26,4 +26,10 @@ i2cdev = "0.3.1"
 byteorder = "1.4.3"
 
 [features]
-rpi = ["dep:rppal", "dep:lidar_lite_v3"]
+gpio = ["dep:rppal"]
+ina219 = ["dep:rppal"]
+ads1015 = ["dep:rppal"]
+mpu6050 = ["dep:rppal"]
+inverter = ["dep:rppal"]
+lidar = ["dep:lidar_lite_v3"]
+rpi = ["gpio", "ads1015", "ina219", "mpu6050", "inverter", "lidar"]

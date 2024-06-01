@@ -1,4 +1,4 @@
-#[cfg(feature = "rpi")]
+#[cfg(feature = "ads1015")]
 use {
 	ads1x1x::ic::{Ads1015, Resolution12Bit},
 	ads1x1x::interface::I2cInterface,
@@ -32,12 +32,12 @@ fn voltage_to_temp(voltage: f32) -> f32 {
 }
 
 pub struct LimTemperature {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "ads1015")]
 	ads1015: Ads1x1x<I2cInterface<I2c>, Ads1015, Resolution12Bit, OneShot>,
 }
 
 impl LimTemperature {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "ads1015")]
 	pub fn new(device_address: SlaveAddr) -> Self {
 		let i2cdev = I2c::new().unwrap();
 		let adc = Ads1x1x::new_ads1015(i2cdev, device_address);
@@ -47,25 +47,25 @@ impl LimTemperature {
 		}
 	}
 
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "ads1015"))]
 	pub fn new(device_address: SlaveAddr) -> Self {
 		info!("Mocking ADS at {:?} for LimTemperature", device_address);
 		LimTemperature {}
 	}
 
 	pub fn cleanup(self) {
-		#[cfg(feature = "rpi")]
+		#[cfg(feature = "ads1015")]
 		self.ads1015.destroy_ads1015();
 	}
 
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "ads1015")]
 	pub fn read_lim_temps(&mut self) -> [f32; 4] {
 		[SingleA0, SingleA1, SingleA2, SingleA3]
 			.map(|channel| f32::from(block!(self.ads1015.read(channel)).unwrap()) / 1000.0)
 			.map(voltage_to_temp)
 	}
 
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "ads1015"))]
 	pub fn read_lim_temps(&mut self) -> [f32; 4] {
 		[0.0, 0.0, 0.0, 0.0].map(voltage_to_temp)
 	}

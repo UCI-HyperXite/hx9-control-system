@@ -1,6 +1,6 @@
-#[cfg(not(feature = "rpi"))]
+#[cfg(not(feature = "gpio"))]
 use crate::utils::mock::OutputPin;
-#[cfg(feature = "rpi")]
+#[cfg(feature = "gpio")]
 use rppal::gpio::{Gpio, OutputPin};
 
 use tracing::debug;
@@ -14,11 +14,11 @@ pub struct Brakes {
 impl Brakes {
 	pub fn new() -> Self {
 		Brakes {
-			#[cfg(not(feature = "rpi"))]
+			#[cfg(not(feature = "gpio"))]
 			pin: OutputPin {
 				pin: GpioPins::PNEUMATICS_RELAY.into(),
 			},
-			#[cfg(feature = "rpi")]
+			#[cfg(feature = "gpio")]
 			pin: Gpio::new()
 				.unwrap()
 				.get(GpioPins::PNEUMATICS_RELAY.into())

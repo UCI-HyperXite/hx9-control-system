@@ -1,11 +1,11 @@
 use mpu6050::Mpu6050;
-#[cfg(feature = "rpi")]
+#[cfg(feature = "mpu6050")]
 use rppal::{hal::Delay, i2c::I2c};
 
 use serde::Serialize;
 
 pub struct Gyroscope {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "mpu6050")]
 	mpu6050: Mpu6050<I2c>,
 }
 
@@ -16,7 +16,7 @@ pub struct Orientation {
 }
 
 impl Gyroscope {
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "mpu6050")]
 	pub fn new() -> Self {
 		let i2c = I2c::new().unwrap();
 		let mut mpu6050 = Mpu6050::new(i2c);
@@ -24,7 +24,7 @@ impl Gyroscope {
 		Gyroscope { mpu6050 }
 	}
 
-	#[cfg(feature = "rpi")]
+	#[cfg(feature = "mpu6050")]
 	pub fn read_orientation(&mut self) -> Orientation {
 		let angles = self.mpu6050.get_acc_angles().unwrap();
 		Orientation {
@@ -33,12 +33,12 @@ impl Gyroscope {
 		}
 	}
 
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "mpu6050"))]
 	pub fn new() -> Self {
 		Gyroscope {}
 	}
 
-	#[cfg(not(feature = "rpi"))]
+	#[cfg(not(feature = "mpu6050"))]
 	pub fn read_orientation(&mut self) -> Orientation {
 		Orientation {
 			pitch: 0.0,
