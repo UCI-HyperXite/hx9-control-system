@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
 use once_cell::sync::Lazy;
-use socketioxide::extract::AckSender;
 use serde_json::json;
+use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::components::brakes::Brakes;
+use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
@@ -40,15 +41,16 @@ pub struct StateMachine {
 	enter_actions: EnumMap<State, fn(&mut Self)>,
 	state_transitions: EnumMap<State, Option<StateTransition>>,
 	io: SocketIo,
-	// brakes: Brakes,
-	// signal_light: SignalLight,
-	// wheel_encoder: WheelEncoder,
-	// //upstream_pressure_transducer: PressureTransducer,
-	// downstream_pressure_transducer: PressureTransducer,
-	// lim_temperature_port: LimTemperature,
-	// lim_temperature_starboard: LimTemperature,
-	// high_voltage_system: HighVoltageSystem,
+	brakes: Brakes,
+	signal_light: SignalLight,
+	wheel_encoder: WheelEncoder,
+	upstream_pressure_transducer: PressureTransducer,
+	downstream_pressure_transducer: PressureTransducer,
+	lim_temperature_port: LimTemperature,
+	lim_temperature_starboard: LimTemperature,
+	high_voltage_system: HighVoltageSystem,
 	lidar: Lidar,
+	gyro: Gyroscope,
 }
 
 impl StateMachine {
@@ -95,17 +97,18 @@ impl StateMachine {
 			enter_actions,
 			state_transitions,
 			io,
-			// brakes: Brakes::new(),
-			// signal_light: SignalLight::new(),
-			// wheel_encoder: WheelEncoder::new(),
-			// //upstream_pressure_transducer: PressureTransducer::upstream(),
-			// downstream_pressure_transducer: PressureTransducer::downstream(),
-			// lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
-			// lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
-			// 	false, true,
-			// )),
-			// high_voltage_system: HighVoltageSystem::new(),
+			brakes: Brakes::new(),
+			signal_light: SignalLight::new(),
+			wheel_encoder: WheelEncoder::new(),
+			upstream_pressure_transducer: PressureTransducer::upstream(),
+			downstream_pressure_transducer: PressureTransducer::downstream(),
+			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
+			lim_temperature_starboard: LimTemperature::new(ads1x1x::SlaveAddr::Alternative(
+				false, true,
+			)),
+			high_voltage_system: HighVoltageSystem::new(),
 			lidar: Lidar::new(),
+			gyro: Gyroscope::new(),
 		}
 	}
 
@@ -141,12 +144,29 @@ impl StateMachine {
 
 	/// Perform operations on every FSM tick
 	fn pod_periodic(&mut self) {
+		// Reading each value individually
+		let gyro_data = self.gyro.read_orientation();
+		let wheel_encoder_distance = self.wheel_encoder.measure().expect("wheel encoder faulted");
+		let wheel_encoder_velocity = self.wheel_encoder.get_velocity();
+		let downstream_pressure_data = self.downstream_pressure_transducer.read_pressure();
+		let upstream_pressure_data = self.upstream_pressure_transducer.read_pressure();
+		let lim_temp_port_data = self.lim_temperature_port.read_lim_temps();
+		let lim_temp_starboard_data = self.lim_temperature_starboard.read_lim_temps();
+
+		// Full JSON object
+		let full_json = json!({
+			"gyroscope": gyro_data,
+			"wheel_encoder": { "distance": wheel_encoder_distance, "velocity": wheel_encoder_velocity },
+			"downstream_pressure_transducer": downstream_pressure_data,
+			"upstream_pressure_transducer": upstream_pressure_data,
+			"lim_temperature_port": lim_temp_port_data,
+			"lim_temperature_starboard": lim_temp_starboard_data,
+		});
+
 		self.io
 			.of("/control-station")
 			.unwrap()
-			.emit("serverResponse", json!({
-				"lidar":self.lidar.read_distance(),
-			}))
+			.emit("serverResponse", full_json)
 			.ok();
 	}
 
@@ -198,14 +218,9 @@ impl StateMachine {
 
 	fn _enter_faulted(&mut self) {
 		info!("Entering Faulted state");
-		// self.io
-		// 	.of("/control-station")
-		// 	.unwrap()
-		// 	.emit("fault", "123")
-		// 	.ok();
-		// self.signal_light.disable();
-		// self.brakes.engage();
-		// self.high_voltage_system.disable();
+		self.signal_light.disable();
+		self.brakes.engage();
+		self.high_voltage_system.disable();
 	}
 
 	/// Perform operations when the pod is loading
