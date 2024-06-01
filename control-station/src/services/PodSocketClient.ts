@@ -34,6 +34,7 @@ export interface PodData {
 	connected: boolean;
 	state: State;
 	messages: Message[];
+	lidar: number;
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
