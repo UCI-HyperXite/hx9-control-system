@@ -1,10 +1,15 @@
-use ads1x1x::ic::{Ads1015, Resolution12Bit};
-use ads1x1x::interface::I2cInterface;
-use ads1x1x::mode::OneShot;
-use ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2};
-use ads1x1x::{Ads1x1x, DynamicOneShot, FullScaleRange, SlaveAddr};
-use nb::block;
-use rppal::i2c::I2c;
+use ads1x1x::SlaveAddr;
+use tracing::info;
+#[cfg(feature = "rpi")]
+use {
+	ads1x1x::ic::{Ads1015, Resolution12Bit},
+	ads1x1x::interface::I2cInterface,
+	ads1x1x::mode::OneShot,
+	ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2},
+	ads1x1x::{Ads1x1x, DynamicOneShot, FullScaleRange},
+	nb::block,
+	rppal::i2c::I2c,
+};
 
 const QUIESCENT_VOLTAGE: f32 = 2.5; //Units: volts (v)
 const SENSITIVITY: f32 = 0.066; //Unit: vots/amp (v/a)
@@ -17,10 +22,12 @@ fn voltage_to_current(voltage: i16) -> f32 {
 }
 
 pub struct LimCurrent {
+	#[cfg(feature = "rpi")]
 	ads1015: Ads1x1x<I2cInterface<I2c>, Ads1015, Resolution12Bit, OneShot>,
 }
 
 impl LimCurrent {
+	#[cfg(feature = "rpi")]
 	pub fn new(device_address: SlaveAddr) -> Self {
 		let i2cdev = I2c::new().unwrap();
 		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
@@ -29,14 +36,27 @@ impl LimCurrent {
 		LimCurrent { ads1015: adc }
 	}
 
+	#[cfg(not(feature = "rpi"))]
+	pub fn new(device_address: SlaveAddr) -> Self {
+		info!("Mocking ADS at {:?} for LimCurrnt", device_address);
+		LimCurrent {}
+	}
+
 	pub fn cleanup(self) {
+		#[cfg(feature = "rpi")]
 		self.ads1015.destroy_ads1015();
 	}
 
+	#[cfg(feature = "rpi")]
 	pub fn read_currents(&mut self) -> (f32, f32, f32) {
 		[SingleA0, SingleA1, SingleA2]
 			.map(|channel| block!(self.ads1015.read(channel)).unwrap() * 2)
 			.map(voltage_to_current)
 			.into()
+	}
+
+	#[cfg(not(feature = "rpi"))]
+	pub fn read_currents(&mut self) -> (f32, f32, f32) {
+		[2500, 2500, 2500].map(voltage_to_current).into()
 	}
 }

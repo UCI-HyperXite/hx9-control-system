@@ -1,5 +1,7 @@
-use ina219::INA219;
+#[cfg(feature = "rpi")]
 use rppal::i2c::I2c;
+
+use ina219::INA219;
 use tracing::debug;
 
 // The calibration value is used to adjust the maximum current measurement
@@ -48,6 +50,7 @@ impl Reference {
 	}
 }
 
+#[cfg(feature = "rpi")]
 fn init_ina(device_address: u8) -> INA219<I2c> {
 	let device = I2c::new().unwrap();
 
@@ -61,6 +64,7 @@ fn init_ina(device_address: u8) -> INA219<I2c> {
 }
 
 pub struct PressureTransducer {
+	#[cfg(feature = "rpi")]
 	ina: INA219<I2c>,
 	ref_values: Reference,
 }
@@ -70,6 +74,7 @@ impl PressureTransducer {
 	// grounded. That is, the device address is 0x40.
 	pub fn upstream() -> Self {
 		Self {
+			#[cfg(feature = "rpi")]
 			ina: init_ina(INA219_UPSTREAM_ADDRESS),
 			ref_values: Reference::upstream(),
 		}
@@ -79,6 +84,7 @@ impl PressureTransducer {
 	// jumped. That is, the device address is 0x41.
 	pub fn downstream() -> Self {
 		Self {
+			#[cfg(feature = "rpi")]
 			ina: init_ina(INA219_DOWNSTREAM_ADDRESS),
 			ref_values: Reference::downstream(),
 		}
@@ -87,7 +93,10 @@ impl PressureTransducer {
 	// Read current from the INA219 and apply a scaling factor to translate
 	// the current reading to PSI.
 	pub fn read_pressure(&mut self) -> f32 {
+		#[cfg(feature = "rpi")]
 		let current = self.read_current();
+		#[cfg(not(feature = "rpi"))]
+		let current = 4.0;
 
 		let Reference {
 			pressure_lo,
@@ -101,6 +110,7 @@ impl PressureTransducer {
 
 	// Read from the INA219 and divide the reading by a scalar factor to
 	// convert the reading to mA.
+	#[cfg(feature = "rpi")]
 	fn read_current(&mut self) -> f32 {
 		f32::from(self.ina.current().unwrap()) / INA219_SCALING_VALUE
 	}
