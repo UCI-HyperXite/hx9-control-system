@@ -14,6 +14,7 @@ use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
+use crate::components::motors::Motors;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -55,6 +56,7 @@ pub struct StateMachine {
 	lidar: Lidar,
 	wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>,
 	gyro: Gyroscope,
+	motors: Motors,
 }
 
 impl StateMachine {
@@ -113,6 +115,7 @@ impl StateMachine {
 			lidar: Lidar::new(),
 			gyro: Gyroscope::new(),
 			wheel_encoder: std::sync::Arc::new(std::sync::Mutex::new(WheelEncoder::new())),
+			motors: Motors::new("/dev/ttyACM0", "/dev/ttyACM1"),
 		}
 	}
 
@@ -225,17 +228,20 @@ impl StateMachine {
 		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.signal_light.enable();
 		self.brakes.disengage();
+		self.motors.set_speed_mph(10.0).unwrap();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
 		self.signal_light.disable();
+		self.motors.set_speed_mph(0.0).unwrap();
 		self.brakes.engage();
 	}
 
 	fn _enter_halted(&mut self) {
 		info!("Entering Halted state");
 		self.signal_light.disable();
+		self.motors.set_speed_mph(0.0).unwrap();
 		self.brakes.engage();
 		self.high_voltage_system.disable();
 	}
@@ -243,6 +249,7 @@ impl StateMachine {
 	fn _enter_faulted(&mut self) {
 		info!("Entering Faulted state");
 		self.signal_light.disable();
+		self.motors.set_speed_mph(0.0).unwrap();
 		self.brakes.engage();
 		self.high_voltage_system.disable();
 	}
