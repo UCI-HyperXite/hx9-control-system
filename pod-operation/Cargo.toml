@@ -24,6 +24,7 @@ mpu6050 = "0.1.6"
 lidar_lite_v3 = { version = "0.1.0", optional = true }
 i2cdev = "0.3.1"
 byteorder = "1.4.3"
+vesc-comm = { git = "https://github.com/UCI-HyperXite/vesc-comm.git" }
 
 [features]
 gpio = ["dep:rppal"]
@@ -31,5 +32,6 @@ ina219 = ["dep:rppal"]
 ads1015 = ["dep:rppal"]
 mpu6050 = ["dep:rppal"]
 inverter = ["dep:rppal"]
+vesc = ["dep:rppal"]
 lidar = ["dep:lidar_lite_v3"]
-rpi = ["gpio", "ads1015", "ina219", "mpu6050", "inverter", "lidar"]
+rpi = ["gpio", "ads1015", "ina219", "mpu6050", "inverter", "vesc", "lidar"]

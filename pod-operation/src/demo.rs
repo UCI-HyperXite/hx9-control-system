@@ -7,6 +7,7 @@ use crate::components::inverter_board::InverterBoard;
 use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
+use crate::components::motors::Motors;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -133,5 +134,15 @@ pub async fn read_lidar(mut lidar: Lidar) {
 	loop {
 		println!("{:?}", lidar.read_distance());
 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+	}
+}
+
+pub async fn vesc_motors(mut motors: Motors) {
+	loop {
+		motors.set_speed_mph(10.0).unwrap();
+		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+		// println!("{:?}", motors.vesc.get_fw_version().unwrap());
+		motors.set_speed_mph(0.0).unwrap();
+		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
 	}
 }
