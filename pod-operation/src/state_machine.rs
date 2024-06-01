@@ -22,6 +22,8 @@ const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
+const BRAKING_THRESHOLD: f32 = 9.1; // Meters
+const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -233,8 +235,11 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
+
+		let distance = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
+		let velocity = self.wheel_encoder.get_velocity();
+
+		if StateMachine::_should_stop(distance, velocity) {
 			return State::Stopped;
 		}
 
@@ -252,6 +257,7 @@ impl StateMachine {
 				.ok();
 			return State::Faulted;
 		}
+
 		let default_readings = self.lim_temperature_port.read_lim_temps();
 		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
 		if default_readings
@@ -283,6 +289,21 @@ impl StateMachine {
 		}
 
 		State::Running
+	}
+
+	/// Consider two stopping conditions based on the pod's distance and velocity
+	/// at the next tickwhich is when the stopping will actually initiate
+	fn _should_stop(distance: f32, velocity: f32) -> bool {
+		// Predict next tick's braking distance
+		let predicted_velocity = velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
+		let predicted_braking_distance = -predicted_velocity.powi(2) / (2.0 * BRAKING_DECELERATION);
+
+		// Check if the predicted braking distance requires stopping
+		if distance + velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
+			return true;
+		}
+
+		predicted_braking_distance <= BRAKING_THRESHOLD
 	}
 
 	// To avoid conflicts with the state-transition model,

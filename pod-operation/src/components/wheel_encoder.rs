@@ -7,7 +7,7 @@ use rppal::gpio::{Gpio, InputPin, Level};
 
 use crate::utils::GpioPins;
 
-const WHEEL_DIAMETER: f32 = 0.25; // feet
+const WHEEL_DIAMETER: f32 = 0.0762; // meters
 const ENCODER_RESOLUTION: f32 = 16.0; // pulses per revolution
 const DISTANCE_PER_COUNT: f32 = WHEEL_DIAMETER * std::f32::consts::PI / ENCODER_RESOLUTION; // feet
 
