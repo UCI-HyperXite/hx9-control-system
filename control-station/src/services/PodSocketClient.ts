@@ -15,7 +15,7 @@ export enum State {
 interface ServerToClientEvents {
 	connect: () => void;
 	disconnect: (reason: Socket.DisconnectReason) => void;
-	serverResponse: (data: string) => void;
+	serverResponse: (data: {lidar:number}) => void;
 }
 
 interface Message {
@@ -46,95 +46,95 @@ type Entries<T> = {
 }[keyof T][];
 
 class PodSocketClient {
-	socket: Socket<ServerToClientEvents, ClientToServerEvents>;
-	serverEvents: ServerToClientEvents;
-	setPodData: SetPodData;
+    socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+    serverEvents: ServerToClientEvents;
+    setPodData: SetPodData;
 
-	constructor(setPodData: SetPodData) {
-		this.socket = ioNamespace("control-station");
-		this.serverEvents = {
-			connect: this.onConnect.bind(this),
-			disconnect: this.onDisconnect.bind(this),
+    constructor(setPodData: SetPodData) {
+        this.socket = ioNamespace("control-station");
+        this.serverEvents = {
+            connect: this.onConnect.bind(this),
+            disconnect: this.onDisconnect.bind(this),
 			serverResponse: this.onData.bind(this),
-		} as const;
-		this.setPodData = setPodData;
-	}
+        } as const;
+        this.setPodData = setPodData;
+    }
 
-	enable(): void {
-		this.socket.connect();
-		console.debug("Enabling socket event handlers");
-		(Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
-			([event, handler]) => {
-				this.socket.on(event, handler);
-			},
-		);
-	}
+    enable(): void {
+        this.socket.connect();
+        console.debug("Enabling socket event handlers");
+        (Object.entries(this.serverEvents) as Entries<ServerToClientEvents>).forEach(
+            ([event, handler]) => {
+                this.socket.on(event, handler);
+            },
+        );
+    }
 
-	disable(): void {
-		console.debug("Disabling socket event handlers");
-		Object.keys(this.serverEvents).forEach((event) => {
-			this.socket.off(event as keyof ServerToClientEvents);
-		});
-		this.socket.disconnect();
-	}
+    disable(): void {
+        console.debug("Disabling socket event handlers");
+        Object.keys(this.serverEvents).forEach((event) => {
+            this.socket.off(event as keyof ServerToClientEvents);
+        });
+        this.socket.disconnect();
+    }
 
-	sendLoad(): void {
-		this.socket.emit("load", (response: string) => {
-			console.log("Server acknowledged:", response);
-			this.addMessage(response, State.Load);
-		});
-	}
+    sendLoad(): void {
+        this.socket.emit("load", (response: string) => {
+            console.log("Server acknowledged:", response);
+            this.addMessage(response, State.Load);
+        });
+    }
 
-	sendRun(): void {
-		this.socket.emit("run", (response: string) => {
-			console.log("Server acknowledged:", response);
-			this.addMessage(response, State.Running);
-		});
-	}
+    sendRun(): void {
+        this.socket.emit("run", (response: string) => {
+            console.log("Server acknowledged:", response);
+            this.addMessage(response, State.Running);
+        });
+    }
 
-	sendStop(): void {
-		this.socket.emit("stop", (response: string) => {
-			console.log("Server acknowledged:", response);
-			this.addMessage(response, State.Stopped);
-		});
-	}
+    sendStop(): void {
+        this.socket.emit("stop", (response: string) => {
+            console.log("Server acknowledged:", response);
+            this.addMessage(response, State.Stopped);
+        });
+    }
 
-	sendHalt(): void {
-		this.socket.emit("halt", (response: string) => {
-			console.log("Server acknowledged:", response);
-			this.addMessage(response, State.Halted);
-		});
-	}
+    sendHalt(): void {
+        this.socket.emit("halt", (response: string) => {
+            console.log("Server acknowledged:", response);
+            this.addMessage(response, State.Halted);
+        });
+    }
 
-	private onConnect(): void {
-		console.log("Connected to server as", this.socket.id);
-		// TODO: On connecting, the state below should be what's provided by the pod
-		// if it's already running. Otherwise, the states should be State.Init
-		this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
-	}
+    private onConnect(): void {
+        console.log("Connected to server as", this.socket.id);
+        this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
+    }
 
-	private onDisconnect(reason: Socket.DisconnectReason): void {
-		console.log(`Disconnected from server: ${reason}`);
-		this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
-	}
+    private onDisconnect(reason: Socket.DisconnectReason): void {
+        console.log(`Disconnected from server: ${reason}`);
+        this.setPodData((d) => ({ ...d, connected: false, state: State.Disconnected }));
+    }
 
-	private onData(data: string): void {
-		console.log("server says", data);
-	}
+    private onData(data: { lidar: number }): void { // Updated this line
+        console.log("Server says lidar data:", data.lidar);
+        this.setPodData((d) => ({ ...d, lidar: data.lidar }));
+    }
 
-	private addMessage(response: string, newState: State): void {
-		const timestamp = new Date();
-		const newMessage = {
-			timestamp,
-			message: response,
-		};
+    private addMessage(response: string, newState: State): void {
+        const timestamp = new Date();
+        const newMessage = {
+            timestamp,
+            message: response,
+        };
 
-		this.setPodData((d) => ({
-			...d,
-			state: newState,
-			messages: [...d.messages, newMessage],
-		}));
-	}
+        this.setPodData((d) => ({
+            ...d,
+            state: newState,
+            messages: [...d.messages, newMessage],
+        }));
+    }
 }
+
 
 export default PodSocketClient;
