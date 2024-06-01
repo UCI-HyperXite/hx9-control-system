@@ -239,6 +239,17 @@ impl StateMachine {
 		}
 
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit(
+					"fault",
+					(
+						"Low pressure detected. Currently {}, should be above 126 PSI.",
+						self.downstream_pressure_transducer.read_pressure(),
+					),
+				)
+				.ok();
 			return State::Faulted;
 		}
 		let default_readings = self.lim_temperature_port.read_lim_temps();
@@ -248,10 +259,26 @@ impl StateMachine {
 			.chain(alternative_readings.iter())
 			.any(|&reading| reading > LIM_TEMP_THRESHOLD)
 		{
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit(
+					"fault",
+					(
+						"High temperature detected, should be below {} C.",
+						LIM_TEMP_THRESHOLD,
+					),
+				)
+				.ok();
 			return State::Faulted;
 		}
 		// Last 20% of the track, as indicated by braking
 		if self.lidar.read_distance() < END_OF_TRACK {
+			self.io
+				.of("/control-station")
+				.unwrap()
+				.emit("fault", ("End of track detected. Current distance to end: {}, less than {} meters away", self.lidar.read_distance(), END_OF_TRACK))
+				.ok();
 			return State::Faulted;
 		}
 
