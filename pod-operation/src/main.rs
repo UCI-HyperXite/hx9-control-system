@@ -24,6 +24,9 @@ use crate::state_machine::StateMachine;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing::subscriber::set_global_default(FmtSubscriber::default())?;
 
+	#[cfg(not(feature = "rpi"))]
+	info!("NOTE: Did not compile for Raspberry Pi, peripherals will be mocked.");
+
 	let (layer, io) = SocketIo::new_layer();
 
 	let signal_light = SignalLight::new();

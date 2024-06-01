@@ -89,11 +89,14 @@ jobs:
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
 
-      - name: Lint pod operation
+      - name: Lint pod operation (w/o rpi)
         run: cargo clippy -- -D warnings
+
+      - name: Lint pod operation (w/ rpi)
+        run: cargo clippy --features rpi -- -D warnings
 
       - name: Build Pod Operation Program (debug)
         run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\"
 
       - name: Build Pod Operation Program (release)
-        run: cargo build --target $TARGET --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\" --release
+        run: cargo brpi --config target.$TARGET.linker=\"aarch64-linux-gnu-gcc\"

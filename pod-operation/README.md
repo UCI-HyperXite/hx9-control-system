@@ -90,10 +90,10 @@ cargo watch -x run
 
 Uncomment the aarch64 Linux linker for your operating system in `.cargo/config.toml`.
 
-To build for production, use the `--release` option:
+To do a release build for the Raspberry Pi, use the `brpi` alias:
 
 ```shell
-cargo build --target aarch64-unknown-linux-gnu --release
+cargo brpi
 ```
 
 Alternatively, use `cross` to compile in a container:
