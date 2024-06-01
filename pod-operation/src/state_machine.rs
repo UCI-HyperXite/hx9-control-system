@@ -19,6 +19,7 @@ const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const BRAKING_THRESHOLD: f32 = 9.1; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
+const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -212,17 +213,25 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
+
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
+		let current_velocity = self.wheel_encoder.get_velocity();
+		let predicted_velocity =
+			current_velocity + BRAKING_DECELERATION * TICK_INTERVAL.as_secs_f32();
+
+		// Check if the predicted braking distance requires stopping
+		if encoder_value + current_velocity * TICK_INTERVAL.as_secs_f32() >= STOP_THRESHOLD {
 			return State::Stopped;
 		}
-		if self.wheel_encoder.get_braking_distance() <= BRAKING_THRESHOLD {
+
+		if encoder_value <= STOP_THRESHOLD {
 			return State::Stopped;
 		}
 
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}
+
 		let default_readings = self.lim_temperature_port.read_lim_temps();
 		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
 		if default_readings

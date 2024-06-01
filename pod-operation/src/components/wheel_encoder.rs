@@ -7,7 +7,6 @@ use crate::utils::GpioPins;
 const WHEEL_DIAMETER: f32 = 0.0762; // meters
 const ENCODER_RESOLUTION: f32 = 16.0; // pulses per revolution
 const DISTANCE_PER_COUNT: f32 = WHEEL_DIAMETER * std::f32::consts::PI / ENCODER_RESOLUTION; // feet
-const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
 
 #[derive(Clone, Copy, num_enum::FromPrimitive, num_enum::IntoPrimitive)]
 #[repr(i8)]
@@ -121,11 +120,6 @@ impl WheelEncoder {
 
 	pub fn get_velocity(&self) -> f32 {
 		self.velocity
-	}
-
-	pub fn get_braking_distance(&self) -> f32 {
-		let delta_v = initial_velocity - self.velocity;
-		-self.velocity.powi(2) / (2.0 * BRAKING_DECELERATION)
 	}
 
 	fn read_state(&self) -> EncoderState {

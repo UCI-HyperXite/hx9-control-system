@@ -85,8 +85,7 @@ pub async fn read_wheel_encoder(mut wheel_encoder: WheelEncoder) {
 	loop {
 		let count = wheel_encoder.measure().expect("faulted");
 		let velocity = wheel_encoder.get_velocity();
-		let braking_distance = wheel_encoder.get_braking_distance();
-		println!("{:?} {:?} {:?}", count, velocity, braking_distance);
+		println!("{:?} {:?}", count, velocity);
 		tokio::time::sleep(std::time::Duration::from_millis(1)).await;
 	}
 }
