@@ -256,8 +256,24 @@ impl StateMachine {
 	/// Perform operations when the pod is running
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
-		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
+
+		let encoder_value = self.wheel_encoder.lock().unwrap();
+		let distance = encoder_value.get_distance();
+		let velocity: f32 = encoder_value.get_velocity();
+		drop(encoder_value);
+
+		let full_json = json!({
+			"distance": distance,
+			"velocity": velocity,
+		});
+
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("serverResponse", full_json)
+			.ok();
+
+		if StateMachine::_should_stop(distance, velocity) {
 			return State::Stopped;
 		}
 
