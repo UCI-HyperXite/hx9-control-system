@@ -25,11 +25,21 @@ interface ClientToServerEvents {
 	halt: (ack: (data: string) => void) => void;
 }
 
+interface Wheel_Encoder {
+	distance: number;
+	speed: number;
+}
+
+interface Gyroscope {
+	pitch: number;
+	roll: number;
+}
+
 export interface PodData {
 	connected: boolean;
 	state: State;
-	gyroscope: number;
-	wheel_encoder: number;
+	gyroscope: Gyroscope;
+	wheel_encoder: Wheel_Encoder;
 	downstream_pressure_transducer: number;
 	upstream_pressure_transducer: number;
 	lim_temperature_port: number;

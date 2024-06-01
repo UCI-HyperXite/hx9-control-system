@@ -5,8 +5,8 @@ function usePodData() {
 	const [podData, setPodData] = useState<PodData>({
 		connected: false,
 		state: State.Disconnected,
-		gyroscope: 0,
-		wheel_encoder: 0,
+		gyroscope: { roll: 0, pitch: 0 },
+		wheel_encoder: { distance: 0, speed: 0 },
 		downstream_pressure_transducer: 0,
 		upstream_pressure_transducer: 0,
 		lim_temperature_port: 0,
