@@ -1,4 +1,3 @@
-use std::thread::sleep;
 use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
