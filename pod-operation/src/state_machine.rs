@@ -6,6 +6,7 @@ use serde_json::json;
 use socketioxide::extract::AckSender;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::sync::Mutex;
+
 use tracing::info;
 
 use crate::components::brakes::Brakes;
@@ -17,13 +18,14 @@ use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(10);
+const TICK_INTERVAL: Duration = Duration::from_millis(100);
 const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
 const BRAKING_THRESHOLD: f32 = 9.1; // Meters
 const BRAKING_DECELERATION: f32 = -15.14; // m/s^2
+const ENCODER_SAMPLE_INTERVAL: Duration = Duration::from_micros(100);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -45,13 +47,13 @@ pub struct StateMachine {
 	io: SocketIo,
 	brakes: Brakes,
 	signal_light: SignalLight,
-	wheel_encoder: WheelEncoder,
 	upstream_pressure_transducer: PressureTransducer,
 	downstream_pressure_transducer: PressureTransducer,
 	lim_temperature_port: LimTemperature,
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
 	lidar: Lidar,
+	wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>,
 	gyro: Gyroscope,
 }
 
@@ -101,7 +103,6 @@ impl StateMachine {
 			io,
 			brakes: Brakes::new(),
 			signal_light: SignalLight::new(),
-			wheel_encoder: WheelEncoder::new(),
 			upstream_pressure_transducer: PressureTransducer::upstream(),
 			downstream_pressure_transducer: PressureTransducer::downstream(),
 			lim_temperature_port: LimTemperature::new(ads1x1x::SlaveAddr::Default),
@@ -111,14 +112,38 @@ impl StateMachine {
 			high_voltage_system: HighVoltageSystem::new(),
 			lidar: Lidar::new(),
 			gyro: Gyroscope::new(),
+			wheel_encoder: std::sync::Arc::new(std::sync::Mutex::new(WheelEncoder::new())),
 		}
 	}
 
 	pub async fn run(&mut self) {
 		let mut interval = tokio::time::interval(TICK_INTERVAL);
+		let encoder = self.wheel_encoder.clone();
+
+		tokio::spawn(Self::wheel_encoder_task(encoder));
 
 		loop {
 			self.tick().await;
+			interval.tick().await;
+		}
+	}
+
+	async fn wheel_encoder_task(wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>) {
+		let mut interval = tokio::time::interval(ENCODER_SAMPLE_INTERVAL);
+
+		loop {
+			// Lock the mutex, measure, then immediately unlock
+			let _value = {
+				let mut encoder = wheel_encoder.lock().unwrap();
+				match encoder.measure() {
+					Ok(value) => value,
+					Err(e) => {
+						info!("Wheel encoder error: {:?}", e);
+						continue;
+					}
+				}
+			};
+			//info!("Wheel encoder value: {}", value);
 			interval.tick().await;
 		}
 	}
@@ -148,8 +173,6 @@ impl StateMachine {
 	fn pod_periodic(&mut self) {
 		// Reading each value individually
 		let gyro_data = self.gyro.read_orientation();
-		let wheel_encoder_distance = self.wheel_encoder.measure().expect("wheel encoder faulted");
-		let wheel_encoder_velocity = self.wheel_encoder.get_velocity();
 		let downstream_pressure_data = self.downstream_pressure_transducer.read_pressure();
 		let upstream_pressure_data = self.upstream_pressure_transducer.read_pressure();
 		let lim_temp_port_data = self.lim_temperature_port.read_lim_temps();
@@ -158,7 +181,6 @@ impl StateMachine {
 		// Full JSON object
 		let full_json = json!({
 			"gyroscope": gyro_data,
-			"wheel_encoder": { "distance": wheel_encoder_distance, "velocity": wheel_encoder_velocity },
 			"downstream_pressure_transducer": downstream_pressure_data,
 			"upstream_pressure_transducer": upstream_pressure_data,
 			"lim_temperature_port": lim_temp_port_data,
@@ -228,7 +250,6 @@ impl StateMachine {
 	/// Perform operations when the pod is loading
 	fn _load_periodic(&mut self) -> State {
 		info!("Rolling Load state");
-
 		State::Load
 	}
 
@@ -236,8 +257,23 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 
-		let distance = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		let velocity = self.wheel_encoder.get_velocity();
+		let encoder_value = self.wheel_encoder.lock().unwrap();
+		let distance = encoder_value.get_distance();
+		let velocity = encoder_value.get_velocity();
+		drop(encoder_value);
+
+		let full_json = json!({
+			"wheel_encoder": {
+				"distance": distance,
+				"velocity": velocity,
+			},
+		});
+
+		self.io
+			.of("/control-station")
+			.unwrap()
+			.emit("serverResponse", full_json)
+			.ok();
 
 		if StateMachine::_should_stop(distance, velocity) {
 			return State::Stopped;
