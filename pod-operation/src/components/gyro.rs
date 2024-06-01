@@ -27,6 +27,7 @@ impl Gyroscope {
 	}
 
 	#[cfg(feature = "mpu6050")]
+
 	pub fn read_orientation(&mut self) -> Orientation {
 		let angles = self.mpu6050.get_acc_angles().unwrap();
 		Orientation {
