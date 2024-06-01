@@ -27,7 +27,7 @@ interface ClientToServerEvents {
 
 interface Wheel_Encoder {
 	distance: number;
-	speed: number;
+	velocity: number;
 }
 
 interface Gyroscope {
