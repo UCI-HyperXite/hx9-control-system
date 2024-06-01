@@ -122,9 +122,9 @@ class PodSocketClient {
 		});
 	}
 
-	// TODO: On connecting, the state below should be what's provided by the pod
-	// if it's already running. Otherwise, the states should be State.Init
 	private onConnect(): void {
+		// TODO: On connecting, the state below should be what's provided by the pod
+		// if it's already running. Otherwise, the states should be State.Init
 		console.log("Connected to server as", this.socket.id);
 		this.setPodData((d) => ({ ...d, connected: true, state: State.Init }));
 	}

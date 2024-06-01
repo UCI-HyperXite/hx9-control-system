@@ -21,7 +21,5 @@
 		"test:cs",
 		"test:po"
 	],
-	"author": "UCI HyperXite",
-	"dependencies": {
-	}
+	"author": "UCI HyperXite"
 }

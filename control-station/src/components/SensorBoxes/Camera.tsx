@@ -8,9 +8,13 @@ function Camera() {
 	const [lidarList, setLidarList] = useState<number[]>([]);
 
 	useEffect(() => {
-		console.log(lidarList);
-		setLidarList((prevLidarList) => [...prevLidarList, podData.lidar]);
-	}, [podData]);
+		setLidarList((prevLidarList) => {
+			if (prevLidarList.length < 200) {
+				return [...prevLidarList, podData.lidar];
+			}
+			return [...prevLidarList.slice(1), podData.lidar];
+		});
+	}, [podData.lidar]);
 
 	return (
 		<div className="camera">
