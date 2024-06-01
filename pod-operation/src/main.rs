@@ -17,6 +17,7 @@ use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
+use crate::components::vesc::VescControl;
 use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
 
@@ -62,6 +63,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let inverter_board = InverterBoard::new();
 	tokio::spawn(demo::inverter_control(inverter_board));
+
+	let vesc = VescControl::new("/dev/ttyACM0");
+	tokio::spawn(demo::vesc_control(vesc));
 
 	let mut state_machine = StateMachine::new(io);
 	tokio::spawn(async move {
