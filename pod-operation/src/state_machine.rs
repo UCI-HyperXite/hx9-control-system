@@ -260,7 +260,7 @@ impl StateMachine {
 		let distance = encoder_value.get_distance();
 		let velocity: f32 = encoder_value.get_velocity();
 		drop(encoder_value);
-		
+
 		let full_json = json!({
 			"distance": distance,
 			"velocity": velocity,
