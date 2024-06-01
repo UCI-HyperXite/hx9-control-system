@@ -18,6 +18,11 @@ interface ServerToClientEvents {
 	serverResponse: (data: string) => void;
 }
 
+interface Message {
+	timestamp: Date;
+	message: string;
+}
+
 interface ClientToServerEvents {
 	load: (ack: (data: string) => void) => void;
 	run: (ack: (data: string) => void) => void;
@@ -28,6 +33,7 @@ interface ClientToServerEvents {
 export interface PodData {
 	connected: boolean;
 	state: State;
+	messages: Message[];
 }
 
 type SetPodData = Dispatch<SetStateAction<PodData>>;
@@ -74,28 +80,28 @@ class PodSocketClient {
 	sendLoad(): void {
 		this.socket.emit("load", (response: string) => {
 			console.log("Server acknowledged:", response);
-			this.setPodData((d) => ({ ...d, state: State.Load }));
+			this.addMessage(response, State.Load);
 		});
 	}
 
 	sendRun(): void {
 		this.socket.emit("run", (response: string) => {
 			console.log("Server acknowledged:", response);
-			this.setPodData((d) => ({ ...d, state: State.Running }));
+			this.addMessage(response, State.Running);
 		});
 	}
 
 	sendStop(): void {
 		this.socket.emit("stop", (response: string) => {
 			console.log("Server acknowledged:", response);
-			this.setPodData((d) => ({ ...d, state: State.Stopped }));
+			this.addMessage(response, State.Stopped);
 		});
 	}
 
 	sendHalt(): void {
 		this.socket.emit("halt", (response: string) => {
 			console.log("Server acknowledged:", response);
-			this.setPodData((d) => ({ ...d, state: State.Halted }));
+			this.addMessage(response, State.Halted);
 		});
 	}
 
@@ -113,6 +119,20 @@ class PodSocketClient {
 
 	private onData(data: string): void {
 		console.log("server says", data);
+	}
+
+	private addMessage(response: string, newState: State): void {
+		const timestamp = new Date();
+		const newMessage = {
+			timestamp,
+			message: response,
+		};
+
+		this.setPodData((d) => ({
+			...d,
+			state: newState,
+			messages: [...d.messages, newMessage],
+		}));
 	}
 }
 

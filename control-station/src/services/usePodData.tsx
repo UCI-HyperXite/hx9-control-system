@@ -5,6 +5,7 @@ function usePodData() {
 	const [podData, setPodData] = useState<PodData>({
 		state: State.Disconnected,
 		connected: false,
+		messages: [],
 	});
 
 	const podSocketClient = useMemo(() => new PodSocketClient(setPodData), []);
