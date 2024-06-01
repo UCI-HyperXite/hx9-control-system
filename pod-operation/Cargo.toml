@@ -21,9 +21,9 @@ ina219 = "0.1.0"
 ads1x1x = "0.2.2"
 nb = "1.1.0"
 mpu6050 = "0.1.6"
-lidar_lite_v3 = "0.1.0"
+lidar_lite_v3 = { version = "0.1.0", optional = true }
 i2cdev = "0.3.1"
 byteorder = "1.4.3"
 
 [features]
-rpi = ["dep:rppal"]
+rpi = ["dep:rppal", "dep:lidar_lite_v3"]
