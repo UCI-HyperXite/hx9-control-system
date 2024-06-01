@@ -1,7 +1,7 @@
 #[cfg(feature = "inverter")]
 use rppal::uart::{Parity, Uart};
 
-use tracing::info;
+use tracing::debug;
 
 #[cfg(feature = "inverter")]
 mod serial_constants {
@@ -31,6 +31,10 @@ impl InverterBoard {
 	#[cfg(feature = "inverter")]
 	pub fn send_control(&mut self, velocity: f32, throttle: f32) {
 		let message = format!("{velocity} {throttle}\n");
+		debug!(
+			"Sending inverter control message: {} {}",
+			velocity, throttle
+		);
 		self.uart.write(message.as_bytes()).unwrap();
 	}
 
@@ -42,7 +46,7 @@ impl InverterBoard {
 	/// Combine velocity and throttle into a space-separated string message
 	#[cfg(not(feature = "inverter"))]
 	pub fn send_control(&mut self, velocity: f32, throttle: f32) {
-		info!(
+		debug!(
 			"Mocking inverter sending message: {} {}",
 			velocity, throttle
 		);

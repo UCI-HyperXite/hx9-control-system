@@ -18,6 +18,7 @@ impl Lidar {
 			.expect("Failed to initialize I2C device");
 		let lidar_lite = LidarLiteV3::new(i2cdev).expect("Failed to initialize LidarLiteV3");
 
+		info!("Initialized LidarLite");
 		Lidar { lidar_lite }
 	}
 

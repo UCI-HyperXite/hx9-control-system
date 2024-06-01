@@ -16,9 +16,7 @@ const SENSITIVITY: f32 = 0.066; //Unit: vots/amp (v/a)
 
 fn voltage_to_current(voltage: i16) -> f32 {
 	let voltage = f32::from(voltage) / 1000.0;
-	let current = (voltage - QUIESCENT_VOLTAGE) / SENSITIVITY;
-	println!("Voltage: {}", voltage);
-	current
+	(voltage - QUIESCENT_VOLTAGE) / SENSITIVITY
 }
 
 pub struct LimCurrent {
@@ -33,12 +31,13 @@ impl LimCurrent {
 		let mut adc = Ads1x1x::new_ads1015(i2cdev, device_address);
 		adc.set_full_scale_range(FullScaleRange::Within4_096V)
 			.unwrap();
+		info!("Configured ADS1015 for for LimCurrent");
 		LimCurrent { ads1015: adc }
 	}
 
 	#[cfg(not(feature = "ads1015"))]
 	pub fn new(device_address: SlaveAddr) -> Self {
-		info!("Mocking ADS at {:?} for LimCurrnt", device_address);
+		info!("Mocking ADS at {:?} for LimCurrent", device_address);
 		LimCurrent {}
 	}
 

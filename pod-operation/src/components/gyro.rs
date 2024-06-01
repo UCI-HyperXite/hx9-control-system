@@ -1,6 +1,8 @@
-use mpu6050::Mpu6050;
 #[cfg(feature = "mpu6050")]
-use rppal::{hal::Delay, i2c::I2c};
+use {
+	mpu6050::Mpu6050,
+	rppal::{hal::Delay, i2c::I2c},
+};
 
 use serde::Serialize;
 

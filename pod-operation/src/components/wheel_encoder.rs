@@ -1,7 +1,7 @@
 use std::{ops::Sub, time::Instant};
 
 #[cfg(not(feature = "gpio"))]
-use crate::utils::mock::{InputPin, Level};
+use crate::utils::mock::gpio::{InputPin, Level};
 #[cfg(feature = "gpio")]
 use rppal::gpio::{Gpio, InputPin, Level};
 

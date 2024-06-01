@@ -1,5 +1,5 @@
 #[cfg(not(feature = "gpio"))]
-use crate::utils::mock::OutputPin;
+use crate::utils::mock::gpio::OutputPin;
 #[cfg(feature = "gpio")]
 use rppal::gpio::{Gpio, OutputPin};
 

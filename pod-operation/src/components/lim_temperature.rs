@@ -41,10 +41,8 @@ impl LimTemperature {
 	pub fn new(device_address: SlaveAddr) -> Self {
 		let i2cdev = I2c::new().unwrap();
 		let adc = Ads1x1x::new_ads1015(i2cdev, device_address);
-		LimTemperature {
-			// ads1015: Mutex::new(adc),
-			ads1015: adc,
-		}
+		info!("Configured ADS1015 for for LimTemperature");
+		LimTemperature { ads1015: adc }
 	}
 
 	#[cfg(not(feature = "ads1015"))]
