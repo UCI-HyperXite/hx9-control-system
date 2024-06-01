@@ -141,7 +141,7 @@ pub async fn vesc_motors(mut motors: Motors) {
 	loop {
 		motors.set_speed_mph(10.0).unwrap();
 		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
-		println!("{:?}", motors.vesc.get_fw_version().unwrap());
+		// println!("{:?}", motors.vesc.get_fw_version().unwrap());
 		motors.set_speed_mph(0.0).unwrap();
 		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
 	}
