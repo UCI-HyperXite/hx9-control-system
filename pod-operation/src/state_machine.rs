@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use enum_map::{enum_map, EnumMap};
@@ -20,6 +21,7 @@ const STOP_THRESHOLD: f32 = 37.0; // Meters
 const MIN_PRESSURE: f32 = 126.0; // PSI
 const END_OF_TRACK: f32 = 8.7; // Meters
 const LIM_TEMP_THRESHOLD: f32 = 71.0; //°C
+const ENCODER_SAMPLE_INTERVAL: Duration = Duration::from_millis(1);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, enum_map::Enum)]
 pub enum State {
@@ -48,6 +50,7 @@ pub struct StateMachine {
 	lim_temperature_starboard: LimTemperature,
 	high_voltage_system: HighVoltageSystem,
 	lidar: Lidar,
+	encoder_value: Arc<Mutex<f32>>,
 }
 
 impl StateMachine {
@@ -105,14 +108,41 @@ impl StateMachine {
 			)),
 			high_voltage_system: HighVoltageSystem::new(),
 			lidar: Lidar::new(),
+			encoder_value: Arc::new(Mutex::new(0.0)),
 		}
 	}
 
 	pub async fn run(&mut self) {
 		let mut interval = tokio::time::interval(TICK_INTERVAL);
+		let encoder_value = self.encoder_value.clone(); // Clone the Arc to pass to the task
+		tokio::spawn(Self::wheel_encoder_task(
+			self.wheel_encoder.clone(),
+			encoder_value,
+		)); // Spawn the wheel encoder task
 
 		loop {
 			self.tick().await;
+			interval.tick().await;
+		}
+	}
+
+	async fn wheel_encoder_task(mut wheel_encoder: WheelEncoder, encoder_value: Arc<Mutex<f32>>) {
+		let mut interval = tokio::time::interval(ENCODER_SAMPLE_INTERVAL);
+
+		loop {
+			match wheel_encoder.measure() {
+				Ok(value) => {
+					// Write the encoder value to the mutex
+					let mut encoder_value_guard = encoder_value.lock().await;
+					*encoder_value_guard = value;
+					info!("Wheel encoder value: {}", value);
+				}
+				Err(e) => {
+					// Handle measurement error
+					info!("Wheel encoder error: {:?}", e);
+				}
+			}
+
 			interval.tick().await;
 		}
 	}
@@ -216,13 +246,16 @@ impl StateMachine {
 	fn _running_periodic(&mut self) -> State {
 		info!("Rolling Running state");
 		let encoder_value = self.wheel_encoder.measure().expect("wheel encoder faulted"); // Read the encoder value
-		if encoder_value > STOP_THRESHOLD {
+		let encoder_value = self.encoder_value.lock().await; // Access the encoder value
+
+		if *encoder_value > STOP_THRESHOLD {
 			return State::Stopped;
 		}
 
 		if self.downstream_pressure_transducer.read_pressure() < MIN_PRESSURE {
 			return State::Faulted;
 		}
+
 		let default_readings = self.lim_temperature_port.read_lim_temps();
 		let alternative_readings = self.lim_temperature_starboard.read_lim_temps();
 		if default_readings
