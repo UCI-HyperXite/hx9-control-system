@@ -6,7 +6,7 @@ pub mod ads1015_plswork {
     use ads1x1x::mode::OneShot;
     use ads1x1x::ChannelSelection::{SingleA0, SingleA1, SingleA2, SingleA3};
     use ads1x1x::{Ads1x1x, DynamicOneShot};
-    use nb::block;
+    use nb::block;`
     use rppal::i2c::I2c;
     use ads1x1x::SlaveAddr;
     use tracing::info;
