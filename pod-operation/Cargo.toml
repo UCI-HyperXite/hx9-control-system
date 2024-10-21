@@ -27,6 +27,7 @@ byteorder = "1.4.3"
 vesc-comm = { git = "https://github.com/UCI-HyperXite/vesc-comm.git" }
 
 [features]
+default = ["rpi"]
 gpio = ["rppal"]
 ina219 = ["rppal"]
 ads1015 = ["rppal"]
