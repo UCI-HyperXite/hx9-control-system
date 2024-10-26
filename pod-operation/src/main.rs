@@ -1,4 +1,5 @@
 use axum::{http::Method, response::IntoResponse, routing::Router, Server};
+use components::pico_relay::PicoRelay;
 use socketioxide::SocketIo;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info};
@@ -17,6 +18,7 @@ use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::motors::Motors;
+use crate::components::pico_relay;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -33,6 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
+
+	let pico_relay = PicoRelay::new();
+	tokio::spawn(demo::blinkRelay(pico_relay));
 
 	let upstream_pressure_transducer = PressureTransducer::upstream();
 	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));

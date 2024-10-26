@@ -8,6 +8,7 @@ use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
 use crate::components::motors::Motors;
+use crate::components::pico_relay::{self, PicoRelay};
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -22,6 +23,21 @@ pub async fn blink(mut signal_light: SignalLight) {
 			signal_light.enable();
 		} else if i % 4 == 1 {
 			signal_light.disable();
+		}
+
+		i += 1;
+	}
+}
+
+pub async fn blinkRelay(mut pico_relay: PicoRelay) {
+	let mut i = 0;
+	info!("Starting relay demo.");
+	loop {
+		tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+		if i % 4 == 0 {
+			pico_relay.enable();
+		} else if i % 4 == 1 {
+			pico_relay.disable();
 		}
 
 		i += 1;
