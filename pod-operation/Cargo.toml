@@ -28,11 +28,11 @@ vesc-comm = { git = "https://github.com/UCI-HyperXite/vesc-comm.git" }
 tower-http = { version = "0.4", features = ["cors"] }
 
 [features]
-gpio = ["dep:rppal"]
-ina219 = ["dep:rppal"]
-ads1015 = ["dep:rppal"]
-mpu6050 = ["dep:rppal"]
-inverter = ["dep:rppal"]
-vesc = ["dep:rppal"]
-lidar = ["dep:lidar_lite_v3"]
+gpio = ["rppal"]
+ina219 = ["rppal"]
+ads1015 = ["rppal"]
+mpu6050 = ["rppal"]
+inverter = ["rppal"]
+vesc = ["rppal"]
+lidar = ["lidar_lite_v3"]
 rpi = ["gpio", "ads1015", "ina219", "mpu6050", "inverter", "vesc", "lidar"]
