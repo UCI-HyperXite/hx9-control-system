@@ -1,5 +1,6 @@
-use axum::Server;
+use axum::{http::Method, response::IntoResponse, routing::Router, Server};
 use socketioxide::SocketIo;
+use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
@@ -72,7 +73,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		state_machine.run().await;
 	});
 
-	let app = axum::Router::new().layer(layer);
+	let cors = CorsLayer::new()
+		.allow_origin(Any) // Allow any origin
+		.allow_methods(vec![Method::GET, Method::POST, Method::OPTIONS]) // Allow specific HTTP methods
+		.allow_headers(Any); // Allow any headers
+
+	let app = Router::new()
+		.layer(cors) // Add the CORS layer to the router
+		.layer(layer); // Keep your existing SocketIo layer
+
+	info!("Starting server on port 5000");
 
 	info!("Starting server on port 5000");
 
