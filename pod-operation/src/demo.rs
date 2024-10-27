@@ -3,13 +3,13 @@ use tracing::info;
 use crate::components::brakes::Brakes;
 use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
-use crate::components::inverter_board::InverterBoard;
-use crate::components::lidar::Lidar;
+// use crate::components::inverter_board::InverterBoard;
+// use crate::components::lidar::Lidar;
 use crate::components::lim_current::LimCurrent;
 use crate::components::lim_temperature::LimTemperature;
-use crate::components::motors::Motors;
+// use crate::components::motors::Motors;
 // use crate::components::pico_relay::PicoRelay;
-use crate::components::pressure_transducer::PressureTransducer;
+// use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 
@@ -44,14 +44,14 @@ pub async fn blink(mut signal_light: SignalLight) {
 // 	}
 // }
 
-pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
-	info!("Starting pressure transducer demo.");
+// pub async fn read_pressure_transducer(mut pressure_transducer: PressureTransducer) {
+// 	info!("Starting pressure transducer demo.");
 
-	loop {
-		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
-		println!("{:?}", pressure_transducer.read_pressure());
-	}
-}
+// 	loop {
+// 		tokio::time::sleep(std::time::Duration::new(1, 0)).await;
+// 		println!("{:?}", pressure_transducer.read_pressure());
+// 	}
+// }
 
 pub async fn read_ads1015(mut lim_temperature: LimTemperature) {
 	info!("Starting ADS1015 Demo.");
@@ -139,26 +139,26 @@ pub async fn high_voltage_system(mut high_voltage_system: HighVoltageSystem) {
 	}
 }
 
-pub async fn inverter_control(mut inverter_control: InverterBoard) {
-	loop {
-		inverter_control.send_control(0.0, 1.0);
-		tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-	}
-}
-pub async fn read_lidar(mut lidar: Lidar) {
-	info!("Starting Lidar Demo.");
-	loop {
-		println!("{:?}", lidar.read_distance());
-		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-	}
-}
+// pub async fn inverter_control(mut inverter_control: InverterBoard) {
+// 	loop {
+// 		inverter_control.send_control(0.0, 1.0);
+// 		tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+// 	}
+// }
+// pub async fn read_lidar(mut lidar: Lidar) {
+// 	info!("Starting Lidar Demo.");
+// 	loop {
+// 		println!("{:?}", lidar.read_distance());
+// 		tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+// 	}
+// }
 
-pub async fn vesc_motors(mut motors: Motors) {
-	loop {
-		motors.set_speed_mph(10.0).unwrap();
-		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
-		// println!("{:?}", motors.vesc.get_fw_version().unwrap());
-		motors.set_speed_mph(0.0).unwrap();
-		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
-	}
-}
+// pub async fn vesc_motors(mut motors: Motors) {
+// 	loop {
+// 		motors.set_speed_mph(10.0).unwrap();
+// 		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+// 		// println!("{:?}", motors.vesc.get_fw_version().unwrap());
+// 		motors.set_speed_mph(0.0).unwrap();
+// 		tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+// 	}
+// }
