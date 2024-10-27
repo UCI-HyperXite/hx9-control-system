@@ -20,7 +20,7 @@ use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
 use crate::state_machine::StateMachine;
-use components::pico_relay::PicoRelay;
+// use components::pico_relay::PicoRelay;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -34,8 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let signal_light = SignalLight::new();
 	tokio::spawn(demo::blink(signal_light));
 
-	let pico_relay = PicoRelay::new();
-	tokio::spawn(demo::blink_relay(pico_relay));
+	// let pico_relay = PicoRelay::new();
+	// tokio::spawn(demo::blink_relay(pico_relay));
 
 	let upstream_pressure_transducer = PressureTransducer::upstream();
 	tokio::spawn(demo::read_pressure_transducer(upstream_pressure_transducer));
