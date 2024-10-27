@@ -14,6 +14,7 @@ use crate::components::gyro::Gyroscope;
 use crate::components::high_voltage_system::HighVoltageSystem;
 use crate::components::lidar::Lidar;
 use crate::components::lim_temperature::LimTemperature;
+use crate::components::pico_relay::PicoRelay;
 use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
@@ -55,6 +56,7 @@ pub struct StateMachine {
 	lidar: Lidar,
 	wheel_encoder: std::sync::Arc<std::sync::Mutex<WheelEncoder>>,
 	gyro: Gyroscope,
+	pico_relay: PicoRelay,
 }
 
 impl StateMachine {
@@ -113,6 +115,7 @@ impl StateMachine {
 			lidar: Lidar::new(),
 			gyro: Gyroscope::new(),
 			wheel_encoder: std::sync::Arc::new(std::sync::Mutex::new(WheelEncoder::new())),
+			pico_relay: PicoRelay::new(),
 		}
 	}
 
@@ -218,6 +221,7 @@ impl StateMachine {
 		info!("Entering Load state");
 		self.brakes.disengage();
 		self.signal_light.disable();
+		self.pico_relay.disable();
 	}
 
 	fn _enter_running(&mut self) {
@@ -225,12 +229,14 @@ impl StateMachine {
 		self.high_voltage_system.enable(); // Enable high voltage system -- may move later
 		self.signal_light.enable();
 		self.brakes.disengage();
+		self.pico_relay.enable();
 	}
 
 	fn _enter_stopped(&mut self) {
 		info!("Entering Stopped state");
 		self.signal_light.disable();
 		self.brakes.engage();
+		self.pico_relay.disable();
 	}
 
 	fn _enter_halted(&mut self) {
@@ -238,6 +244,7 @@ impl StateMachine {
 		self.signal_light.disable();
 		self.brakes.engage();
 		self.high_voltage_system.disable();
+		self.pico_relay.disable();
 	}
 
 	fn _enter_faulted(&mut self) {
@@ -245,6 +252,7 @@ impl StateMachine {
 		self.signal_light.disable();
 		self.brakes.engage();
 		self.high_voltage_system.disable();
+		self.pico_relay.disable();
 	}
 
 	/// Perform operations when the pod is loading
