@@ -19,7 +19,7 @@ use crate::components::lim_temperature::LimTemperature;
 // use crate::components::pressure_transducer::PressureTransducer;
 use crate::components::signal_light::SignalLight;
 use crate::components::wheel_encoder::WheelEncoder;
-use crate::state_machine::StateMachine;
+// use crate::state_machine::StateMachine;
 // use components::pico_relay::PicoRelay;
 
 #[tokio::main]
@@ -53,8 +53,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	let gyro: Gyroscope = Gyroscope::new();
 	tokio::spawn(demo::read_gyroscope(gyro));
-	let brakes = Brakes::new();
-	tokio::spawn(demo::brake(brakes));
+	let mut brakes = Brakes::new();
+	brakes.disengage();
+	// tokio::spawn(demo::brake(brakes));
 
 	let high_voltage_system = HighVoltageSystem::new();
 	tokio::spawn(demo::high_voltage_system(high_voltage_system));
@@ -71,10 +72,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	// let motors = Motors::new("/dev/ttyACM0");
 	// tokio::spawn(demo::vesc_motors(motors));
 
-	let mut state_machine = StateMachine::new(io);
-	tokio::spawn(async move {
-		state_machine.run().await;
-	});
+	// let mut state_machine = StateMachine::new(io);
+	// tokio::spawn(async move {
+	// 	state_machine.run().await;
+	// });
 
 	let app = Router::new().layer(layer); // Keep your existing SocketIo layer
 
