@@ -88,10 +88,11 @@ pub async fn read_gyroscope(mut gyroscope: Gyroscope) {
 	tokio::spawn(async move {
 		loop {
 			let orientation = gyroscope.read_orientation();
+			let acceleration = gyroscope.read_acceleration();
 			tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 			println!(
-				"Pitch: {:?}, Roll: {:?}",
-				orientation.pitch, orientation.roll
+				"Pitch: {:?}, Roll: {:?}, Yaw: {:?},  x: {:?}, y: {:?}, z: {:?}",
+				orientation.pitch, orientation.roll, orientation.yaw, acceleration.x, acceleration.y, acceleration.z
 			);
 		}
 	});
